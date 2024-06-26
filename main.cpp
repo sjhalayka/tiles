@@ -230,7 +230,7 @@ int main(int, char**)
 
 		ImGui::Begin("image", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
-		ImVec2 img_size = { float(my_image_width), float(my_image_height) };
+		const ImVec2 img_size = { float(my_image_width), float(my_image_height) };
 
 		static char str0[128] = "12";
 		ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0));
@@ -238,7 +238,7 @@ int main(int, char**)
 		istringstream iss(str0);
 		size_t block_size = 0;
 		iss >> block_size;
-		//ImVec2 img_blocks = ImVec2(img_size.x / block_size, img_size.y / block_size);
+//		ImVec2 img_block = ImVec2(floor( block_size / img_size.x), floor(block_size / img_size.y));
 
 		{
 			ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
@@ -285,7 +285,8 @@ int main(int, char**)
 
 			if (left_clicked)
 			{
-				//cout << block_size << " " << img_size.x << " " << img_size.y << endl;
+
+				// ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
 
 				size_t x = size_t(mousePositionRelative.x) % block_size;
 				size_t y = size_t(mousePositionRelative.y) % block_size;
@@ -318,7 +319,8 @@ int main(int, char**)
 
 			if (right_clicked)
 			{
-				//cout << block_size << " " << img_size.x << " " << img_size.y << endl;
+
+//				ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
 
 				size_t x = size_t(mousePositionRelative.x) % block_size;
 				size_t y = size_t(mousePositionRelative.y) % block_size;
