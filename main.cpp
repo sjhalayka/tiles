@@ -199,7 +199,7 @@ int main(int, char**)
 	int my_image_height = 0;
 	GLuint my_image_texture = 0;
 
-	bool ret = LoadTextureFromFile("C:/temp/test.jpg", &my_image_texture, &my_image_width, &my_image_height);
+	bool ret = LoadTextureFromFile("C:/temp/goblins.png", &my_image_texture, &my_image_width, &my_image_height);
 
 
 	while (!done)
@@ -232,7 +232,7 @@ int main(int, char**)
 
 		const ImVec2 img_size = { float(my_image_width), float(my_image_height) };
 
-		static char str0[128] = "12";
+		static char str0[128] = "36";
 		ImGui::InputText("Tile size", str0, IM_ARRAYSIZE(str0));
 
 		istringstream iss(str0);
@@ -278,7 +278,7 @@ int main(int, char**)
 
 
 		{
-			static const ImVec2 thumbnail_img_size = { img_size.x / 4, img_size.y / 4};
+			static const ImVec2 thumbnail_img_size = { 128, 128};
 			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
 			static ImVec2 uv_max = ImVec2(0.0f, 0.0f);                 // Lower-right
 
@@ -311,7 +311,7 @@ int main(int, char**)
 
 
 		{
-			static const ImVec2 thumbnail_img_size = { img_size.x / 4, img_size.y / 4};
+			static const ImVec2 thumbnail_img_size = { 128, 128};
 			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
 			static ImVec2 uv_max = ImVec2(0.0f, 0.0f);                 // Lower-right
 
