@@ -58,10 +58,10 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 	glBindTexture(GL_TEXTURE_2D, image_texture);
 
 	// Setup filtering parameters for display
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE); // This is required on WebGL for non power-of-two textures
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE); // Same
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 	// Upload pixels into texture
 #if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
@@ -230,7 +230,7 @@ int main(int, char**)
 
 		ImGui::Begin("image", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
-		ImVec2 img_size = { float(my_image_width), float(my_image_height) };
+		ImVec2 img_size = { float(512), float(512) };
 
 		static char str0[128] = "12";
 		ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0));
@@ -270,7 +270,6 @@ int main(int, char**)
 			left_clicked = true;
 		}
 
-
 		if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
 		{
 			right_clicked = true;
@@ -291,22 +290,22 @@ int main(int, char**)
 
 			static const ImVec2 thumbnail_img_size = { 128.0f, 128.0f };
 			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-			static ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+			static ImVec2 uv_max = ImVec2(0.0f, 0.0f);                 // Lower-right
 
 			if (left_clicked)
 			{
-				float u_start = float(mousePositionRelative.x) / float(img_size.x);
-				float v_start = float(mousePositionRelative.y) / float(img_size.y);
+				float u_start = mousePositionRelative.x / img_size.x;
+				float v_start = mousePositionRelative.y / img_size.y;
 
-				float u_end = (block_size / float(thumbnail_img_size.x)) + u_start;
-				float v_end = (block_size / float(thumbnail_img_size.y)) + v_start;
+				float u_end = block_size / img_size.x + u_start;
+				float v_end = block_size / img_size.y + v_start;
 
 				uv_min = ImVec2(u_start, v_start);                 // Top-left
 				uv_max = ImVec2(u_end, v_end);
 			}
 
 			ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // 50% opaque white
 
 			ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, tint_col, border_col);
 		}
@@ -314,22 +313,25 @@ int main(int, char**)
 		{
 			static const ImVec2 thumbnail_img_size = { 128.0f, 128.0f };
 			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-			static ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+			static ImVec2 uv_max = ImVec2(0.0f, 0.0f);                 // Lower-right
 
 			if (right_clicked)
 			{
-				float u_start = float(mousePositionRelative.x) / float(img_size.x);
-				float v_start = float(mousePositionRelative.y) / float(img_size.y);
+				float u_start = mousePositionRelative.x / img_size.x;
+				float v_start = mousePositionRelative.y / img_size.y;
 
-				float u_end = (block_size / float(thumbnail_img_size.x)) + u_start;
-				float v_end = (block_size / float(thumbnail_img_size.y)) + v_start;
+				float u_end = (mousePositionRelative.x + 12 / 4) / img_size.x;
+				float v_end = (mousePositionRelative.y + 12 / 4) / img_size.y;
+
+				//float u_end = block_size / thumbnail_img_size.x + u_start;
+				//float v_end = block_size / thumbnail_img_size.y + v_start;
 
 				uv_min = ImVec2(u_start, v_start);                 // Top-left
 				uv_max = ImVec2(u_end, v_end);
 			}
 
 			ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
+			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // 50% opaque white
 
 			ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, tint_col, border_col);
 		}
