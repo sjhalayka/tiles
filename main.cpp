@@ -230,7 +230,7 @@ int main(int, char**)
 
 		ImGui::Begin("image", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
-		ImVec2 img_size = { float(512), float(512) };
+		ImVec2 img_size = { float(my_image_width), float(my_image_height) };
 
 		static char str0[128] = "12";
 		ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0));
@@ -238,16 +238,8 @@ int main(int, char**)
 		istringstream iss(str0);
 		size_t block_size = 0;
 		iss >> block_size;
-		ImVec2 img_blocks = ImVec2(img_size.x / block_size, img_size.y / block_size);
+		//ImVec2 img_blocks = ImVec2(img_size.x / block_size, img_size.y / block_size);
 
-		//ImVec2 tv;
-		//tv.x = size_t(img_size.x) % block_size;
-		//tv.y = size_t(img_size.y) % block_size;
-
-
-
-		//if ()
-		//{
 		{
 			ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
 			ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
@@ -256,7 +248,6 @@ int main(int, char**)
 
 			ImGui::Image((void*)(intptr_t)my_image_texture, img_size, uv_min, uv_max, tint_col, border_col);
 		}
-		//}
 
 		ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
 		ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
@@ -286,14 +277,22 @@ int main(int, char**)
 
 
 
-		{
 
-			static const ImVec2 thumbnail_img_size = { 128.0f, 128.0f };
+		{
+			static const ImVec2 thumbnail_img_size = { img_size.x / 4, img_size.y / 4};
 			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
 			static ImVec2 uv_max = ImVec2(0.0f, 0.0f);                 // Lower-right
 
 			if (left_clicked)
 			{
+				//cout << block_size << " " << img_size.x << " " << img_size.y << endl;
+
+				size_t x = size_t(mousePositionRelative.x) % block_size;
+				size_t y = size_t(mousePositionRelative.y) % block_size;
+
+				mousePositionRelative.x -= x;
+				mousePositionRelative.y -= y;
+
 				float u_start = mousePositionRelative.x / img_size.x;
 				float v_start = mousePositionRelative.y / img_size.y;
 
@@ -310,21 +309,28 @@ int main(int, char**)
 			ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, tint_col, border_col);
 		}
 
+
+
 		{
-			static const ImVec2 thumbnail_img_size = { 128.0f, 128.0f };
+			static const ImVec2 thumbnail_img_size = { img_size.x / 4, img_size.y / 4};
 			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
 			static ImVec2 uv_max = ImVec2(0.0f, 0.0f);                 // Lower-right
 
 			if (right_clicked)
 			{
+				//cout << block_size << " " << img_size.x << " " << img_size.y << endl;
+
+				size_t x = size_t(mousePositionRelative.x) % block_size;
+				size_t y = size_t(mousePositionRelative.y) % block_size;
+
+				mousePositionRelative.x -= x;
+				mousePositionRelative.y -= y;
+
 				float u_start = mousePositionRelative.x / img_size.x;
 				float v_start = mousePositionRelative.y / img_size.y;
 
-				float u_end = (mousePositionRelative.x + 12 / 4) / img_size.x;
-				float v_end = (mousePositionRelative.y + 12 / 4) / img_size.y;
-
-				//float u_end = block_size / thumbnail_img_size.x + u_start;
-				//float v_end = block_size / thumbnail_img_size.y + v_start;
+				float u_end = block_size / img_size.x + u_start;
+				float v_end = block_size / img_size.y + v_start;
 
 				uv_min = ImVec2(u_start, v_start);                 // Top-left
 				uv_max = ImVec2(u_end, v_end);
