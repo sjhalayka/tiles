@@ -233,13 +233,12 @@ int main(int, char**)
 		const ImVec2 img_size = { float(my_image_width), float(my_image_height) };
 
 		static char str0[128] = "12";
-		ImGui::InputText("input text", str0, IM_ARRAYSIZE(str0));
+		ImGui::InputText("Tile size", str0, IM_ARRAYSIZE(str0));
 
 		istringstream iss(str0);
 		size_t block_size = 0;
 		iss >> block_size;
-//		ImVec2 img_block = ImVec2(floor( block_size / img_size.x), floor(block_size / img_size.y));
-
+\
 		{
 			ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
 			ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
@@ -285,7 +284,6 @@ int main(int, char**)
 
 			if (left_clicked)
 			{
-
 				// ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
 
 				size_t x = size_t(mousePositionRelative.x) % block_size;
@@ -319,7 +317,6 @@ int main(int, char**)
 
 			if (right_clicked)
 			{
-
 //				ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
 
 				size_t x = size_t(mousePositionRelative.x) % block_size;
