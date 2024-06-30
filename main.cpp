@@ -35,7 +35,7 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 
 	Mat img = imread(filename, IMREAD_UNCHANGED);
 
-	if(img.empty() || img.channels() != 4)
+	if(img.empty())
 		return false;
 
 	image_width = img.cols;
@@ -53,7 +53,10 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 	// Upload pixels into texture
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data);
+	if(img.channels() == 4)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data);
+	else if(img.channels() == 3)
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image_width, image_height, 0, GL_RGB, GL_UNSIGNED_BYTE, img.data);
 
 	*out_texture = image_texture;
 	*out_width = image_width;
