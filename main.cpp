@@ -1,37 +1,14 @@
-// Dear ImGui: standalone example application for SDL2 + OpenGL
-// (SDL is a cross-platform general purpose library for handling windows, inputs, OpenGL/Vulkan/Metal graphics context creation, etc.)
-
-// Learn about Dear ImGui:
-// - FAQ                  https://dearimgui.com/faq
-// - Getting Started      https://dearimgui.com/getting-started
-// - Documentation        https://dearimgui.com/docs (same as your local docs/ folder).
-// - Introduction, links and more at the top of imgui.cpp
-
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_sdl2.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
 #include <stdio.h>
 #include <SDL.h>
-#if defined(IMGUI_IMPL_OPENGL_ES2)
-#include <SDL_opengles2.h>
-#else
 #include <SDL_opengl.h>
-#endif
-
-
 
 #pragma comment(lib, "SDL2.lib")
 #pragma comment(lib, "SDL2main.lib")
 #pragma comment(lib, "OpenGL32.lib")
 #pragma comment(lib, "opencv_world4100.lib")
-
-
-
-
-
-
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
 
 #include <iostream>
 #include <sstream>
@@ -39,11 +16,8 @@
 using namespace std;
 
 
-
-
-
-
-
+#include <opencv2/opencv.hpp>
+using namespace cv;
 
 
 
@@ -58,9 +32,14 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 	// Load from file
 	int image_width = 0;
 	int image_height = 0;
-	unsigned char* image_data = stbi_load(filename, &image_width, &image_height, NULL, 4);
-	if (image_data == NULL)
+
+	Mat img = imread(filename, IMREAD_UNCHANGED);
+
+	if(img.empty() || img.channels() != 4)
 		return false;
+
+	image_width = img.cols;
+	image_height = img.rows;
 
 	// Create a OpenGL texture identifier
 	GLuint image_texture;
@@ -74,11 +53,7 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 	// Upload pixels into texture
-#if defined(GL_UNPACK_ROW_LENGTH) && !defined(__EMSCRIPTEN__)
-	glPixelStorei(GL_UNPACK_ROW_LENGTH, 0);
-#endif
-	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
-	stbi_image_free(image_data);
+	glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data);
 
 	*out_texture = image_texture;
 	*out_width = image_width;
@@ -93,10 +68,6 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 
 
 
-
-
-
-#include <opencv2/opencv.hpp>
 
 // https://stackoverflow.com/questions/65091012/how-to-split-an-image-into-m-x-n-tiles
 std::vector<cv::Mat> splitImage(cv::Mat& image, int M, int N)
@@ -215,7 +186,7 @@ int main(int, char**)
 	int my_image_height = 0;
 	GLuint my_image_texture = 0;
 
-	bool ret = LoadTextureFromFile("C:/temp/goblins.png", &my_image_texture, &my_image_width, &my_image_height);
+	bool ret = LoadTextureFromFile("goblins.png", &my_image_texture, &my_image_width, &my_image_height);
 
 
 
