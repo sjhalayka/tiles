@@ -265,9 +265,9 @@ int main(int, char**)
 			ImGui::Image((void*)(intptr_t)my_image_texture, img_size, uv_min, uv_max, tint_col, border_col);
 		}
 
-		ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
-		ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
-		ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
+		const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
+		const ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
+		const ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
 
 		bool left_clicked = false;
 		bool right_clicked = false;
@@ -287,13 +287,6 @@ int main(int, char**)
 
 		ImGui::Begin("image2");// , nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
-
-
-
-
-
-
-
 		{
 			static const ImVec2 thumbnail_img_size = { 128, 128};
 			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
@@ -301,16 +294,14 @@ int main(int, char**)
 
 			if (left_clicked)
 			{
-				// ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+				//cout << img_block.x << " " << img_block.y << endl;
 
 				size_t x = size_t(mousePositionRelative.x) % block_size;
 				size_t y = size_t(mousePositionRelative.y) % block_size;
 
-				mousePositionRelative.x -= x;
-				mousePositionRelative.y -= y;
-
-				float u_start = mousePositionRelative.x / img_size.x;
-				float v_start = mousePositionRelative.y / img_size.y;
+				float u_start = (mousePositionRelative.x - x) / img_size.x;
+				float v_start = (mousePositionRelative.y - y) / img_size.y;
 
 				float u_end = block_size / img_size.x + u_start;
 				float v_end = block_size / img_size.y + v_start;
@@ -334,16 +325,14 @@ int main(int, char**)
 
 			if (right_clicked)
 			{
-//				ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+				//cout << img_block.x << " " << img_block.y << endl;
 
 				size_t x = size_t(mousePositionRelative.x) % block_size;
 				size_t y = size_t(mousePositionRelative.y) % block_size;
 
-				mousePositionRelative.x -= x;
-				mousePositionRelative.y -= y;
-
-				float u_start = mousePositionRelative.x / img_size.x;
-				float v_start = mousePositionRelative.y / img_size.y;
+				float u_start = (mousePositionRelative.x - x) / img_size.x;
+				float v_start = (mousePositionRelative.y - y) / img_size.y;
 
 				float u_end = block_size / img_size.x + u_start;
 				float v_end = block_size / img_size.y + v_start;
