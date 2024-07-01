@@ -107,16 +107,30 @@ std::vector<cv::Mat> splitImage(cv::Mat& image, int M, int N)
 
 vector<string> left_strings;
 int left_selected = -1;
+vector<ImVec2> left_uv_mins;
+vector<ImVec2> left_uv_maxs;
+
 
 void left_add_button_func(void)
 {
 	left_strings.push_back("1.0");
+	left_uv_mins.push_back(ImVec2(0, 0));
+	left_uv_maxs.push_back(ImVec2(0, 0));
+
+	if (left_strings.size() == 1)
+		left_selected = 0;
 }
 
 void left_remove_button_func(int i)
 {
 	left_strings.erase(left_strings.begin() + i);
+	left_uv_mins.erase(left_uv_mins.begin() + i);
+	left_uv_maxs.erase(left_uv_maxs.begin() + i);
+
+	if (i == left_selected)
+		left_selected = -1;
 }
+
 
 
 // Main code
@@ -130,7 +144,7 @@ int main(int, char**)
 	}
 
 	// GL 3.0 + GLSL 130
-	const char* glsl_version = "#version 130";
+	const char* glsl_version = "#version 430";
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
@@ -285,11 +299,9 @@ int main(int, char**)
 
 		for(int i = 0; i < left_strings.size(); i++)
 		{
-			static const ImVec2 thumbnail_img_size = { float(block_size), float(block_size)	 };
-			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-			static ImVec2 uv_max = ImVec2(0.0f, 0.0f);                 // Lower-right
-
-			if (left_clicked)
+			const ImVec2 thumbnail_img_size = { float(block_size), float(block_size) };
+   
+			if (left_clicked && i == left_selected)
 			{
 				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
 				//cout << img_block.x << " " << img_block.y << endl;
@@ -303,19 +315,18 @@ int main(int, char**)
 				float u_end = block_size / img_size.x + u_start;
 				float v_end = block_size / img_size.y + v_start;
 
-				uv_min = ImVec2(u_start, v_start);                 // Top-left
-				uv_max = ImVec2(u_end, v_end);
+				left_uv_mins[i] = ImVec2(u_start, v_start);
+				left_uv_maxs[i] = ImVec2(u_end, v_end);
 			}
 
 			ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // 50% opaque white
-
-			ImVec4 orange = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+			ImVec4 selected_border_col = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 			if(i == left_selected)
-				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, orange, border_col);
+				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, selected_border_col);
 			else
-				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, tint_col, border_col);
+				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, border_col);
 
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 				left_selected = i;
