@@ -106,6 +106,7 @@ std::vector<cv::Mat> splitImage(cv::Mat& image, int M, int N)
 
 
 vector<string> left_strings;
+int left_selected = -1;
 
 void left_add_button_func(void)
 {
@@ -282,8 +283,6 @@ int main(int, char**)
 		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
 			left_add_button_func();
 
-		const size_t num_rows = 1;
-
 		for(int i = 0; i < left_strings.size(); i++)
 		{
 			static const ImVec2 thumbnail_img_size = { float(block_size), float(block_size)	 };
@@ -311,8 +310,16 @@ int main(int, char**)
 			ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
 			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // 50% opaque white
 
-			ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, tint_col, border_col);
-		
+			ImVec4 orange = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+
+			if(i == left_selected)
+				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, orange, border_col);
+			else
+				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, tint_col, border_col);
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+				left_selected = i;
+
 			ImGui::SameLine();
 
 			if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))                         // Buttons return true when clicked (most widgets return true when edited/activated)
