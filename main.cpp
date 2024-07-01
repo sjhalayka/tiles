@@ -105,13 +105,16 @@ std::vector<cv::Mat> splitImage(cv::Mat& image, int M, int N)
 }	
 
 
-void add_button_func(void)
+vector<string> left_strings;
+
+void left_add_button_func(void)
 {
+	left_strings.push_back("1.0");
 }
 
-void remove_button_func(int i)
+void left_remove_button_func(int i)
 {
-	cout << i << endl;
+	left_strings.erase(left_strings.begin() + i);
 }
 
 
@@ -277,22 +280,11 @@ int main(int, char**)
 		ImGui::Begin("Left Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
 		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			add_button_func();
+			left_add_button_func();
 
-		const size_t num_rows = 2;
+		const size_t num_rows = 1;
 
-		static vector<string> v;
-
-		if (v.size() != num_rows)
-		{
-			for (int i = 0; i < num_rows; i++)
-			{
-				string s = "1.0";
-				v.push_back(s);
-			}
-		}
-
-		for(int i = 0; i < num_rows; i++)
+		for(int i = 0; i < left_strings.size(); i++)
 		{
 			static const ImVec2 thumbnail_img_size = { float(block_size), float(block_size)	 };
 			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
@@ -324,14 +316,14 @@ int main(int, char**)
 			ImGui::SameLine();
 
 			if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))                         // Buttons return true when clicked (most widgets return true when edited/activated)
-				remove_button_func(i);
+				left_remove_button_func(i);
 
 			ImGui::SameLine();
 			
 			string x = "Weight " + to_string(i);
 
 			ImGui::PushItemWidth(80);
-			ImGui::InputText(x.c_str(), &v[i]);
+			ImGui::InputText(x.c_str(), &left_strings[i]);
 			ImGui::PopItemWidth();
 		}
 
