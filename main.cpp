@@ -109,8 +109,9 @@ void add_button_func(void)
 {
 }
 
-void remove_button_func(void)
+void remove_button_func(int i)
 {
+	cout << i << endl;
 }
 
 
@@ -282,7 +283,7 @@ int main(int, char**)
 
 		static vector<string> v;
 
-		if (v.size() == 0)
+		if (v.size() != num_rows)
 		{
 			for (int i = 0; i < num_rows; i++)
 			{
@@ -322,17 +323,15 @@ int main(int, char**)
 		
 			ImGui::SameLine();
 
-			if (ImGui::Button("Remove"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-				remove_button_func();
+			if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))                         // Buttons return true when clicked (most widgets return true when edited/activated)
+				remove_button_func(i);
 
 			ImGui::SameLine();
 			
 			string x = "Weight " + to_string(i);
 
-			//static string s = "1.0";
-
 			ImGui::PushItemWidth(80);
-			ImGui::InputText(x.c_str(), &v[i], IM_ARRAYSIZE(v[i].c_str()));
+			ImGui::InputText(x.c_str(), &v[i]);
 			ImGui::PopItemWidth();
 		}
 
