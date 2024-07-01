@@ -1,6 +1,9 @@
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_sdl2.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
+#include "imgui/misc/cpp/imgui_stdlib.h"
+
+
 #include <stdio.h>
 #include <SDL.h>
 #include <SDL_opengl.h>
@@ -102,8 +105,13 @@ std::vector<cv::Mat> splitImage(cv::Mat& image, int M, int N)
 }	
 
 
+void add_button_func(void)
+{
+}
 
-
+void remove_button_func(void)
+{
+}
 
 
 // Main code
@@ -193,6 +201,9 @@ int main(int, char**)
 
 
 
+
+
+
 	while (!done)
 	{
 		// Poll and handle events (inputs, window resize, etc.)
@@ -259,10 +270,30 @@ int main(int, char**)
 		ImGui::End();
 
 
-		ImGui::Begin("image2");// , nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
+
+
+		ImGui::Begin("Left Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
+
+		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+			add_button_func();
+
+		const size_t num_rows = 2;
+
+		static vector<string> v;
+
+		if (v.size() == 0)
 		{
-			static const ImVec2 thumbnail_img_size = { 128, 128};
+			for (int i = 0; i < num_rows; i++)
+			{
+				string s = "1.0";
+				v.push_back(s);
+			}
+		}
+
+		for(int i = 0; i < num_rows; i++)
+		{
+			static const ImVec2 thumbnail_img_size = { float(block_size), float(block_size)	 };
 			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
 			static ImVec2 uv_max = ImVec2(0.0f, 0.0f);                 // Lower-right
 
@@ -288,38 +319,23 @@ int main(int, char**)
 			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // 50% opaque white
 
 			ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, tint_col, border_col);
+		
+			ImGui::SameLine();
+
+			if (ImGui::Button("Remove"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				remove_button_func();
+
+			ImGui::SameLine();
+			
+			string x = "Weight " + to_string(i);
+
+			//static string s = "1.0";
+
+			ImGui::PushItemWidth(80);
+			ImGui::InputText(x.c_str(), &v[i], IM_ARRAYSIZE(v[i].c_str()));
+			ImGui::PopItemWidth();
 		}
 
-
-
-		{
-			static const ImVec2 thumbnail_img_size = { 128, 128};
-			static ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-			static ImVec2 uv_max = ImVec2(0.0f, 0.0f);                 // Lower-right
-
-			if (right_clicked)
-			{
-				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
-				//cout << img_block.x << " " << img_block.y << endl;
-
-				size_t x = size_t(mousePositionRelative.x) % block_size;
-				size_t y = size_t(mousePositionRelative.y) % block_size;
-
-				float u_start = (mousePositionRelative.x - x) / img_size.x;
-				float v_start = (mousePositionRelative.y - y) / img_size.y;
-
-				float u_end = block_size / img_size.x + u_start;
-				float v_end = block_size / img_size.y + v_start;
-
-				uv_min = ImVec2(u_start, v_start);                 // Top-left
-				uv_max = ImVec2(u_end, v_end);
-			}
-
-			ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f); // 50% opaque white
-
-			ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, uv_min, uv_max, tint_col, border_col);
-		}
 
 		ImGui::End();
 
