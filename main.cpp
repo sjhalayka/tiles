@@ -149,6 +149,38 @@ void left_remove_button_func(int i)
 
 
 
+
+vector<string> right_strings;
+int right_selected = -1;
+vector<ImVec2> right_uv_mins;
+vector<ImVec2> right_uv_maxs;
+
+
+void right_add_button_func(void)
+{
+	right_strings.push_back("1.0");
+	right_uv_mins.push_back(ImVec2(0, 0));
+	right_uv_maxs.push_back(ImVec2(0, 0));
+
+	if (right_strings.size() == 1)
+		right_selected = 0;
+}
+
+void right_remove_button_func(int i)
+{
+	right_strings.erase(right_strings.begin() + i);
+	right_uv_mins.erase(right_uv_mins.begin() + i);
+	right_uv_maxs.erase(right_uv_maxs.begin() + i);
+
+	if (i == right_selected)
+		right_selected = -1;
+}
+
+
+
+
+
+
 // http://www.songho.ca/opengl/gl_transform.html
 
 complex<float> get_window_coords_from_ndc_coords(size_t viewport_width, size_t viewport_height, complex<float>& src_coords)
@@ -169,23 +201,18 @@ complex<float> get_ndc_coords_from_window_coords(size_t viewport_width, size_t v
 
 
 
-GLuint vao = 0, vbo = 0, ibo = 0;
-//GLuint tex_handle = 0;
 
 
-
-
-
-void draw(GLuint shader_program, size_t x, size_t y, size_t tile_size, size_t win_width, size_t win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
+void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, size_t win_width, size_t win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
+	static GLuint vao = 0, vbo = 0, ibo = 0;
+
 	if (!glIsVertexArray(vao))
 	{
 		glGenVertexArrays(1, &vao);
 		glGenBuffers(1, &vbo);
 		glGenBuffers(1, &ibo);
 	}
-
-
 
 	glDisable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -406,7 +433,7 @@ int main(int, char**)
 		ImGui::InputText("Tile size", str0, IM_ARRAYSIZE(str0));
 
 		istringstream iss(str0);
-		size_t block_size = 0;
+		int block_size = 0;
 		iss >> block_size;
 
 		{
@@ -497,6 +524,72 @@ int main(int, char**)
 
 		ImGui::End();
 
+
+
+
+
+
+		ImGui::Begin("Right Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
+
+		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+			right_add_button_func();
+
+		for (int i = 0; i < right_strings.size(); i++)
+		{
+			const ImVec2 thumbnail_img_size = { float(block_size), float(block_size) };
+
+			if (right_clicked && i == right_selected)
+			{
+				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+				//cout << img_block.x << " " << img_block.y << endl;
+
+				size_t x = size_t(mousePositionRelative.x) % block_size;
+				size_t y = size_t(mousePositionRelative.y) % block_size;
+
+				float u_start = (mousePositionRelative.x - x) / img_size.x;
+				float v_start = (mousePositionRelative.y - y) / img_size.y;
+
+				float u_end = block_size / img_size.x + u_start;
+				float v_end = block_size / img_size.y + v_start;
+
+				right_uv_mins[i] = ImVec2(u_start, v_start);
+				right_uv_maxs[i] = ImVec2(u_end, v_end);
+			}
+
+			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+			const ImVec4 selected_border_col = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+			const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+			if (i == right_selected)
+				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, selected_border_col);
+			else
+				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, border_col);
+
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+				right_selected = i;
+
+			ImGui::SameLine();
+
+			if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))                         // Buttons return true when clicked (most widgets return true when edited/activated)
+				right_remove_button_func(i);
+
+			ImGui::SameLine();
+
+			string x = "Weight " + to_string(i);
+
+			ImGui::PushItemWidth(80);
+			ImGui::InputText(x.c_str(), &right_strings[i]);
+			ImGui::PopItemWidth();
+		}
+
+
+		ImGui::End();
+
+
+
+
+
+
 		// Rendering
 		ImGui::Render();
 
@@ -506,10 +599,9 @@ int main(int, char**)
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-
 		for (int i = 0; i < left_strings.size(); i++)
 		{
-			draw(ortho.get_program(), 100, 100, block_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, left_uv_mins[i], left_uv_maxs[i]);
+			draw_textured_quad(ortho.get_program(), i * block_size, i * block_size, block_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, left_uv_mins[i], left_uv_maxs[i]);
 		}
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
