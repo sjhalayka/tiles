@@ -1,3 +1,6 @@
+
+#include <GL/glew.h>
+
 #include "imgui/imgui.h"
 #include "imgui/backends/imgui_impl_sdl2.h"
 #include "imgui/backends/imgui_impl_opengl3.h"
@@ -8,7 +11,10 @@
 #include <SDL.h>
 #include <SDL_opengl.h>
 
+
 #pragma comment(lib, "SDL2.lib")
+#pragma comment(lib, "glew32.lib")
+
 #pragma comment(lib, "SDL2main.lib")
 #pragma comment(lib, "OpenGL32.lib")
 #pragma comment(lib, "opencv_world4100.lib")
@@ -23,9 +29,40 @@ using namespace std;
 using namespace cv;
 
 
+#include "vertex_fragment_shader.h"
 
+vertex_fragment_shader ortho;
 
+struct
+{
+	//struct
+	//{
+	//	GLint           mv_matrix;
+	//	GLint           proj_matrix;
+	//	GLint           shading_level;
+	//} render;
+	//struct
+	//{
+	//	GLint           ssao_level;
+	//	GLint           object_level;
+	//	GLint           ssao_radius;
+	//	GLint           weight_by_angle;
+	//	GLint           randomize_points;
+	//	GLint           point_count;
+	//} ssao;
+	//struct
+	//{
+	//	GLint           mv_matrix;
+	//	GLint           proj_matrix;
+	//	GLint			flat_colour;
+	//} flat;
 
+	struct
+	{
+		GLint			tex;
+	} ortho;
+
+} uniforms;
 
 
 
@@ -133,6 +170,126 @@ void left_remove_button_func(int i)
 
 
 
+
+// http://www.songho.ca/opengl/gl_transform.html
+
+complex<float> get_window_coords_from_ndc_coords(size_t viewport_width, size_t viewport_height, complex<float>& src_coords)
+{
+	float x_w = viewport_width / 2.0f * src_coords.real() + viewport_width / 2.0f;
+	float y_w = viewport_height / 2.0f * src_coords.imag() + viewport_height / 2.0f;
+
+	return complex<float>(x_w, y_w);
+}
+
+complex<float> get_ndc_coords_from_window_coords(size_t viewport_width, size_t viewport_height, complex<float>& src_coords)
+{
+	float x_ndc = (2.0f * src_coords.real() / viewport_width) - 1.0f;
+	float y_ndc = (2.0f * src_coords.imag() / viewport_height) - 1.0f;
+
+	return complex<float>(x_ndc, y_ndc);
+}
+
+
+
+GLuint tex_handle = 0, vao = 0, vbo = 0, ibo = 0;
+
+
+
+
+
+void draw(GLuint shader_program, size_t x, size_t y, size_t win_width, size_t win_height)
+{
+	glGenVertexArrays(1, &vao);
+	glGenBuffers(1, &vbo);
+	glGenBuffers(1, &ibo);
+
+	//glGenTextures(1, &tex_handle);
+	//glBindTexture(GL_TEXTURE_2D, tex_handle);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, static_cast<GLsizei>(36), static_cast<GLsizei>(36), 0, GL_RGBA, GL_UNSIGNED_BYTE, &rgba_data[0]);
+
+
+
+	glDisable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+	complex<float> v1w(static_cast<float>(x), static_cast<float>(y + 36));
+	complex<float> v2w(static_cast<float>(x + 36), static_cast<float>(y + 36));
+	complex<float> v3w(static_cast<float>(x + 36), static_cast<float>(y));
+
+	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
+	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
+	complex<float> v2ndc = get_ndc_coords_from_window_coords(win_width, win_height, v2w);
+	complex<float> v3ndc = get_ndc_coords_from_window_coords(win_width, win_height, v3w);
+
+	// data for a fullscreen quad (this time with texture coords)
+	const GLfloat vertexData[] = {
+		//	       X     Y     Z					  U     V     
+			  v0ndc.real(), v0ndc.imag(), 0,      0, 1, // vertex 0
+			  v1ndc.real(), v1ndc.imag(), 0,      0, 0, // vertex 1
+			  v2ndc.real(), v2ndc.imag(), 0,      1, 0, // vertex 2
+			  v3ndc.real(), v3ndc.imag(), 0,      1, 1, // vertex 3
+	}; // 4 vertices with 5 components (floats) each
+
+
+
+	// https://raw.githubusercontent.com/progschj/OpenGL-Examples/master/03texture.cpp
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+
+
+	// fill with data
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 5, vertexData, GL_STATIC_DRAW);
+
+
+	// set up generic attrib pointers
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (char*)0 + 0 * sizeof(GLfloat));
+
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (char*)0 + 3 * sizeof(GLfloat));
+
+	// generate and bind the index buffer object
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+	static const GLuint indexData[] = {
+		3,1,0, // first triangle
+		2,1,3, // second triangle
+	};
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 2 * 3, indexData, GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+
+	glUseProgram(ortho.get_program());
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex_handle);
+
+	glUniform1i(uniforms.ortho.tex, 0);
+
+	glBindVertexArray(vao);
+
+	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+}
+
+
+
+
+
+
+
+
+
+
 // Main code
 int main(int, char**)
 {
@@ -142,6 +299,8 @@ int main(int, char**)
 		printf("Error: %s\n", SDL_GetError());
 		return -1;
 	}
+
+
 
 	// GL 3.0 + GLSL 130
 	const char* glsl_version = "#version 430";
@@ -170,6 +329,23 @@ int main(int, char**)
 	SDL_GLContext gl_context = SDL_GL_CreateContext(window);
 	SDL_GL_MakeCurrent(window, gl_context);
 	SDL_GL_SetSwapInterval(1); // Enable vsync
+
+	if (GLEW_OK != glewInit())
+	{
+		cout << "GLEW initialization error" << endl;
+		return false;
+	}
+
+
+	if (false == ortho.init("ortho.vs.glsl", "ortho.fs.glsl"))
+	{
+		cout << "Could not load ortho shader" << endl;
+		return false;
+	}
+
+	uniforms.ortho.tex = glGetUniformLocation(ortho.get_program(), "tex");
+
+
 
 	// Setup Dear ImGui context
 	IMGUI_CHECKVERSION();
@@ -319,9 +495,9 @@ int main(int, char**)
 				left_uv_maxs[i] = ImVec2(u_end, v_end);
 			}
 
-			ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-			ImVec4 selected_border_col = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
-			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+			const ImVec4 selected_border_col = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+			const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 			if(i == left_selected)
 				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, selected_border_col);
@@ -354,10 +530,17 @@ int main(int, char**)
 
 		// Rendering
 		ImGui::Render();
+
+
+
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
-		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+
+		draw(ortho.get_program(), 36, 36, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+
+
+		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
 	}
 
