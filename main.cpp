@@ -35,28 +35,6 @@ vertex_fragment_shader ortho;
 
 struct
 {
-	//struct
-	//{
-	//	GLint           mv_matrix;
-	//	GLint           proj_matrix;
-	//	GLint           shading_level;
-	//} render;
-	//struct
-	//{
-	//	GLint           ssao_level;
-	//	GLint           object_level;
-	//	GLint           ssao_radius;
-	//	GLint           weight_by_angle;
-	//	GLint           randomize_points;
-	//	GLint           point_count;
-	//} ssao;
-	//struct
-	//{
-	//	GLint           mv_matrix;
-	//	GLint           proj_matrix;
-	//	GLint			flat_colour;
-	//} flat;
-
 	struct
 	{
 		GLint			tex;
@@ -191,26 +169,21 @@ complex<float> get_ndc_coords_from_window_coords(size_t viewport_width, size_t v
 
 
 
-GLuint tex_handle = 0, vao = 0, vbo = 0, ibo = 0;
+GLuint vao = 0, vbo = 0, ibo = 0;
+//GLuint tex_handle = 0;
 
 
 
 
 
-void draw(GLuint shader_program, size_t x, size_t y, size_t win_width, size_t win_height)
+void draw(GLuint shader_program, size_t x, size_t y, size_t tile_size, size_t win_width, size_t win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
-	glGenVertexArrays(1, &vao);
-	glGenBuffers(1, &vbo);
-	glGenBuffers(1, &ibo);
-
-	//glGenTextures(1, &tex_handle);
-	//glBindTexture(GL_TEXTURE_2D, tex_handle);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	//glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-	//glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, static_cast<GLsizei>(36), static_cast<GLsizei>(36), 0, GL_RGBA, GL_UNSIGNED_BYTE, &rgba_data[0]);
+	if (!glIsVertexArray(vao))
+	{
+		glGenVertexArrays(1, &vao);
+		glGenBuffers(1, &vbo);
+		glGenBuffers(1, &ibo);
+	}
 
 
 
@@ -218,9 +191,9 @@ void draw(GLuint shader_program, size_t x, size_t y, size_t win_width, size_t wi
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 	complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-	complex<float> v1w(static_cast<float>(x), static_cast<float>(y + 36));
-	complex<float> v2w(static_cast<float>(x + 36), static_cast<float>(y + 36));
-	complex<float> v3w(static_cast<float>(x + 36), static_cast<float>(y));
+	complex<float> v1w(static_cast<float>(x), static_cast<float>(y + tile_size));
+	complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
+	complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
 
 	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
 	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
@@ -230,10 +203,10 @@ void draw(GLuint shader_program, size_t x, size_t y, size_t win_width, size_t wi
 	// data for a fullscreen quad (this time with texture coords)
 	const GLfloat vertexData[] = {
 		//	       X     Y     Z					  U     V     
-			  v0ndc.real(), v0ndc.imag(), 0,      0, 1, // vertex 0
-			  v1ndc.real(), v1ndc.imag(), 0,      0, 0, // vertex 1
-			  v2ndc.real(), v2ndc.imag(), 0,      1, 0, // vertex 2
-			  v3ndc.real(), v3ndc.imag(), 0,      1, 1, // vertex 3
+			  v0ndc.real(), v0ndc.imag(), 0,      uv_min.x, uv_max.y, // vertex 0
+			  v1ndc.real(), v1ndc.imag(), 0,      uv_min.x, uv_min.y, // vertex 1
+			  v2ndc.real(), v2ndc.imag(), 0,      uv_max.x, uv_min.y, // vertex 2
+			  v3ndc.real(), v3ndc.imag(), 0,      uv_max.x, uv_max.y, // vertex 3
 	}; // 4 vertices with 5 components (floats) each
 
 
@@ -524,10 +497,6 @@ int main(int, char**)
 
 		ImGui::End();
 
-
-
-
-
 		// Rendering
 		ImGui::Render();
 
@@ -537,10 +506,13 @@ int main(int, char**)
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		draw(ortho.get_program(), 36, 36, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 
+		for (int i = 0; i < left_strings.size(); i++)
+		{
+			draw(ortho.get_program(), 100, 100, block_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, left_uv_mins[i], left_uv_maxs[i]);
+		}
 
-		//ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
 	}
 
