@@ -220,7 +220,7 @@ int tiles_per_dimension = 20;
 
 vector<background_tile> background_tiles;
 
-float zoom_factor = 1.5f;
+float zoom_factor = 1.0f;
 
 
 
@@ -243,10 +243,17 @@ void draw_textured_quad(GLuint shader_program, long signed int x, long signed in
 	complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
 	complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
 
-	v0w *= zoom_factor;
-	v1w *= zoom_factor;
-	v2w *= zoom_factor;
-	v3w *= zoom_factor;
+	v0w.real(v0w.real() * zoom_factor);
+	v0w.imag(v0w.imag() * zoom_factor);
+	v1w.real(v1w.real() * zoom_factor);
+	v1w.imag(v1w.imag() * zoom_factor);
+	v2w.real(v2w.real() * zoom_factor);
+	v2w.imag(v2w.imag() * zoom_factor);
+	v3w.real(v3w.real() * zoom_factor);
+	v3w.imag(v3w.imag() * zoom_factor);
+
+
+
 
 	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
 	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
@@ -442,6 +449,9 @@ int main(int, char**)
 				done = true;
 			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
 				done = true;
+
+			if (event.type == SDL_MOUSEWHEEL)
+				zoom_factor -= event.wheel.y * 0.1f;
 		}
 
 		// Start the Dear ImGui frame
@@ -655,11 +665,11 @@ int main(int, char**)
 
 
 
-		if (!hovered && ImGui::IsMouseDragging(0, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			ImVec2 motion = ImGui::GetMouseDragDelta();
-			image_anchor.x += motion.x;
-			image_anchor.y += -motion.y;
+			image_anchor.x += motion.x/zoom_factor;
+			image_anchor.y += -motion.y/zoom_factor;
 
 			ImGui::ResetMouseDragDelta();
 		}
