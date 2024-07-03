@@ -31,16 +31,20 @@ using namespace cv;
 
 #include "vertex_fragment_shader.h"
 
-vertex_fragment_shader ortho;
+vertex_fragment_shader ortho_shader;
 
 struct
 {
 	struct
 	{
-		GLint			tex;
-	} ortho;
+		GLint tex;
+	}
 
-} uniforms;
+	ortho_shader_uniforms;
+
+} 
+
+uniforms;
 
 
 
@@ -71,10 +75,12 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
 
 	// Upload pixels into texture
-	if(img.channels() == 4)
+	if (img.channels() == 4)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, image_width, image_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img.data);
-	else if(img.channels() == 3)
+	else if (img.channels() == 3)
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, image_width, image_height, 0, GL_RGB, GL_UNSIGNED_BYTE, img.data);
+	else
+		return false;
 
 	*out_texture = image_texture;
 	*out_width = image_width;
@@ -201,6 +207,21 @@ complex<float> get_ndc_coords_from_window_coords(size_t viewport_width, size_t v
 
 
 
+class background_tile
+{
+public:
+	int tile_size;
+	ImVec2 uv_min;
+	ImVec2 uv_max;
+};
+
+int tiles_per_dimension = 200;
+
+
+vector<background_tile> background_tiles;
+
+
+
 
 
 void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, size_t win_width, size_t win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
@@ -230,10 +251,10 @@ void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, s
 	// data for a fullscreen quad (this time with texture coords)
 	const GLfloat vertexData[] = {
 		//	       X     Y     Z					  U     V     
-			  v0ndc.real(), v0ndc.imag(), 0,      uv_min.x, uv_max.y, // vertex 0
-			  v1ndc.real(), v1ndc.imag(), 0,      uv_min.x, uv_min.y, // vertex 1
-			  v2ndc.real(), v2ndc.imag(), 0,      uv_max.x, uv_min.y, // vertex 2
-			  v3ndc.real(), v3ndc.imag(), 0,      uv_max.x, uv_max.y, // vertex 3
+			  v0ndc.real(), v0ndc.imag(), 0,      uv_max.x, uv_min.y, // vertex 0
+			  v1ndc.real(), v1ndc.imag(), 0,      uv_max.x, uv_max.y, // vertex 1
+			  v2ndc.real(), v2ndc.imag(), 0,      uv_min.x, uv_max.y, // vertex 2
+			  v3ndc.real(), v3ndc.imag(), 0,      uv_min.x, uv_min.y, // vertex 3
 	}; // 4 vertices with 5 components (floats) each
 
 
@@ -243,11 +264,8 @@ void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, s
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-
-
 	// fill with data
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 5, vertexData, GL_STATIC_DRAW);
-
 
 	// set up generic attrib pointers
 	glEnableVertexAttribArray(0);
@@ -269,12 +287,12 @@ void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, s
 
 	glBindVertexArray(0);
 
-	glUseProgram(ortho.get_program());
+	glUseProgram(ortho_shader.get_program());
 
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex_handle);
 
-	glUniform1i(uniforms.ortho.tex, 0);
+	glUniform1i(uniforms.ortho_shader_uniforms.tex, 0);
 
 	glBindVertexArray(vao);
 
@@ -293,6 +311,17 @@ void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, s
 // Main code
 int main(int, char**)
 {
+
+
+
+
+
+
+
+
+
+
+
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -337,13 +366,13 @@ int main(int, char**)
 	}
 
 
-	if (false == ortho.init("ortho.vs.glsl", "ortho.fs.glsl"))
+	if (false == ortho_shader.init("ortho.vs.glsl", "ortho.fs.glsl"))
 	{
 		cout << "Could not load ortho shader" << endl;
 		return false;
 	}
 
-	uniforms.ortho.tex = glGetUniformLocation(ortho.get_program(), "tex");
+	uniforms.ortho_shader_uniforms.tex = glGetUniformLocation(ortho_shader.get_program(), "tex");
 
 
 
@@ -381,7 +410,7 @@ int main(int, char**)
 
 	// Our state
 
-	ImVec4 clear_color = ImVec4(0.45f, 0.55f, 0.60f, 1.00f);
+	ImVec4 clear_color = ImVec4(1.0, 0.5, 0.0, 1.0);
 
 	// Main loop
 	bool done = false;
@@ -396,6 +425,20 @@ int main(int, char**)
 
 
 
+	background_tiles.resize(tiles_per_dimension * tiles_per_dimension);
+
+	for (size_t i = 0; i < tiles_per_dimension; i++)
+	{
+		for (size_t j = 0; j < tiles_per_dimension; j++)
+		{
+			size_t index = i * tiles_per_dimension + j;
+
+			background_tiles[index].tile_size = 36;
+
+			background_tiles[index].uv_min = ImVec2(0, 0);
+			background_tiles[index].uv_max = ImVec2(0, 0);// my_image_width / float(background_tiles[index].tile_size), my_image_height / float(background_tiles[index].tile_size));
+		}
+	}
 
 
 
@@ -493,6 +536,18 @@ int main(int, char**)
 
 				left_uv_mins[i] = ImVec2(u_start, v_start);
 				left_uv_maxs[i] = ImVec2(u_end, v_end);
+
+
+				for (size_t i = 0; i < tiles_per_dimension; i++)
+				{
+					for (size_t j = 0; j < tiles_per_dimension; j++)
+					{
+						size_t index = i * tiles_per_dimension + j;
+
+						background_tiles[index].uv_min = ImVec2(u_start, v_start);
+						background_tiles[index].uv_max = ImVec2(u_end, v_end);
+					}
+				}
 			}
 
 			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
@@ -554,6 +609,19 @@ int main(int, char**)
 
 				right_uv_mins[i] = ImVec2(u_start, v_start);
 				right_uv_maxs[i] = ImVec2(u_end, v_end);
+
+
+
+				for (size_t i = 0; i < tiles_per_dimension; i++)
+				{
+					for (size_t j = 0; j < tiles_per_dimension; j++)
+					{
+						size_t index = i * tiles_per_dimension + j;
+						draw_textured_quad(ortho_shader.get_program(), int(i) * background_tiles[index].tile_size, int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_max, background_tiles[index].uv_min);
+					}
+				}
+
+
 			}
 
 			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
@@ -595,14 +663,27 @@ int main(int, char**)
 
 
 
+
+
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		for (int i = 0; i < left_strings.size(); i++)
+		for (size_t i = 0; i < tiles_per_dimension; i++)
 		{
-			draw_textured_quad(ortho.get_program(), i * block_size, i * block_size, block_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, left_uv_mins[i], left_uv_maxs[i]);
+			for (size_t j = 0; j < tiles_per_dimension; j++)
+			{
+				size_t index = i * tiles_per_dimension + j;
+				draw_textured_quad(ortho_shader.get_program(), int(i) * background_tiles[index].tile_size, int(j)* background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_max, background_tiles[index].uv_min);
+			}
 		}
+
+
+
+//		for (int i = 0; i < left_strings.size(); i++)
+//		{
+//			draw_textured_quad(ortho_shader.get_program(), i * block_size, 0, block_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, left_uv_mins[i], left_uv_maxs[i]);
+//		}
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
