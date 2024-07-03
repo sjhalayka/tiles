@@ -42,7 +42,7 @@ struct
 
 	ortho_shader_uniforms;
 
-} 
+}
 
 uniforms;
 
@@ -57,7 +57,7 @@ bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_wid
 
 	Mat img = imread(filename, IMREAD_UNCHANGED);
 
-	if(img.empty())
+	if (img.empty())
 		return false;
 
 	image_width = img.cols;
@@ -123,7 +123,7 @@ std::vector<cv::Mat> splitImage(cv::Mat& image, int M, int N)
 	}
 
 	return result;
-}	
+}
 
 
 vector<string> left_strings;
@@ -251,10 +251,10 @@ void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, s
 	// data for a fullscreen quad (this time with texture coords)
 	const GLfloat vertexData[] = {
 		//	       X     Y     Z					  U     V     
-			  v0ndc.real(), v0ndc.imag(), 0,      uv_max.x, uv_min.y, // vertex 0
-			  v1ndc.real(), v1ndc.imag(), 0,      uv_max.x, uv_max.y, // vertex 1
-			  v2ndc.real(), v2ndc.imag(), 0,      uv_min.x, uv_max.y, // vertex 2
-			  v3ndc.real(), v3ndc.imag(), 0,      uv_min.x, uv_min.y, // vertex 3
+			  v0ndc.real(), v0ndc.imag(), 0,      uv_min.x, uv_max.y, // vertex 0
+			  v1ndc.real(), v1ndc.imag(), 0,      uv_min.x, uv_min.y, // vertex 1
+			  v2ndc.real(), v2ndc.imag(), 0,      uv_max.x, uv_min.y, // vertex 2
+			  v3ndc.real(), v3ndc.imag(), 0,      uv_max.x, uv_max.y, // vertex 3
 	}; // 4 vertices with 5 components (floats) each
 
 
@@ -516,10 +516,10 @@ int main(int, char**)
 		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
 			left_add_button_func();
 
-		for(int i = 0; i < left_strings.size(); i++)
+		for (int i = 0; i < left_strings.size(); i++)
 		{
 			const ImVec2 thumbnail_img_size = { float(block_size), float(block_size) };
-   
+
 			if (left_clicked && i == left_selected)
 			{
 				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
@@ -537,7 +537,6 @@ int main(int, char**)
 				left_uv_mins[i] = ImVec2(u_start, v_start);
 				left_uv_maxs[i] = ImVec2(u_end, v_end);
 
-
 				for (size_t i = 0; i < tiles_per_dimension; i++)
 				{
 					for (size_t j = 0; j < tiles_per_dimension; j++)
@@ -554,7 +553,7 @@ int main(int, char**)
 			const ImVec4 selected_border_col = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
 			const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
-			if(i == left_selected)
+			if (i == left_selected)
 				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, selected_border_col);
 			else
 				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, border_col);
@@ -568,7 +567,7 @@ int main(int, char**)
 				left_remove_button_func(i);
 
 			ImGui::SameLine();
-			
+
 			string x = "Weight " + to_string(i);
 
 			ImGui::PushItemWidth(80);
@@ -609,19 +608,6 @@ int main(int, char**)
 
 				right_uv_mins[i] = ImVec2(u_start, v_start);
 				right_uv_maxs[i] = ImVec2(u_end, v_end);
-
-
-
-				for (size_t i = 0; i < tiles_per_dimension; i++)
-				{
-					for (size_t j = 0; j < tiles_per_dimension; j++)
-					{
-						size_t index = i * tiles_per_dimension + j;
-						draw_textured_quad(ortho_shader.get_program(), int(i) * background_tiles[index].tile_size, int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_max, background_tiles[index].uv_min);
-					}
-				}
-
-
 			}
 
 			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
@@ -638,7 +624,7 @@ int main(int, char**)
 
 			ImGui::SameLine();
 
-			if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))                         // Buttons return true when clicked (most widgets return true when edited/activated)
+			if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))
 				right_remove_button_func(i);
 
 			ImGui::SameLine();
@@ -674,16 +660,16 @@ int main(int, char**)
 			for (size_t j = 0; j < tiles_per_dimension; j++)
 			{
 				size_t index = i * tiles_per_dimension + j;
-				draw_textured_quad(ortho_shader.get_program(), int(i) * background_tiles[index].tile_size, int(j)* background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_max, background_tiles[index].uv_min);
+				draw_textured_quad(ortho_shader.get_program(), int(i) * background_tiles[index].tile_size, int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 			}
 		}
 
 
 
-//		for (int i = 0; i < left_strings.size(); i++)
-//		{
-//			draw_textured_quad(ortho_shader.get_program(), i * block_size, 0, block_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, left_uv_mins[i], left_uv_maxs[i]);
-//		}
+		//		for (int i = 0; i < left_strings.size(); i++)
+		//		{
+		//			draw_textured_quad(ortho_shader.get_program(), i * block_size, 0, block_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, left_uv_mins[i], left_uv_maxs[i]);
+		//		}
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
