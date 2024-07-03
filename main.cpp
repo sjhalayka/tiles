@@ -184,7 +184,7 @@ void right_remove_button_func(int i)
 
 
 
-
+ImVec2 image_anchor(0, 0);
 
 
 // http://www.songho.ca/opengl/gl_transform.html
@@ -327,7 +327,7 @@ int main(int, char**)
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-	SDL_Window* window = SDL_CreateWindow("Dear ImGui SDL2+OpenGL3 example", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+	SDL_Window* window = SDL_CreateWindow("World Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
 	if (window == nullptr)
 	{
 		printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
@@ -648,15 +648,28 @@ int main(int, char**)
 		ImGui::Render();
 
 
+
+
 		if (!hovered && ImGui::IsMouseDragging(0, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			ImVec2 motion = ImGui::GetMouseDragDelta();
+			image_anchor.x = motion.x;
+			image_anchor.y = -motion.y;
 
-			cout << "motion x " << motion.x << endl;
-			cout << "motion y " << motion.y << endl;
-			cout << endl;
+
+			//static ImVec2 last_mouse_pos = ImGui::GetMousePos();
+
+			//ImVec2 curr_mouse_pos = ImGui::GetMousePos();
+
+			//ImVec2 mouse_delta;
+			//mouse_delta.x = curr_mouse_pos.x - last_mouse_pos.x;
+			//mouse_delta.y = curr_mouse_pos.y - last_mouse_pos.y;
+
+			//image_anchor.x += mouse_delta.x;
+			//image_anchor.y -= mouse_delta.y;
+
+			//last_mouse_pos = curr_mouse_pos;
 		}
-
 
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
@@ -667,16 +680,13 @@ int main(int, char**)
 			for (size_t j = 0; j < tiles_per_dimension; j++)
 			{
 				size_t index = i * tiles_per_dimension + j;
-				draw_textured_quad(ortho_shader.get_program(), int(i) * background_tiles[index].tile_size, int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+
+				draw_textured_quad(ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 			}
 		}
 
 
 
-		//		for (int i = 0; i < left_strings.size(); i++)
-		//		{
-		//			draw_textured_quad(ortho_shader.get_program(), i * block_size, 0, block_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, left_uv_mins[i], left_uv_maxs[i]);
-		//		}
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
