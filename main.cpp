@@ -418,6 +418,7 @@ int main(int, char**)
 
 	background_tiles.resize(tiles_per_dimension * tiles_per_dimension);
 
+	// Initialize to use 
 	for (size_t i = 0; i < tiles_per_dimension; i++)
 	{
 		for (size_t j = 0; j < tiles_per_dimension; j++)
@@ -425,9 +426,8 @@ int main(int, char**)
 			size_t index = i * tiles_per_dimension + j;
 
 			background_tiles[index].tile_size = 36;
-
 			background_tiles[index].uv_min = ImVec2(0, 0);
-			background_tiles[index].uv_max = ImVec2(0, 0);// my_image_width / float(background_tiles[index].tile_size), my_image_height / float(background_tiles[index].tile_size));
+			background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / my_image_width, float(background_tiles[index].tile_size)/ my_image_height);
 		}
 	}
 
@@ -505,9 +505,6 @@ int main(int, char**)
 			right_clicked = true;
 		}
 
-		//if (ImGui::IsItemHovered())
-		//	hovered = true;
-
 		ImGui::End();
 
 
@@ -526,8 +523,6 @@ int main(int, char**)
 		{
 			const ImVec2 thumbnail_img_size = { float(block_size), float(block_size) };
 
-
-
 			if (left_clicked && i == left_selected)
 			{
 				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
@@ -544,17 +539,6 @@ int main(int, char**)
 
 				left_uv_mins[i] = ImVec2(u_start, v_start);
 				left_uv_maxs[i] = ImVec2(u_end, v_end);
-
-				for (size_t i = 0; i < tiles_per_dimension; i++)
-				{
-					for (size_t j = 0; j < tiles_per_dimension; j++)
-					{
-						size_t index = i * tiles_per_dimension + j;
-
-						background_tiles[index].uv_min = ImVec2(u_start, v_start);
-						background_tiles[index].uv_max = ImVec2(u_end, v_end);
-					}
-				}
 			}
 
 			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
@@ -666,13 +650,13 @@ int main(int, char**)
 		ImGui::Render();
 
 		if(!hovered)
-		zoom_factor -= last_mousewheel * 0.1f;
+			zoom_factor -= last_mousewheel * 0.1f;
 
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			ImVec2 motion = ImGui::GetMouseDragDelta();
-			image_anchor.x += motion.x/zoom_factor;
-			image_anchor.y += -motion.y/zoom_factor;
+			image_anchor.x += motion.x / zoom_factor;
+			image_anchor.y += -motion.y / zoom_factor;
 
 			ImGui::ResetMouseDragDelta();
 		}
