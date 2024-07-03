@@ -221,7 +221,7 @@ int tiles_per_dimension = 20;
 vector<background_tile> background_tiles;
 
 float zoom_factor = 1.0f;
-
+float last_mousewheel = 0.0f;
 
 
 void draw_textured_quad(GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
@@ -440,6 +440,8 @@ int main(int, char**)
 		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
 		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
 		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
+		last_mousewheel = 0;
+		
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -451,7 +453,8 @@ int main(int, char**)
 				done = true;
 
 			if (event.type == SDL_MOUSEWHEEL)
-				zoom_factor -= event.wheel.y * 0.1f;
+				last_mousewheel = (float)event.wheel.y;
+				
 		}
 
 		// Start the Dear ImGui frame
@@ -662,8 +665,8 @@ int main(int, char**)
 		// Rendering
 		ImGui::Render();
 
-
-
+		if(!hovered)
+		zoom_factor -= last_mousewheel * 0.1f;
 
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
