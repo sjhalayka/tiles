@@ -437,8 +437,6 @@ int main(int, char**)
 				done = true;
 			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
 				done = true;
-
-
 		}
 
 		// Start the Dear ImGui frame
@@ -446,8 +444,8 @@ int main(int, char**)
 		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 
+		// Only pan image if not hovering over an ImGui window
 		bool hovered = false;
-
 
 		ImGui::Begin("image", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
