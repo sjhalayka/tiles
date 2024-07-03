@@ -6,6 +6,6 @@ out vec2 ftexcoord;
 
 void main()
 {
-    ftexcoord = texcoord;
     gl_Position = position;
+    ftexcoord = texcoord;
 }
