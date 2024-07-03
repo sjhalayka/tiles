@@ -215,7 +215,7 @@ public:
 	ImVec2 uv_max;
 };
 
-int tiles_per_dimension = 200;
+int tiles_per_dimension = 20;
 
 
 vector<background_tile> background_tiles;
