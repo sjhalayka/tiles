@@ -220,11 +220,11 @@ int tiles_per_dimension = 20;
 
 vector<background_tile> background_tiles;
 
+float zoom_factor = 1.5f;
 
 
 
-
-void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, size_t win_width, size_t win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
+void draw_textured_quad(GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
 	static GLuint vao = 0, vbo = 0, ibo = 0;
 
@@ -242,6 +242,11 @@ void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, s
 	complex<float> v1w(static_cast<float>(x), static_cast<float>(y + tile_size));
 	complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
 	complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
+
+	v0w *= zoom_factor;
+	v1w *= zoom_factor;
+	v2w *= zoom_factor;
+	v3w *= zoom_factor;
 
 	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
 	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
@@ -653,22 +658,10 @@ int main(int, char**)
 		if (!hovered && ImGui::IsMouseDragging(0, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			ImVec2 motion = ImGui::GetMouseDragDelta();
-			image_anchor.x = motion.x;
-			image_anchor.y = -motion.y;
+			image_anchor.x += motion.x;
+			image_anchor.y += -motion.y;
 
-
-			//static ImVec2 last_mouse_pos = ImGui::GetMousePos();
-
-			//ImVec2 curr_mouse_pos = ImGui::GetMousePos();
-
-			//ImVec2 mouse_delta;
-			//mouse_delta.x = curr_mouse_pos.x - last_mouse_pos.x;
-			//mouse_delta.y = curr_mouse_pos.y - last_mouse_pos.y;
-
-			//image_anchor.x += mouse_delta.x;
-			//image_anchor.y -= mouse_delta.y;
-
-			//last_mouse_pos = curr_mouse_pos;
+			ImGui::ResetMouseDragDelta();
 		}
 
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
