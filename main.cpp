@@ -248,39 +248,31 @@ void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, s
 	complex<float> v2ndc = get_ndc_coords_from_window_coords(win_width, win_height, v2w);
 	complex<float> v3ndc = get_ndc_coords_from_window_coords(win_width, win_height, v3w);
 
-	// data for a fullscreen quad (this time with texture coords)
 	const GLfloat vertexData[] = {
-		//	       X     Y     Z					  U     V     
-			  v0ndc.real(), v0ndc.imag(), 0,      uv_min.x, uv_max.y, // vertex 0
-			  v1ndc.real(), v1ndc.imag(), 0,      uv_min.x, uv_min.y, // vertex 1
-			  v2ndc.real(), v2ndc.imag(), 0,      uv_max.x, uv_min.y, // vertex 2
-			  v3ndc.real(), v3ndc.imag(), 0,      uv_max.x, uv_max.y, // vertex 3
-	}; // 4 vertices with 5 components (floats) each
-
-
+		//	  X             Y             Z		  U         V     
+			  v0ndc.real(), v0ndc.imag(), 0,      uv_min.x, uv_max.y,
+			  v1ndc.real(), v1ndc.imag(), 0,      uv_min.x, uv_min.y,
+			  v2ndc.real(), v2ndc.imag(), 0,      uv_max.x, uv_min.y,
+			  v3ndc.real(), v3ndc.imag(), 0,      uv_max.x, uv_max.y,
+	};
 
 	// https://raw.githubusercontent.com/progschj/OpenGL-Examples/master/03texture.cpp
 
 	glBindVertexArray(vao);
 	glBindBuffer(GL_ARRAY_BUFFER, vbo);
 
-	// fill with data
 	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 4 * 5, vertexData, GL_STATIC_DRAW);
 
-	// set up generic attrib pointers
 	glEnableVertexAttribArray(0);
 	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (char*)0 + 0 * sizeof(GLfloat));
-
 	glEnableVertexAttribArray(1);
 	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (char*)0 + 3 * sizeof(GLfloat));
-
-	// generate and bind the index buffer object
 
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
 
 	static const GLuint indexData[] = {
-		3,1,0, // first triangle
-		2,1,3, // second triangle
+		3,1,0,
+		2,1,3,
 	};
 
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 2 * 3, indexData, GL_STATIC_DRAW);
@@ -311,17 +303,6 @@ void draw_textured_quad(GLuint shader_program, int x, int y, size_t tile_size, s
 // Main code
 int main(int, char**)
 {
-
-
-
-
-
-
-
-
-
-
-
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -329,9 +310,7 @@ int main(int, char**)
 		return -1;
 	}
 
-
-
-	// GL 3.0 + GLSL 130
+	// GL 4.3 + GLSL 430
 	const char* glsl_version = "#version 430";
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
@@ -458,6 +437,8 @@ int main(int, char**)
 				done = true;
 			if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
 				done = true;
+
+
 		}
 
 		// Start the Dear ImGui frame
@@ -465,10 +446,13 @@ int main(int, char**)
 		ImGui_ImplSDL2_NewFrame();
 		ImGui::NewFrame();
 
-
+		bool hovered = false;
 
 
 		ImGui::Begin("image", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
+
+		if (ImGui::IsItemHovered())
+			hovered = true;
 
 		const ImVec2 img_size = { float(my_image_width), float(my_image_height) };
 
@@ -505,6 +489,9 @@ int main(int, char**)
 			right_clicked = true;
 		}
 
+		//if (ImGui::IsItemHovered())
+		//	hovered = true;
+
 		ImGui::End();
 
 
@@ -513,12 +500,17 @@ int main(int, char**)
 
 		ImGui::Begin("Left Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
+		if (ImGui::IsItemHovered())
+			hovered = true;
+
 		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
 			left_add_button_func();
 
 		for (int i = 0; i < left_strings.size(); i++)
 		{
 			const ImVec2 thumbnail_img_size = { float(block_size), float(block_size) };
+
+
 
 			if (left_clicked && i == left_selected)
 			{
@@ -561,6 +553,8 @@ int main(int, char**)
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 				left_selected = i;
 
+
+
 			ImGui::SameLine();
 
 			if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))                         // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -572,8 +566,11 @@ int main(int, char**)
 
 			ImGui::PushItemWidth(80);
 			ImGui::InputText(x.c_str(), &left_strings[i]);
-			ImGui::PopItemWidth();
+			ImGui::PopItemWidth();		
 		}
+
+
+
 
 
 		ImGui::End();
@@ -584,6 +581,9 @@ int main(int, char**)
 
 
 		ImGui::Begin("Right Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
+
+		if (ImGui::IsItemHovered())
+			hovered = true;
 
 		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
 			right_add_button_func();
@@ -634,6 +634,8 @@ int main(int, char**)
 			ImGui::PushItemWidth(80);
 			ImGui::InputText(x.c_str(), &right_strings[i]);
 			ImGui::PopItemWidth();
+
+
 		}
 
 
@@ -648,7 +650,14 @@ int main(int, char**)
 		ImGui::Render();
 
 
+		if (!hovered && ImGui::IsMouseDragging(0, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+		{
+			ImVec2 motion = ImGui::GetMouseDragDelta();
 
+			cout << "motion x " << motion.x << endl;
+			cout << "motion y " << motion.y << endl;
+			cout << endl;
+		}
 
 
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
