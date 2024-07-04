@@ -431,6 +431,12 @@ int main(int, char**)
 		}
 	}
 
+	int window_w = 0, window_h = 0;
+
+	SDL_GetWindowSize(window, &window_w, &window_h);
+
+	image_anchor.x = 0;// float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
+	image_anchor.y = 0;// float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
 
 
 	while (!done)
@@ -649,9 +655,16 @@ int main(int, char**)
 		// Rendering
 		ImGui::Render();
 
-		if(!hovered)
+		if (!hovered)
+		{
 			zoom_factor += last_mousewheel * 0.1f;
-
+		
+			if (last_mousewheel != 0)
+			{
+				//image_anchor.x =  36.0f * float(tiles_per_dimension) / 2.0f  - float(window_w) / 2.0;
+				//image_anchor.y =  36.0f * float(tiles_per_dimension) / 2.0f - float(window_h) / 2.0;
+			}
+		}
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			ImVec2 motion = ImGui::GetMouseDragDelta();
