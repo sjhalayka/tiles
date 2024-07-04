@@ -29,6 +29,7 @@
 #include <iostream>
 #include <sstream>
 #include <vector>
+#include <algorithm>
 using namespace std;
 
 
@@ -45,6 +46,8 @@ struct
 	struct
 	{
 		GLint tex;
+		GLint viewport_width;
+		GLint viewport_height;
 	}
 	ortho_shader_uniforms;
 
@@ -52,10 +55,16 @@ struct
 uniforms;
 
 
-class triangle
+//class triangle
+//{
+//public:
+//	ImVec2 vertices[3];
+//};
+
+class quad
 {
 public:
-	ImVec2 vertices[3];
+	ImVec2 vertices[4];
 };
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
@@ -240,39 +249,13 @@ float last_mousewheel = 0.0f;
 
 
 
-glm::vec3 PickingRayTake2Ortho(float mouseX, float mouseY, float ScreenWidth, float ScreenHeight)
-{
-	glm::vec3 worldUpDirection(0, 1, 0); // if your world is y-up
-
-	glm::vec2 mousePosRelativeToWindow(mouseX, mouseY);
-
-	glm::vec3 cameraTarget(0, 0, -1);
-	glm::vec3 cameraPosition(0, 0, 1);
-
-	glm::vec3 camDirection = glm::normalize(cameraTarget - cameraPosition);
-
-	float x = +(2.0f * mousePosRelativeToWindow.x / ScreenWidth - 1.0f) *(ScreenWidth / 2);
-	float y = -(2.0f * mousePosRelativeToWindow.y / ScreenHeight - 1.0f) *(ScreenHeight / 2);
-
-	cout << x << " " << y << endl;
-
-
-	glm::vec3 cameraRight = normalize(cross(camDirection, worldUpDirection));
-	glm::vec3 cameraUp =    normalize(cross(cameraRight, camDirection));
-
-	glm::vec3 rayOrigin = cameraPosition + cameraRight * x + cameraUp * y;
-	glm::vec3 rayDirection = camDirection;
-
-	return rayOrigin;
-}
 
 
 
 
 
 
-
-ImVec2 draw_textured_quad(vector<triangle> &triangles, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
+void draw_textured_quad(vector<quad> &quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
 	static GLuint vao = 0, vbo = 0, ibo = 0;
 
@@ -291,6 +274,7 @@ ImVec2 draw_textured_quad(vector<triangle> &triangles, GLuint shader_program, lo
 	complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
 	complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
 
+
 	v0w.real(v0w.real() * zoom_factor);
 	v0w.imag(v0w.imag() * zoom_factor);
 	v1w.real(v1w.real() * zoom_factor);
@@ -300,28 +284,50 @@ ImVec2 draw_textured_quad(vector<triangle> &triangles, GLuint shader_program, lo
 	v3w.real(v3w.real() * zoom_factor);
 	v3w.imag(v3w.imag() * zoom_factor);
 
-	complex<float> centre;
-	centre.real((v0w.real() + v1w.real() + v2w.real() + v3w.real()) / 4.0f);
-	centre.imag((v0w.imag() + v1w.imag() + v2w.imag() + v3w.imag()) / 4.0f);
+
+	quad q;
+	q.vertices[0].x = v0w.real();
+	q.vertices[0].y = v0w.imag();
+	q.vertices[1].x = v1w.real();
+	q.vertices[1].y = v1w.imag();
+	q.vertices[2].x = v2w.real();
+	q.vertices[2].y = v2w.imag();
+	q.vertices[3].x = v3w.real();
+	q.vertices[3].y = v3w.imag();
+	quads.push_back(q);
 
 
-	triangle t;
 
-	t.vertices[0].x = v3w.real();
-	t.vertices[0].y = v3w.imag();
-	t.vertices[1].x = v1w.real();
-	t.vertices[1].y = v1w.imag();
-	t.vertices[2].x = v0w.real();
-	t.vertices[2].y = v0w.imag();
-	triangles.push_back(t);
 
-	t.vertices[0].x = v2w.real();
-	t.vertices[0].y = v2w.imag();
-	t.vertices[1].x = v1w.real();
-	t.vertices[1].y = v1w.imag();
-	t.vertices[2].x = v3w.real();
-	t.vertices[2].y = v3w.imag();
-	triangles.push_back(t);
+	//complex<float> centre;
+	//centre.real((v0w.real() + v1w.real() + v2w.real() + v3w.real()) / 4.0f);
+	//centre.imag((v0w.imag() + v1w.imag() + v2w.imag() + v3w.imag()) / 4.0f);
+
+
+	//triangle t;
+
+	//t.vertices[0].x = v3w.real();
+	//t.vertices[0].y = v3w.imag();
+	//t.vertices[1].x = v1w.real();
+	//t.vertices[1].y = v1w.imag();
+	//t.vertices[2].x = v0w.real();
+	//t.vertices[2].y = v0w.imag();
+	//triangles.push_back(t);
+
+	//t.vertices[0].x = v2w.real();
+	//t.vertices[0].y = v2w.imag();
+	//t.vertices[1].x = v1w.real();
+	//t.vertices[1].y = v1w.imag();
+	//t.vertices[2].x = v3w.real();
+	//t.vertices[2].y = v3w.imag();
+	//triangles.push_back(t);
+
+
+
+
+
+
+
 
 
 
@@ -370,16 +376,56 @@ ImVec2 draw_textured_quad(vector<triangle> &triangles, GLuint shader_program, lo
 	glBindTexture(GL_TEXTURE_2D, tex_handle);
 
 	glUniform1i(uniforms.ortho_shader_uniforms.tex, 0);
+	glUniform1i(uniforms.ortho_shader_uniforms.viewport_width, win_width);
+	glUniform1i(uniforms.ortho_shader_uniforms.viewport_height, win_height);
 
 	glBindVertexArray(vao);
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-	return ImVec2(centre.real(), centre.imag());
 }
 
 
 
+bool RayIntersectsTriangle(const glm::vec3 rayOrigin,
+	const glm::vec3 rayVector,
+	const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2,
+	glm::vec3& outIntersectionPoint)
+{
+	const float EPSILON = 0.0000001f;
+	glm::vec3 vertex0 = v0;// inTriangle->vertex0;
+	glm::vec3 vertex1 = v1;// inTriangle->vertex1;
+	glm::vec3 vertex2 = v2;// inTriangle->vertex2;
+	glm::vec3 edge1, edge2, h, s, q;
+	float a, f, u, v;
+	edge1 = vertex1 - vertex0;
+	edge2 = vertex2 - vertex0;
+	h = cross(rayVector, edge2);
+	a = dot(edge1, h);
+	if (a > -EPSILON && a < EPSILON)
+		return false;    // This ray is parallel to this triangle.
+	f = 1.0f / a;
+	s = rayOrigin - vertex0;
+	u = f * dot(s, h);
+	if (u < 0.0f || u > 1.0f)
+		return false;
+	q = cross(s, edge1);
+	v = f * dot(rayVector, q);
+	if (v < 0.0f || u + v > 1.0f)
+		return false;
+
+	// At this stage we can compute t to find out where the intersection point is on the line.
+
+	float t = f * dot(edge2, q);
+
+	if (t > EPSILON) // ray intersection
+	{
+		outIntersectionPoint = rayOrigin + rayVector * t;
+		return true;
+	}
+	else // This means that there is a line intersection but not a ray intersection.
+		return false;
+}
 
 
 
@@ -390,6 +436,9 @@ ImVec2 draw_textured_quad(vector<triangle> &triangles, GLuint shader_program, lo
 // Main code
 int main(int, char**)
 {
+
+
+
 	// Setup SDL
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
 	{
@@ -439,7 +488,8 @@ int main(int, char**)
 	}
 
 	uniforms.ortho_shader_uniforms.tex = glGetUniformLocation(ortho_shader.get_program(), "tex");
-
+	uniforms.ortho_shader_uniforms.viewport_width = glGetUniformLocation(ortho_shader.get_program(), "viewport_width");
+	uniforms.ortho_shader_uniforms.viewport_height = glGetUniformLocation(ortho_shader.get_program(), "viewport_height");
 
 
 	// Setup Dear ImGui context
@@ -507,7 +557,6 @@ int main(int, char**)
 	}
 
 	int window_w = 0, window_h = 0;
-
 	SDL_GetWindowSize(window, &window_w, &window_h);
 
 	image_anchor.x = 0;// float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
@@ -753,7 +802,6 @@ int main(int, char**)
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		vector<triangle> triangles;
 
 		for (size_t i = 0; i < tiles_per_dimension; i++)
 		{
@@ -761,14 +809,110 @@ int main(int, char**)
 			{
 				size_t index = i * tiles_per_dimension + j;
 
-				ImVec2 centre = draw_textured_quad(triangles, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+				vector<quad> quads;
+
+				draw_textured_quad(quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 			
-				int x, y;
-				SDL_GetMouseState(&x, &y);
+				if (quads.size() == 1)
+				{
+					
+					//cout << "1 quad" << endl;
 
-				glm::vec3 p = PickingRayTake2Ortho((float)x, (float)y, io.DisplaySize.x, io.DisplaySize.y);
 
-				//cout << p.x << " " << p.y << " " << p.z << endl;
+					int x, y;
+					SDL_GetMouseState(&x, &y);
+
+
+					quad q = quads[0];
+
+					float min_x = FLT_MAX;
+					float min_y = FLT_MAX;
+					float max_x = -FLT_MAX;
+					float max_y = -FLT_MAX;
+
+					if (q.vertices[0].x < min_x)
+						min_x = q.vertices[0].x;
+					else if (q.vertices[0].x > max_x)
+						max_x = q.vertices[0].x;
+
+					if (q.vertices[1].x < min_x)
+						min_x = q.vertices[1].x;
+					else if (q.vertices[1].x > max_x)
+						max_x = q.vertices[1].x;
+
+					if (q.vertices[2].x < min_x)
+						min_x = q.vertices[2].x;
+					else if (q.vertices[2].x > max_x)
+						max_x = q.vertices[2].x;
+
+					if (q.vertices[3].x < min_x)
+						min_x = q.vertices[3].x;
+					else if (q.vertices[3].x > max_x)
+						max_x = q.vertices[3].x;
+
+					if (q.vertices[0].y < min_y)
+						min_y = q.vertices[0].y;
+					else if (q.vertices[0].y > max_y)
+						max_y = q.vertices[0].y;
+
+					if (q.vertices[1].y < min_y)
+						min_y = q.vertices[1].y;
+					else if (q.vertices[1].y > max_y)
+						max_y = q.vertices[1].y;
+
+					if (q.vertices[2].y < min_y)
+						min_y = q.vertices[2].y;
+					else if (q.vertices[2].y > max_y)
+						max_y = q.vertices[2].y;
+
+					if (q.vertices[3].y < min_y)
+						min_y = q.vertices[3].y;
+					else if (q.vertices[3].y > max_y)
+						max_y = q.vertices[3].y;
+
+					if (x >= min_x && x <= max_x && y >= min_y && y <= max_y)
+					{
+						cout << i << " " << j << endl;
+					}
+				}
+
+
+
+				//if (triangles.size() == 2)
+				//{
+				//	int x, y;
+				//	SDL_GetMouseState(&x, &y);
+
+				//	glm::vec3 v0(triangles[0].vertices[0].x, triangles[0].vertices[0].y, 0);
+				//	glm::vec3 v1(triangles[0].vertices[1].x, triangles[0].vertices[1].y, 0);
+				//	glm::vec3 v2(triangles[0].vertices[2].x, triangles[0].vertices[2].y, 0);
+
+				//	glm::vec3 hit_point;
+
+				//	bool first_hit = false, second_hit = false;
+
+
+				//	first_hit = RayIntersectsTriangle(glm::vec3(x, y, -1),
+				//		glm::vec3(x, y, 1),
+				//		v0, v1, v2,
+				//		hit_point);
+
+				//	if (false == first_hit)
+				//	{
+				//		 v0 = glm::vec3(triangles[1].vertices[0].x, triangles[1].vertices[0].y, 0);
+				//		 v1 = glm::vec3(triangles[1].vertices[1].x, triangles[1].vertices[1].y, 0);
+				//		 v2 = glm::vec3(triangles[1].vertices[2].x, triangles[1].vertices[2].y, 0);
+
+				//		glm::vec3 hit_point;
+
+				//		second_hit = RayIntersectsTriangle(glm::vec3(x, y, -1),
+				//			glm::vec3(x, y, 1),
+				//			v0, v1, v2,
+				//			hit_point);
+				//	}
+
+				//	cout << first_hit << " " << second_hit << endl;
+				//}
 			}
 		}
 
