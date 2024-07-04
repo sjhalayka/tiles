@@ -39,12 +39,20 @@ struct
 	{
 		GLint tex;
 	}
-
 	ortho_shader_uniforms;
 
 }
-
 uniforms;
+
+
+class triangle
+{
+public:
+	ImVec2 vertices[3];
+};
+
+// https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
+// http://geomalgorithms.com/a06-_intersect-2.html
 
 
 
@@ -224,7 +232,7 @@ float zoom_factor = 1.0f;
 float last_mousewheel = 0.0f;
 
 
-void draw_textured_quad(GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
+ImVec2 draw_textured_quad(vector<triangle> &triangles, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
 	static GLuint vao = 0, vbo = 0, ibo = 0;
 
@@ -252,6 +260,28 @@ void draw_textured_quad(GLuint shader_program, long signed int x, long signed in
 	v3w.real(v3w.real() * zoom_factor);
 	v3w.imag(v3w.imag() * zoom_factor);
 
+	complex<float> centre;
+	centre.real((v0w.real() + v1w.real() + v2w.real() + v3w.real()) / 4.0f);
+	centre.imag((v0w.imag() + v1w.imag() + v2w.imag() + v3w.imag()) / 4.0f);
+
+
+	triangle t;
+
+	t.vertices[0].x = v3w.real();
+	t.vertices[0].y = v3w.imag();
+	t.vertices[1].x = v1w.real();
+	t.vertices[1].y = v1w.imag();
+	t.vertices[2].x = v0w.real();
+	t.vertices[2].y = v0w.imag();
+	triangles.push_back(t);
+
+	t.vertices[0].x = v2w.real();
+	t.vertices[0].y = v2w.imag();
+	t.vertices[1].x = v1w.real();
+	t.vertices[1].y = v1w.imag();
+	t.vertices[2].x = v3w.real();
+	t.vertices[2].y = v3w.imag();
+	triangles.push_back(t);
 
 
 
@@ -287,6 +317,9 @@ void draw_textured_quad(GLuint shader_program, long signed int x, long signed in
 		2,1,3,
 	};
 
+
+
+
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 2 * 3, indexData, GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
@@ -301,6 +334,8 @@ void draw_textured_quad(GLuint shader_program, long signed int x, long signed in
 	glBindVertexArray(vao);
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+	return ImVec2(centre.real(), centre.imag());
 }
 
 
@@ -678,13 +713,15 @@ int main(int, char**)
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 
+		vector<triangle> triangles;
+
 		for (size_t i = 0; i < tiles_per_dimension; i++)
 		{
 			for (size_t j = 0; j < tiles_per_dimension; j++)
 			{
 				size_t index = i * tiles_per_dimension + j;
 
-				draw_textured_quad(ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+				ImVec2 centre = draw_textured_quad(triangles, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 			}
 		}
 
