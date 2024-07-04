@@ -249,29 +249,6 @@ float last_mousewheel = 0.0f;
 
 
 
-
-//
-//
-//
-// float Lerp(float a, float b, float t)
-//{
-//	return a + t * (b - a);
-//}
-//
-// glm::vec3 Lerp(glm::vec3 a, glm::vec3 b, float t)
-//{
-//	return  glm::vec3(Lerp(a.x, b.x, t), Lerp(a.y, b.y, t), 0);
-//}
-//
-//glm::vec3 PointInQuad(glm::vec3 t, glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d)
-//{
-//	glm::vec3 p = Lerp(a, b, t.x);
-//	glm::vec3 q = Lerp(c, d, t.x);
-//	return Lerp(p, q, t.y);
-//}
-
-
-
 bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
 {
 	const size_t num_vertices = polygon.size();
