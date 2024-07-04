@@ -467,7 +467,7 @@ int main(int, char**)
 
 		ImGui::Begin("image", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
-		if (ImGui::IsItemHovered())
+		if (ImGui::IsWindowHovered())
 			hovered = true;
 
 		const ImVec2 img_size = { float(my_image_width), float(my_image_height) };
@@ -513,7 +513,7 @@ int main(int, char**)
 
 		ImGui::Begin("Left Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
-		if (ImGui::IsItemHovered())
+		if (ImGui::IsWindowHovered())
 			hovered = true;
 
 		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -582,7 +582,7 @@ int main(int, char**)
 
 		ImGui::Begin("Right Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
-		if (ImGui::IsItemHovered())
+		if (ImGui::IsWindowHovered())
 			hovered = true;
 
 		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -644,13 +644,13 @@ int main(int, char**)
 
 
 
-
+			
 
 		// Rendering
 		ImGui::Render();
 
 		if(!hovered)
-			zoom_factor -= last_mousewheel * 0.1f;
+			zoom_factor += last_mousewheel * 0.1f;
 
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
