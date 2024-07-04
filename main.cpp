@@ -64,7 +64,7 @@ uniforms;
 class quad
 {
 public:
-	ImVec2 vertices[4];
+	glm::vec3 vertices[4];
 };
 
 // https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-rendering-a-triangle/ray-triangle-intersection-geometric-solution
@@ -250,12 +250,89 @@ float last_mousewheel = 0.0f;
 
 
 
+//
+//
+//
+// float Lerp(float a, float b, float t)
+//{
+//	return a + t * (b - a);
+//}
+//
+// glm::vec3 Lerp(glm::vec3 a, glm::vec3 b, float t)
+//{
+//	return  glm::vec3(Lerp(a.x, b.x, t), Lerp(a.y, b.y, t), 0);
+//}
+//
+//glm::vec3 PointInQuad(glm::vec3 t, glm::vec3 a, glm::vec3 b, glm::vec3 c, glm::vec3 d)
+//{
+//	glm::vec3 p = Lerp(a, b, t.x);
+//	glm::vec3 q = Lerp(c, d, t.x);
+//	return Lerp(p, q, t.y);
+//}
+
+
+
+bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
+{
+	const size_t num_vertices = polygon.size();
+	double x = point.x, y = point.y;
+	bool inside = false;
+
+	// Store the first point in the polygon and initialize
+	// the second point
+	glm::vec3 p1 = polygon[0], p2;
+
+	// Loop through each edge in the polygon
+	for (int i = 1; i <= num_vertices; i++) {
+		// Get the next point in the polygon
+		p2 = polygon[i % num_vertices];
+
+		// Check if the point is above the minimum y
+		// coordinate of the edge
+		if (y > min(p1.y, p2.y)) {
+			// Check if the point is below the maximum y
+			// coordinate of the edge
+			if (y <= max(p1.y, p2.y)) {
+				// Check if the point is to the left of the
+				// maximum x coordinate of the edge
+				if (x <= max(p1.x, p2.x)) {
+					// Calculate the x-intersection of the
+					// line connecting the point to the edge
+					double x_intersection
+						= (y - p1.y) * (p2.x - p1.x)
+						/ (p2.y - p1.y)
+						+ p1.x;
+
+					// Check if the point is on the same
+					// line as the edge or to the left of
+					// the x-intersection
+					if (p1.x == p2.x
+						|| x <= x_intersection) {
+						// Flip the inside flag
+						inside = !inside;
+					}
+				}
+			}
+		}
+
+		// Store the current point as the first point for
+		// the next iteration
+		p1 = p2;
+	}
+
+	// Return the value of the inside flag
+	return inside;
+}
 
 
 
 
 
-void draw_textured_quad(vector<quad> &quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
+
+
+
+
+bool draw_textured_quad(int mouse_x, int mouse_y, vector<quad>& quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
 	static GLuint vao = 0, vbo = 0, ibo = 0;
 
@@ -274,7 +351,6 @@ void draw_textured_quad(vector<quad> &quads, GLuint shader_program, long signed 
 	complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
 	complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
 
-
 	v0w.real(v0w.real() * zoom_factor);
 	v0w.imag(v0w.imag() * zoom_factor);
 	v1w.real(v1w.real() * zoom_factor);
@@ -284,44 +360,26 @@ void draw_textured_quad(vector<quad> &quads, GLuint shader_program, long signed 
 	v3w.real(v3w.real() * zoom_factor);
 	v3w.imag(v3w.imag() * zoom_factor);
 
-
 	quad q;
 	q.vertices[0].x = v0w.real();
-	q.vertices[0].y = v0w.imag();
+	q.vertices[0].y = win_height - v0w.imag();
 	q.vertices[1].x = v1w.real();
-	q.vertices[1].y = v1w.imag();
+	q.vertices[1].y = win_height - v1w.imag();
 	q.vertices[2].x = v2w.real();
-	q.vertices[2].y = v2w.imag();
+	q.vertices[2].y = win_height - v2w.imag();
 	q.vertices[3].x = v3w.real();
-	q.vertices[3].y = v3w.imag();
+	q.vertices[3].y = win_height - v3w.imag();
 	quads.push_back(q);
 
+	vector<glm::vec3> points;
+	points.push_back(q.vertices[0]);
+	points.push_back(q.vertices[1]);
+	points.push_back(q.vertices[2]);
+	points.push_back(q.vertices[3]);
 
+	glm::vec3 mouse_pos(mouse_x, mouse_y, 0);
 
-
-	//complex<float> centre;
-	//centre.real((v0w.real() + v1w.real() + v2w.real() + v3w.real()) / 4.0f);
-	//centre.imag((v0w.imag() + v1w.imag() + v2w.imag() + v3w.imag()) / 4.0f);
-
-
-	//triangle t;
-
-	//t.vertices[0].x = v3w.real();
-	//t.vertices[0].y = v3w.imag();
-	//t.vertices[1].x = v1w.real();
-	//t.vertices[1].y = v1w.imag();
-	//t.vertices[2].x = v0w.real();
-	//t.vertices[2].y = v0w.imag();
-	//triangles.push_back(t);
-
-	//t.vertices[0].x = v2w.real();
-	//t.vertices[0].y = v2w.imag();
-	//t.vertices[1].x = v1w.real();
-	//t.vertices[1].y = v1w.imag();
-	//t.vertices[2].x = v3w.real();
-	//t.vertices[2].y = v3w.imag();
-	//triangles.push_back(t);
-
+	bool inside = point_in_polygon(mouse_pos, points);
 
 
 
@@ -363,9 +421,6 @@ void draw_textured_quad(vector<quad> &quads, GLuint shader_program, long signed 
 		2,1,3,
 	};
 
-
-
-
 	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * 2 * 3, indexData, GL_STATIC_DRAW);
 
 	glBindVertexArray(0);
@@ -383,6 +438,7 @@ void draw_textured_quad(vector<quad> &quads, GLuint shader_program, long signed 
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+	return inside;
 }
 
 
@@ -552,7 +608,7 @@ int main(int, char**)
 
 			background_tiles[index].tile_size = 36;
 			background_tiles[index].uv_min = ImVec2(0, 0);
-			background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / my_image_width, float(background_tiles[index].tile_size)/ my_image_height);
+			background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / my_image_width, float(background_tiles[index].tile_size) / my_image_height);
 		}
 	}
 
@@ -571,7 +627,7 @@ int main(int, char**)
 		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
 		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 		last_mousewheel = 0;
-		
+
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -584,7 +640,7 @@ int main(int, char**)
 
 			if (event.type == SDL_MOUSEWHEEL)
 				last_mousewheel = (float)event.wheel.y;
-				
+
 		}
 
 		// Start the Dear ImGui frame
@@ -696,7 +752,7 @@ int main(int, char**)
 
 			ImGui::PushItemWidth(80);
 			ImGui::InputText(x.c_str(), &left_strings[i]);
-			ImGui::PopItemWidth();		
+			ImGui::PopItemWidth();
 		}
 
 
@@ -774,7 +830,7 @@ int main(int, char**)
 
 
 
-			
+
 
 		// Rendering
 		ImGui::Render();
@@ -782,7 +838,7 @@ int main(int, char**)
 		if (!hovered)
 		{
 			zoom_factor += last_mousewheel * 0.1f;
-		
+
 			if (last_mousewheel != 0)
 			{
 				//image_anchor.x =  36.0f * float(tiles_per_dimension) / 2.0f  - float(window_w) / 2.0;
@@ -811,69 +867,14 @@ int main(int, char**)
 
 				vector<quad> quads;
 
-				draw_textured_quad(quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
-			
-				if (quads.size() == 1)
+				int x, y;
+				SDL_GetMouseState(&x, &y);
+
+				bool inside = draw_textured_quad(x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+
+				if (inside)
 				{
-					
-					//cout << "1 quad" << endl;
-
-
-					int x, y;
-					SDL_GetMouseState(&x, &y);
-
-
-					quad q = quads[0];
-
-					float min_x = FLT_MAX;
-					float min_y = FLT_MAX;
-					float max_x = -FLT_MAX;
-					float max_y = -FLT_MAX;
-
-					if (q.vertices[0].x < min_x)
-						min_x = q.vertices[0].x;
-					else if (q.vertices[0].x > max_x)
-						max_x = q.vertices[0].x;
-
-					if (q.vertices[1].x < min_x)
-						min_x = q.vertices[1].x;
-					else if (q.vertices[1].x > max_x)
-						max_x = q.vertices[1].x;
-
-					if (q.vertices[2].x < min_x)
-						min_x = q.vertices[2].x;
-					else if (q.vertices[2].x > max_x)
-						max_x = q.vertices[2].x;
-
-					if (q.vertices[3].x < min_x)
-						min_x = q.vertices[3].x;
-					else if (q.vertices[3].x > max_x)
-						max_x = q.vertices[3].x;
-
-					if (q.vertices[0].y < min_y)
-						min_y = q.vertices[0].y;
-					else if (q.vertices[0].y > max_y)
-						max_y = q.vertices[0].y;
-
-					if (q.vertices[1].y < min_y)
-						min_y = q.vertices[1].y;
-					else if (q.vertices[1].y > max_y)
-						max_y = q.vertices[1].y;
-
-					if (q.vertices[2].y < min_y)
-						min_y = q.vertices[2].y;
-					else if (q.vertices[2].y > max_y)
-						max_y = q.vertices[2].y;
-
-					if (q.vertices[3].y < min_y)
-						min_y = q.vertices[3].y;
-					else if (q.vertices[3].y > max_y)
-						max_y = q.vertices[3].y;
-
-					if (x >= min_x && x <= max_x && y >= min_y && y <= max_y)
-					{
-						cout << i << " " << j << endl;
-					}
+					cout << i << " " << j << endl;
 				}
 
 
