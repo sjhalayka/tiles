@@ -244,47 +244,24 @@ glm::vec3 PickingRayTake2Ortho(float mouseX, float mouseY, float ScreenWidth, fl
 {
 	glm::vec3 worldUpDirection(0, 1, 0); // if your world is y-up
 
-	// Get mouse coordinates (2d) relative to window position:
-	glm::vec2 mousePosRelativeToWindow(mouseX, mouseY);// etMouseCoordsRelativeToWindow(); // (0,0) would be top left window corner
+	glm::vec2 mousePosRelativeToWindow(mouseX, mouseY);
 
 	glm::vec3 cameraTarget(0, 0, -1);
 	glm::vec3 cameraPosition(0, 0, 1);
 
-	// get camera direction vector:
 	glm::vec3 camDirection = glm::normalize(cameraTarget - cameraPosition);
 
-	// get x and y coordinates relative to frustum width and height.
-	// glOrthoWidth and glOrthoHeight are the sizeX and sizeY values 
-	// you created your projection matrix with. If your frustum has a width of 100, 
-	// x would become -50 when the mouse is left and +50 when the mouse is right.
-	float x = +(2.0f * mousePosRelativeToWindow.x / ScreenWidth - 1);// *(ScreenWidth / 2);
-	float y = -(2.0f * mousePosRelativeToWindow.y / ScreenHeight - 1);// *(ScreenHeight / 2);
+	float x = +(2.0f * mousePosRelativeToWindow.x / ScreenWidth - 1.0f) *(ScreenWidth / 2);
+	float y = -(2.0f * mousePosRelativeToWindow.y / ScreenHeight - 1.0f) *(ScreenHeight / 2);
 
-	// Now, you want to calculate the camera's local right and up vectors 
-	// (depending on the camera's current view direction):
+	cout << x << " " << y << endl;
+
+
 	glm::vec3 cameraRight = normalize(cross(camDirection, worldUpDirection));
 	glm::vec3 cameraUp =    normalize(cross(cameraRight, camDirection));
 
-	// Finally, calculate the ray origin:
 	glm::vec3 rayOrigin = cameraPosition + cameraRight * x + cameraUp * y;
 	glm::vec3 rayDirection = camDirection;
-
-
-
-
-	//complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-	//complex<float> v1w(static_cast<float>(x), static_cast<float>(y + tile_size));
-	//complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
-	//complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
-
-	//v0w.real(v0w.real() * zoom_factor);
-	//v0w.imag(v0w.imag() * zoom_factor);
-	//v1w.real(v1w.real() * zoom_factor);
-	//v1w.imag(v1w.imag() * zoom_factor);
-	//v2w.real(v2w.real() * zoom_factor);
-	//v2w.imag(v2w.imag() * zoom_factor);
-	//v3w.real(v3w.real() * zoom_factor);
-	//v3w.imag(v3w.imag() * zoom_factor);
 
 	return rayOrigin;
 }
@@ -791,7 +768,7 @@ int main(int, char**)
 
 				glm::vec3 p = PickingRayTake2Ortho((float)x, (float)y, io.DisplaySize.x, io.DisplaySize.y);
 
-				cout << p.x << " " << p.y << " " << p.z << endl;
+				//cout << p.x << " " << p.y << " " << p.z << endl;
 			}
 		}
 
