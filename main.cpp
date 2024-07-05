@@ -824,10 +824,7 @@ int main(int, char**)
 				}
 			}
 
-
-
-			//cout << brush_in_use << endl;
-
+			// Find brush centre
 			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
 				for (size_t j = 0; j < tiles_per_dimension; j++)
