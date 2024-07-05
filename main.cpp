@@ -155,14 +155,12 @@ vector<string> left_strings;
 int left_selected = -1;
 vector<ImVec2> left_uv_mins;
 vector<ImVec2> left_uv_maxs;
-vector<ImVec2> left_indices;
 
 void left_add_button_func(void)
 {
 	left_strings.push_back("1.0");
 	left_uv_mins.push_back(ImVec2(0, 0));
 	left_uv_maxs.push_back(ImVec2(0, 0));
-	left_indices.push_back(ImVec2(0, 0));
 
 	if (left_strings.size() == 1)
 		left_selected = 0;
@@ -173,7 +171,6 @@ void left_remove_button_func(int i)
 	left_strings.erase(left_strings.begin() + i);
 	left_uv_mins.erase(left_uv_mins.begin() + i);
 	left_uv_maxs.erase(left_uv_maxs.begin() + i);
-	left_indices.erase(left_indices.begin() + i);
 
 	if (i == left_selected)
 		left_selected = -1;
@@ -647,9 +644,6 @@ int main(int, char**)
 
 			if (left_clicked && i == left_selected)
 			{
-				ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
-				//cout << img_block.x << " " << img_block.y << endl;
-
 				size_t x = size_t(mousePositionRelative.x) % block_size;
 				size_t y = size_t(mousePositionRelative.y) % block_size;
 
@@ -661,7 +655,10 @@ int main(int, char**)
 
 				left_uv_mins[i] = ImVec2(u_start, v_start);
 				left_uv_maxs[i] = ImVec2(u_end, v_end);
-				left_indices[i] = img_block;
+
+				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+				//cout << img_block.x << " " << img_block.y << endl;
+				//left_indices[i] = img_block;
 			}
 
 			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
@@ -715,9 +712,6 @@ int main(int, char**)
 
 			if (right_clicked && i == right_selected)
 			{
-				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
-				//cout << img_block.x << " " << img_block.y << endl;
-
 				size_t x = size_t(mousePositionRelative.x) % block_size;
 				size_t y = size_t(mousePositionRelative.y) % block_size;
 
@@ -807,22 +801,16 @@ int main(int, char**)
 					weights[i] /= total;
 			}
 
+
+
+
+			ImVec2 centre_index;
+			glm::vec3 centre_location;
+			bool inside = false;
+
 			size_t brush_in_use = 0;
 
-			const float r = distribution(generator);
 
-			float sub_total = 0;
-
-			for (int i = 0; i < left_strings.size(); i++)
-			{
-				sub_total += weights[i];
-
-				if (r <= sub_total)
-				{
-					brush_in_use = i;
-					break;
-				}
-			}
 
 			// Find brush centre
 			for (size_t i = 0; i < tiles_per_dimension; i++)
@@ -836,12 +824,67 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					bool inside = draw_textured_quad(true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+					inside = draw_textured_quad(true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 
 					if (inside)
 					{
+						const float r = distribution(generator);
+
+						float sub_total = 0;
+
+						for (int k = 0; k < left_strings.size(); k++)
+						{
+							sub_total += weights[k];
+
+							if (r <= sub_total)
+							{
+								brush_in_use = k;
+								break;
+							}
+						}
+
+						centre_index = ImVec2((float)i, (float)j);
+						centre_location = glm::vec3((quads[0].vertices[0] + quads[0].vertices[1] + quads[0].vertices[2] + quads[0].vertices[3])*0.25f);
 						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
 						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+
+						// Abort early
+						i = j = tiles_per_dimension;
+						break;
+					}
+				}
+			}
+
+			if (inside == true)
+			{
+				for (size_t i = 0; i < tiles_per_dimension; i++)
+				{
+					for (size_t j = 0; j < tiles_per_dimension; j++)
+					{
+						size_t index = i * tiles_per_dimension + j;
+
+						if(abs(centre_index.x - i) < 2 && abs(centre_index.y - j) < 2)
+						{
+							size_t brush_in_use = 0;
+
+							const float r = distribution(generator);
+
+							float sub_total = 0;
+
+							for (int k = 0; k < left_strings.size(); k++)
+							{
+								sub_total += weights[k];
+
+								if (r <= sub_total)
+								{
+									brush_in_use = k;
+									break;
+								}
+							}
+
+							background_tiles[index].uv_min = left_uv_mins[brush_in_use];
+							background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+						}
 					}
 				}
 			}
