@@ -552,6 +552,8 @@ int main(int, char**)
 	mt19937 generator((unsigned int)time(0));
 	uniform_real_distribution<float> distribution(0.0, 1.0);
 
+	vector<size_t> prev_painted_indices;
+
 	while (!done)
 	{
 		// Poll and handle events (inputs, window resize, etc.)
@@ -810,7 +812,7 @@ int main(int, char**)
 
 			size_t brush_in_use = 0;
 
-
+			vector<size_t> curr_painted_indices;
 
 			// Find brush centre
 			for (size_t i = 0; i < tiles_per_dimension; i++)
@@ -818,6 +820,20 @@ int main(int, char**)
 				for (size_t j = 0; j < tiles_per_dimension; j++)
 				{
 					size_t index = i * tiles_per_dimension + j;
+
+					bool found_prev_index = false;
+
+					for (size_t k = 0; k < prev_painted_indices.size(); k++)
+					{
+						if (prev_painted_indices[k] == index)
+						{
+							found_prev_index = true;
+							break;
+						}
+					}
+
+					if (found_prev_index)
+						continue;
 
 					vector<quad> quads;
 
@@ -847,6 +863,7 @@ int main(int, char**)
 						centre_location = glm::vec3((quads[0].vertices[0] + quads[0].vertices[1] + quads[0].vertices[2] + quads[0].vertices[3])*0.25f);
 						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
 						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+						curr_painted_indices.push_back(index);
 
 						// Abort early
 						i = j = tiles_per_dimension;
@@ -855,6 +872,9 @@ int main(int, char**)
 				}
 			}
 
+			// if found a brush centre
+			// then go through the other tiles to see if it's
+			// within reach of the brush size
 			if (inside == true)
 			{
 				for (size_t i = 0; i < tiles_per_dimension; i++)
@@ -863,7 +883,23 @@ int main(int, char**)
 					{
 						size_t index = i * tiles_per_dimension + j;
 
-						if(abs(centre_index.x - i) < 2 && abs(centre_index.y - j) < 2)
+						bool found_prev_index = false;
+
+						for (size_t k = 0; k < prev_painted_indices.size(); k++)
+						{
+							if (prev_painted_indices[k] == index)
+							{
+								found_prev_index = true;
+								break;
+							}
+						}
+
+						if (found_prev_index)
+							continue;
+
+						const int square_brush_size = 4;
+
+						if(abs(centre_index.x - i) < (square_brush_size/2) && abs(centre_index.y - j) < (square_brush_size/2))
 						{
 							size_t brush_in_use = 0;
 
@@ -882,11 +918,14 @@ int main(int, char**)
 								}
 							}
 
+							curr_painted_indices.push_back(index);
 							background_tiles[index].uv_min = left_uv_mins[brush_in_use];
 							background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
 						}
 					}
 				}
+			
+				prev_painted_indices = curr_painted_indices;
 			}
 		}
 
