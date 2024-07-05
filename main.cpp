@@ -39,8 +39,11 @@ using namespace cv;
 
 
 #include "vertex_fragment_shader.h"
+#include "vertex_geometry_fragment_shader.h"
+
 
 vertex_fragment_shader ortho_shader;
+vertex_geometry_fragment_shader line_shader;
 
 struct
 {
@@ -52,6 +55,14 @@ struct
 	}
 	ortho_shader_uniforms;
 
+	struct
+	{
+		GLint colour;
+		GLint img_width;
+		GLint img_height;
+		GLint line_thickness;
+	}
+	line_shader_uniforms;
 }
 uniforms;
 
@@ -309,7 +320,7 @@ bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
 
 
 
-bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vector<quad>& quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
+bool draw_textured_quad(bool draw_outline, glm::vec3 outline_colour, bool quit_upon_collision, int mouse_x, int mouse_y, vector<quad>& quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
 	static GLuint vao = 0, vbo = 0, ibo = 0;
 
@@ -411,6 +422,61 @@ bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vect
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
+	if (draw_outline)
+	{
+		glUseProgram(line_shader.get_program());
+
+		glUniform3f(uniforms.line_shader_uniforms.colour, 0.0, 0.5, 1.0);
+		glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
+		glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
+		glUniform1f(uniforms.line_shader_uniforms.line_thickness, 4.0);
+
+		GLuint components_per_vertex = 3;
+		GLuint components_per_position = 3;
+
+		GLuint axis_buffer;
+
+		glGenBuffers(1, &axis_buffer);
+
+		vector<GLfloat> flat_data;
+		flat_data.push_back(v0ndc.real());
+		flat_data.push_back(v0ndc.imag());
+		flat_data.push_back(0.0f);
+
+		flat_data.push_back(v1ndc.real());
+		flat_data.push_back(v1ndc.imag());
+		flat_data.push_back(0.0f);
+
+		flat_data.push_back(v2ndc.real());
+		flat_data.push_back(v2ndc.imag());
+		flat_data.push_back(0.0f);
+
+		flat_data.push_back(v3ndc.real());
+		flat_data.push_back(v3ndc.imag());
+		flat_data.push_back(0.0f);
+
+		GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
+
+		glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
+		glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
+
+		glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
+		glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
+			components_per_position,
+			GL_FLOAT,
+			GL_FALSE,
+			components_per_vertex * sizeof(GLfloat),
+			NULL);
+
+		glDrawArrays(GL_LINE_STRIP, 0, num_vertices);
+
+		glDeleteBuffers(1, &axis_buffer);
+
+
+	}
+
+
+
 	return inside;
 }
 
@@ -474,9 +540,20 @@ int main(int, char**)
 		return false;
 	}
 
+	if (false == line_shader.init("lines.vs.glsl", "lines.gs.glsl", "lines.fs.glsl"))
+	{
+		cout << "Could not load line shader" << endl;
+		return false;
+	}
+
 	uniforms.ortho_shader_uniforms.tex = glGetUniformLocation(ortho_shader.get_program(), "tex");
 	uniforms.ortho_shader_uniforms.viewport_width = glGetUniformLocation(ortho_shader.get_program(), "viewport_width");
 	uniforms.ortho_shader_uniforms.viewport_height = glGetUniformLocation(ortho_shader.get_program(), "viewport_height");
+
+	uniforms.line_shader_uniforms.colour = glGetUniformLocation(line_shader.get_program(), "colour");
+	uniforms.line_shader_uniforms.img_width = glGetUniformLocation(line_shader.get_program(), "img_width");
+	uniforms.line_shader_uniforms.img_height = glGetUniformLocation(line_shader.get_program(), "img_height");
+	uniforms.line_shader_uniforms.line_thickness = glGetUniformLocation(line_shader.get_program(), "line_thickness");
 
 
 	// Setup Dear ImGui context
@@ -840,7 +917,7 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					inside = draw_textured_quad(true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+					inside = draw_textured_quad(false, glm::vec3(0, 0, 0), true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 
 					if (inside)
 					{
@@ -860,7 +937,7 @@ int main(int, char**)
 						}
 
 						centre_index = ImVec2((float)i, (float)j);
-						centre_location = glm::vec3((quads[0].vertices[0] + quads[0].vertices[1] + quads[0].vertices[2] + quads[0].vertices[3])*0.25f);
+						centre_location = glm::vec3((quads[0].vertices[0] + quads[0].vertices[1] + quads[0].vertices[2] + quads[0].vertices[3]) * 0.25f);
 						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
 						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
 						curr_painted_indices.push_back(index);
@@ -899,7 +976,7 @@ int main(int, char**)
 
 						const int square_brush_size = 4;
 
-						if(abs(centre_index.x - i) < (square_brush_size/2) && abs(centre_index.y - j) < (square_brush_size/2))
+						if (abs(centre_index.x - i) < (square_brush_size / 2) && abs(centre_index.y - j) < (square_brush_size / 2))
 						{
 							size_t brush_in_use = 0;
 
@@ -924,10 +1001,12 @@ int main(int, char**)
 						}
 					}
 				}
-			
+
 				prev_painted_indices = curr_painted_indices;
 			}
 		}
+
+
 
 
 
@@ -953,7 +1032,7 @@ int main(int, char**)
 				int x, y;
 				SDL_GetMouseState(&x, &y);
 
-				bool inside = draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+				bool inside = draw_textured_quad(true, glm::vec3(0, 0.5, 1.0), false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 
 				if (inside)
 				{
