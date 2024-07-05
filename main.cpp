@@ -30,6 +30,7 @@
 #include <sstream>
 #include <vector>
 #include <algorithm>
+#include <random>
 using namespace std;
 
 
@@ -154,13 +155,14 @@ vector<string> left_strings;
 int left_selected = -1;
 vector<ImVec2> left_uv_mins;
 vector<ImVec2> left_uv_maxs;
-
+vector<ImVec2> left_indices;
 
 void left_add_button_func(void)
 {
 	left_strings.push_back("1.0");
 	left_uv_mins.push_back(ImVec2(0, 0));
 	left_uv_maxs.push_back(ImVec2(0, 0));
+	left_indices.push_back(ImVec2(0, 0));
 
 	if (left_strings.size() == 1)
 		left_selected = 0;
@@ -171,6 +173,7 @@ void left_remove_button_func(int i)
 	left_strings.erase(left_strings.begin() + i);
 	left_uv_mins.erase(left_uv_mins.begin() + i);
 	left_uv_maxs.erase(left_uv_maxs.begin() + i);
+	left_indices.erase(left_indices.begin() + i);
 
 	if (i == left_selected)
 		left_selected = -1;
@@ -309,7 +312,7 @@ bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
 
 
 
-bool draw_textured_quad(int mouse_x, int mouse_y, vector<quad>& quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
+bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vector<quad>& quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
 	static GLuint vao = 0, vbo = 0, ibo = 0;
 
@@ -358,12 +361,8 @@ bool draw_textured_quad(int mouse_x, int mouse_y, vector<quad>& quads, GLuint sh
 
 	bool inside = point_in_polygon(mouse_pos, points);
 
-
-
-
-
-
-
+	if (quit_upon_collision)
+		return inside;
 
 
 	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
@@ -416,48 +415,6 @@ bool draw_textured_quad(int mouse_x, int mouse_y, vector<quad>& quads, GLuint sh
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
 	return inside;
-}
-
-
-
-bool RayIntersectsTriangle(const glm::vec3 rayOrigin,
-	const glm::vec3 rayVector,
-	const glm::vec3 v0, const glm::vec3 v1, const glm::vec3 v2,
-	glm::vec3& outIntersectionPoint)
-{
-	const float EPSILON = 0.0000001f;
-	glm::vec3 vertex0 = v0;// inTriangle->vertex0;
-	glm::vec3 vertex1 = v1;// inTriangle->vertex1;
-	glm::vec3 vertex2 = v2;// inTriangle->vertex2;
-	glm::vec3 edge1, edge2, h, s, q;
-	float a, f, u, v;
-	edge1 = vertex1 - vertex0;
-	edge2 = vertex2 - vertex0;
-	h = cross(rayVector, edge2);
-	a = dot(edge1, h);
-	if (a > -EPSILON && a < EPSILON)
-		return false;    // This ray is parallel to this triangle.
-	f = 1.0f / a;
-	s = rayOrigin - vertex0;
-	u = f * dot(s, h);
-	if (u < 0.0f || u > 1.0f)
-		return false;
-	q = cross(s, edge1);
-	v = f * dot(rayVector, q);
-	if (v < 0.0f || u + v > 1.0f)
-		return false;
-
-	// At this stage we can compute t to find out where the intersection point is on the line.
-
-	float t = f * dot(edge2, q);
-
-	if (t > EPSILON) // ray intersection
-	{
-		outIntersectionPoint = rayOrigin + rayVector * t;
-		return true;
-	}
-	else // This means that there is a line intersection but not a ray intersection.
-		return false;
 }
 
 
@@ -595,6 +552,8 @@ int main(int, char**)
 	image_anchor.x = 0;// float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
 	image_anchor.y = 0;// float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
 
+	mt19937 generator((unsigned int)time(0));
+	uniform_real_distribution<float> distribution(0.0, 1.0);
 
 	while (!done)
 	{
@@ -688,7 +647,7 @@ int main(int, char**)
 
 			if (left_clicked && i == left_selected)
 			{
-				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+				ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
 				//cout << img_block.x << " " << img_block.y << endl;
 
 				size_t x = size_t(mousePositionRelative.x) % block_size;
@@ -702,6 +661,7 @@ int main(int, char**)
 
 				left_uv_mins[i] = ImVec2(u_start, v_start);
 				left_uv_maxs[i] = ImVec2(u_end, v_end);
+				left_indices[i] = img_block;
 			}
 
 			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
@@ -731,8 +691,6 @@ int main(int, char**)
 			ImGui::InputText(x.c_str(), &left_strings[i]);
 			ImGui::PopItemWidth();
 		}
-
-
 
 
 
@@ -816,11 +774,11 @@ int main(int, char**)
 		{
 			zoom_factor += last_mousewheel * 0.1f;
 
-			if (last_mousewheel != 0)
-			{
-				//image_anchor.x =  36.0f * float(tiles_per_dimension) / 2.0f  - float(window_w) / 2.0;
-				//image_anchor.y =  36.0f * float(tiles_per_dimension) / 2.0f - float(window_h) / 2.0;
-			}
+			//if (last_mousewheel != 0)
+			//{
+			//	//image_anchor.x =  36.0f * float(tiles_per_dimension) / 2.0f  - float(window_w) / 2.0;
+			//	//image_anchor.y =  36.0f * float(tiles_per_dimension) / 2.0f - float(window_h) / 2.0;
+			//}
 		}
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
@@ -831,10 +789,79 @@ int main(int, char**)
 			ImGui::ResetMouseDragDelta();
 		}
 
+		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && left_strings.size() > 0)
+		{
+			vector<float> weights;
+			float total = 0;
+
+			for (int i = 0; i < left_strings.size(); i++)
+			{
+				const float weight = stof(left_strings[i]);
+				weights.push_back(weight);
+				total += weight;
+			}
+
+			if (total != 0.0f && total != -0.0f)
+			{
+				for (int i = 0; i < left_strings.size(); i++)
+					weights[i] /= total;
+			}
+
+			size_t brush_in_use = 0;
+
+			const float r = distribution(generator);
+
+			float sub_total = 0;
+
+			for (int i = 0; i < left_strings.size(); i++)
+			{
+				sub_total += weights[i];
+
+				if (r <= sub_total)
+				{
+					brush_in_use = i;
+					break;
+				}
+			}
+
+
+
+			//cout << brush_in_use << endl;
+
+			for (size_t i = 0; i < tiles_per_dimension; i++)
+			{
+				for (size_t j = 0; j < tiles_per_dimension; j++)
+				{
+					size_t index = i * tiles_per_dimension + j;
+
+					vector<quad> quads;
+
+					int x, y;
+					SDL_GetMouseState(&x, &y);
+
+					bool inside = draw_textured_quad(true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+
+					if (inside)
+					{
+						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
+						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+					}
+				}
+			}
+		}
+
+
+
+
+
+		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Right, 0))
+		{
+			// draw using right brush
+		}
+
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
-
 
 		for (size_t i = 0; i < tiles_per_dimension; i++)
 		{
@@ -847,50 +874,12 @@ int main(int, char**)
 				int x, y;
 				SDL_GetMouseState(&x, &y);
 
-				bool inside = draw_textured_quad(x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+				bool inside = draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 
 				if (inside)
 				{
-					cout << i << " " << j << endl;
+					//cout << i << " " << j << endl;
 				}
-
-
-
-				//if (triangles.size() == 2)
-				//{
-				//	int x, y;
-				//	SDL_GetMouseState(&x, &y);
-
-				//	glm::vec3 v0(triangles[0].vertices[0].x, triangles[0].vertices[0].y, 0);
-				//	glm::vec3 v1(triangles[0].vertices[1].x, triangles[0].vertices[1].y, 0);
-				//	glm::vec3 v2(triangles[0].vertices[2].x, triangles[0].vertices[2].y, 0);
-
-				//	glm::vec3 hit_point;
-
-				//	bool first_hit = false, second_hit = false;
-
-
-				//	first_hit = RayIntersectsTriangle(glm::vec3(x, y, -1),
-				//		glm::vec3(x, y, 1),
-				//		v0, v1, v2,
-				//		hit_point);
-
-				//	if (false == first_hit)
-				//	{
-				//		 v0 = glm::vec3(triangles[1].vertices[0].x, triangles[1].vertices[0].y, 0);
-				//		 v1 = glm::vec3(triangles[1].vertices[1].x, triangles[1].vertices[1].y, 0);
-				//		 v2 = glm::vec3(triangles[1].vertices[2].x, triangles[1].vertices[2].y, 0);
-
-				//		glm::vec3 hit_point;
-
-				//		second_hit = RayIntersectsTriangle(glm::vec3(x, y, -1),
-				//			glm::vec3(x, y, 1),
-				//			v0, v1, v2,
-				//			hit_point);
-				//	}
-
-				//	cout << first_hit << " " << second_hit << endl;
-				//}
 			}
 		}
 
