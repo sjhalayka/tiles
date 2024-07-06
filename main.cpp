@@ -451,7 +451,7 @@ void draw_quad_line_loop(int win_width, int win_height, float line_thickness, qu
 	complex<float> v1w(static_cast<float>(q.vertices[1].x), static_cast<float>(q.vertices[1].y));
 	complex<float> v2w(static_cast<float>(q.vertices[2].x), static_cast<float>(q.vertices[2].y));
 	complex<float> v3w(static_cast<float>(q.vertices[3].x), static_cast<float>(q.vertices[3].y));
-	
+
 	//v0w.imag(win_height - v0w.imag());
 	//v1w.imag(win_height - v1w.imag());
 	//v2w.imag(win_height - v2w.imag());
@@ -1142,28 +1142,28 @@ int main(int, char**)
 			{
 				size_t index = i * tiles_per_dimension + j;
 
-				const float x = ( (image_anchor.x) + int(i) * background_tiles[index].tile_size);
-				const float y = ( (image_anchor.y) + int(j) * background_tiles[index].tile_size);
+				const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+				const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
 
 				complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
 				complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
 				complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
 				complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
 
-				v0w.real(v0w.real()* zoom_factor);
-				v0w.imag(v0w.imag()* zoom_factor);
-				v1w.real(v1w.real()* zoom_factor);
-				v1w.imag(v1w.imag()* zoom_factor);
-				v2w.real(v2w.real()* zoom_factor);
-				v2w.imag(v2w.imag()* zoom_factor);
-				v3w.real(v3w.real()* zoom_factor);
-				v3w.imag(v3w.imag()* zoom_factor);
+				v0w.real(v0w.real() * zoom_factor);
+				v0w.imag(v0w.imag() * zoom_factor);
+				v1w.real(v1w.real() * zoom_factor);
+				v1w.imag(v1w.imag() * zoom_factor);
+				v2w.real(v2w.real() * zoom_factor);
+				v2w.imag(v2w.imag() * zoom_factor);
+				v3w.real(v3w.real() * zoom_factor);
+				v3w.imag(v3w.imag() * zoom_factor);
 
 				quad q;
 				q.vertices[0].x = v0w.real();
-				q.vertices[0].y =  v0w.imag();
+				q.vertices[0].y = v0w.imag();
 				q.vertices[1].x = v1w.real();
-				q.vertices[1].y =  v1w.imag();
+				q.vertices[1].y = v1w.imag();
 				q.vertices[2].x = v2w.real();
 				q.vertices[2].y = v2w.imag();
 				q.vertices[3].x = v3w.real();
@@ -1173,14 +1173,14 @@ int main(int, char**)
 				glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
 
 				vector<glm::vec3> points;
-				points.push_back(glm::vec3(selected_start.x, selected_start.y, 0)*zoom_factor);
-				points.push_back(glm::vec3(selected_start.x, selected_end.y, 0)* zoom_factor);
-				points.push_back(glm::vec3(selected_end.x,   selected_end.y, 0)* zoom_factor);
-				points.push_back(glm::vec3(selected_end.x,   selected_start.y, 0)*zoom_factor);
+				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0) * zoom_factor);
+				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0) * zoom_factor);
+				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0) * zoom_factor);
+				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0) * zoom_factor);
 
 				bool inside = point_in_polygon(quad_centre, points);
-					
-				if(inside)
+
+				if (inside)
 					draw_quad_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 
 
@@ -1208,16 +1208,16 @@ int main(int, char**)
 			}
 		}
 
-		
+
 		// Draw selected outline
 		if (tool == TOOL_SELECT && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 		{
 			quad q;
 
-			complex<float> v0w(static_cast<float>(selected_start.x), static_cast<float>(selected_start.y));
-			complex<float> v1w(static_cast<float>(selected_start.x), static_cast<float>(selected_end.y));
-			complex<float> v2w(static_cast<float>(selected_end.x), static_cast<float>(selected_end.y));
-			complex<float> v3w(static_cast<float>(selected_end.x), static_cast<float>(selected_start.y));
+			complex<float> v0w(static_cast<float>(selected_start.x), static_cast<float>((int)io.DisplaySize.y- selected_start.y));
+			complex<float> v1w(static_cast<float>(selected_start.x), static_cast<float>((int)io.DisplaySize.y - selected_end.y));
+			complex<float> v2w(static_cast<float>(selected_end.x), static_cast<float>((int)io.DisplaySize.y - selected_end.y));
+			complex<float> v3w(static_cast<float>(selected_end.x), static_cast<float>((int)io.DisplaySize.y - selected_start.y));
 
 			q.vertices[0].x = v0w.real();
 			q.vertices[0].y = v0w.imag();
