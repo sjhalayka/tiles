@@ -659,9 +659,9 @@ int main(int, char**)
 #define TOOL_SELECT_SUBTRACT 3
 #define TOOL_PAN 4
 
-	 int tool = 0;
+	int tool = 0;
 
-	 vector<int> prev_tools;
+	vector<int> prev_tools;
 
 	while (!done)
 	{
@@ -695,7 +695,7 @@ int main(int, char**)
 			{
 				tool = TOOL_PAN;
 			}
-			else if ( event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE)
+			else if (event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE)
 			{
 				for (size_t i = 0; i < prev_tools.size(); i++)
 				{
@@ -707,10 +707,10 @@ int main(int, char**)
 			}
 
 
-				
 
 
-			 if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
+
+			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -719,10 +719,9 @@ int main(int, char**)
 
 					selected_start = ImVec2((float)x, (float)y);
 					selected_end = ImVec2((float)x, (float)y);
-					make_selection = true;
 				}
 			}
-			 if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP)
+			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -959,7 +958,7 @@ int main(int, char**)
 			//	//image_anchor.y =  36.0f * float(tiles_per_dimension) / 2.0f - float(window_h) / 2.0;
 			//}
 		}
-		
+
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			ImVec2 motion = ImGui::GetMouseDragDelta();
@@ -970,7 +969,7 @@ int main(int, char**)
 		}
 
 
-if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
+		if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);
@@ -982,7 +981,7 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 
 
 		// Paint using left mouse button
- if (tool == TOOL_PAINT && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
+		if (tool == TOOL_PAINT && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
 		{
 			vector<float> weights;
 			float total = 0;
@@ -1288,7 +1287,7 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 				size_t index = i * tiles_per_dimension + j;
 
 				if (selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
-				{	
+				{
 					const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
 					const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
 
