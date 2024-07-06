@@ -685,18 +685,9 @@ int main(int, char**)
 			if (event.type == SDL_MOUSEWHEEL)
 				last_mousewheel = (float)event.wheel.y;
 			
-			if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+			if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 				tool = TOOL_PAN;
-			//else if(tool != TOOL_PAN)
-			//	tool = prev_tool;
-			//{
-			//	continue;
-			//	prev_tool = tool;
-			//}
-			//else
-			//{
-			//	tool = prev_tool;
-			//}
+
 
 			 if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
 			{
@@ -789,6 +780,7 @@ int main(int, char**)
 		ImGui::RadioButton("Select Add", &tool, TOOL_SELECT_ADD);
 		ImGui::RadioButton("Select Subtract", &tool, TOOL_SELECT_SUBTRACT);
 
+		ImGui::RadioButton("Pan", &tool, TOOL_PAN);
 
 		ImGui::End();
 
