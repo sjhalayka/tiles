@@ -683,9 +683,14 @@ int main(int, char**)
 			if (event.type == SDL_MOUSEWHEEL)
 				last_mousewheel = (float)event.wheel.y;
 
-			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
+
+			if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+				panning = true;
+
+
+			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN && false == panning)
 			{
-				if (event.button.button == SDL_BUTTON_LEFT && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+				if (event.button.button == SDL_BUTTON_LEFT)
 				{
 					int x, y;
 					SDL_GetMouseState(&x, &y);
@@ -693,24 +698,22 @@ int main(int, char**)
 					selected_start = ImVec2((float)x, (float)y);
 					selected_end = ImVec2((float)x, (float)y);
 
-					panning = true;
-
 				}
 			}
 
-			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP)
+			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP && false == panning)
 			{
-				if (event.button.button == SDL_BUTTON_LEFT && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+				if (event.button.button == SDL_BUTTON_LEFT)
 				{
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
 					selected_end = ImVec2((float)x, (float)y);
-
-					panning = true;
 				}
 			}
 		}
+
+
 
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
@@ -943,14 +946,12 @@ int main(int, char**)
 			ImGui::ResetMouseDragDelta();
 		}
 
-		if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
+		if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && false == panning)
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
 			selected_end = ImVec2((float)x, (float)y);
-			panning = true;
-
 		}
 
 
@@ -1191,7 +1192,7 @@ int main(int, char**)
 				qp.vertices[2] = points[2];
 				qp.vertices[3] = points[3];
 
-				//draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, qp);
+				///draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, qp);
 
 
 				bool inside = point_in_polygon(quad_centre, points);
