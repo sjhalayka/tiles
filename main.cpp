@@ -481,7 +481,73 @@ bool draw_textured_quad(bool draw_outline, glm::vec3 outline_colour, bool quit_u
 }
 
 
+void draw_line_loop(int win_width, int win_height, float line_thickness, quad q)
+{
+	glUseProgram(line_shader.get_program());
 
+	glUniform3f(uniforms.line_shader_uniforms.colour, 0.0, 0.5, 1.0);
+	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
+	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
+	glUniform1f(uniforms.line_shader_uniforms.line_thickness, 4.0);
+
+	GLuint components_per_vertex = 3;
+	GLuint components_per_position = 3;
+
+	GLuint axis_buffer;
+
+	glGenBuffers(1, &axis_buffer);
+
+	complex<float> v0w(static_cast<float>(q.vertices[0].x), static_cast<float>(q.vertices[0].y));
+	complex<float> v1w(static_cast<float>(q.vertices[1].x), static_cast<float>(q.vertices[1].y));
+	complex<float> v2w(static_cast<float>(q.vertices[2].x), static_cast<float>(q.vertices[2].y));
+	complex<float> v3w(static_cast<float>(q.vertices[3].x), static_cast<float>(q.vertices[3].y));
+	
+	v0w.imag(win_height - v0w.imag());
+	v1w.imag(win_height - v1w.imag());
+	v2w.imag(win_height - v2w.imag());
+	v3w.imag(win_height - v3w.imag());
+
+	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
+	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
+	complex<float> v2ndc = get_ndc_coords_from_window_coords(win_width, win_height, v2w);
+	complex<float> v3ndc = get_ndc_coords_from_window_coords(win_width, win_height, v3w);
+
+
+
+	vector<GLfloat> flat_data;
+	flat_data.push_back(v0ndc.real());
+	flat_data.push_back(v0ndc.imag());
+	flat_data.push_back(0.0f);
+
+	flat_data.push_back(v1ndc.real());
+	flat_data.push_back(v1ndc.imag());
+	flat_data.push_back(0.0f);
+
+	flat_data.push_back(v2ndc.real());
+	flat_data.push_back(v2ndc.imag());
+	flat_data.push_back(0.0f);
+
+	flat_data.push_back(v3ndc.real());
+	flat_data.push_back(v3ndc.imag());
+	flat_data.push_back(0.0f);
+
+	GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
+
+	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
+	glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
+	glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
+		components_per_position,
+		GL_FLOAT,
+		GL_FALSE,
+		components_per_vertex * sizeof(GLfloat),
+		NULL);
+
+	glDrawArrays(GL_LINE_LOOP, 0, num_vertices);
+
+	glDeleteBuffers(1, &axis_buffer);
+}
 
 
 
@@ -632,6 +698,9 @@ int main(int, char**)
 	vector<size_t> prev_painted_indices;
 
 	vector<size_t> selected_indices;
+	ImVec2 selected_start;
+	ImVec2 selected_end;
+
 
 	while (!done)
 	{
@@ -654,6 +723,28 @@ int main(int, char**)
 
 			if (event.type == SDL_MOUSEWHEEL)
 				last_mousewheel = (float)event.wheel.y;
+
+			if (event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				if (event.button.button == SDL_BUTTON_LEFT)
+				{
+					int x, y;
+					SDL_GetMouseState(&x, &y);
+
+					selected_start = ImVec2((float)x, (float)y);
+				}
+			}
+
+			if (event.type == SDL_MOUSEBUTTONUP)
+			{
+				if (event.button.button == SDL_BUTTON_LEFT)
+				{
+					int x, y;
+					SDL_GetMouseState(&x, &y);
+
+					selected_end = ImVec2((float)x, (float)y);
+				}
+			}
 		}
 
 		// Start the Dear ImGui frame
@@ -710,10 +801,10 @@ int main(int, char**)
 
 
 
-		#define TOOL_PAINT 0
-		#define TOOL_SELECT 1
-		#define TOOL_SELECT_ADD 2
-		#define TOOL_SELECT_SUBTRACT 3
+#define TOOL_PAINT 0
+#define TOOL_SELECT 1
+#define TOOL_SELECT_ADD 2
+#define TOOL_SELECT_SUBTRACT 3
 
 		ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
@@ -894,14 +985,19 @@ int main(int, char**)
 		}
 
 
-		if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && left_strings.size() > 0)
+		if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
 		{
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+
+			selected_end = ImVec2((float)x, (float)y);
+
 
 
 		}
 
 
-		// Draw using left mouse button
+		// Paint using left mouse button
 		if (tool == TOOL_PAINT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && left_strings.size() > 0)
 		{
 			vector<float> weights;
@@ -1082,7 +1178,8 @@ int main(int, char**)
 
 				if (inside)
 				{
-					draw_textured_quad(true, glm::vec3(0, 0.5, 1.0), false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+					draw_textured_quad(false, glm::vec3(0, 0.5, 1.0), false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+					draw_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, quads[0]);
 				}
 				else
 				{
