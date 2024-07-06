@@ -519,8 +519,8 @@ int main(int, char**)
 	const char* glsl_version = "#version 430";
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, 0);
 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_CORE);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 4);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
 
 	// From 2.0.18: Enable native IME.
 #ifdef SDL_HINT_IME_SHOW_UI
@@ -655,10 +655,10 @@ int main(int, char**)
 #define TOOL_SELECT 1
 #define TOOL_SELECT_ADD 2
 #define TOOL_SELECT_SUBTRACT 3
+#define TOOL_PAN 4
 
-	static int tool = 0;
+	 int tool = 0;
 
-	bool panning = false;
 
 
 	while (!done)
@@ -682,13 +682,10 @@ int main(int, char**)
 
 			if (event.type == SDL_MOUSEWHEEL)
 				last_mousewheel = (float)event.wheel.y;
-
-
+			
 			if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
-				panning = true;
-
-
-			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN && false == panning)
+				tool = TOOL_PAN;
+			else if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -697,11 +694,9 @@ int main(int, char**)
 
 					selected_start = ImVec2((float)x, (float)y);
 					selected_end = ImVec2((float)x, (float)y);
-
 				}
 			}
-
-			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP && false == panning)
+			else if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -712,8 +707,6 @@ int main(int, char**)
 				}
 			}
 		}
-
-
 
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
@@ -937,6 +930,7 @@ int main(int, char**)
 			//	//image_anchor.y =  36.0f * float(tiles_per_dimension) / 2.0f - float(window_h) / 2.0;
 			//}
 		}
+		
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			ImVec2 motion = ImGui::GetMouseDragDelta();
@@ -946,7 +940,8 @@ int main(int, char**)
 			ImGui::ResetMouseDragDelta();
 		}
 
-		if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && false == panning)
+
+if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);
@@ -956,7 +951,7 @@ int main(int, char**)
 
 
 		// Paint using left mouse button
-		if (tool == TOOL_PAINT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && left_strings.size() > 0)
+ if (tool == TOOL_PAINT && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
 		{
 			vector<float> weights;
 			float total = 0;
