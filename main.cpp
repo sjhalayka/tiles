@@ -658,8 +658,8 @@ int main(int, char**)
 #define TOOL_PAN 4
 
 	 int tool = 0;
-	 int prev_tool = 0;
 
+	 vector<int> prev_tools;
 
 	while (!done)
 	{
@@ -671,6 +671,8 @@ int main(int, char**)
 		// - When io.WantCaptureKeyboard is true, do not dispatch keyboard input data to your main application, or clear/overwrite your copy of the keyboard data.
 		// Generally you may always pass all inputs to dear imgui, and hide them from your application based on those two flags.
 		last_mousewheel = 0;
+
+
 
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
@@ -684,9 +686,29 @@ int main(int, char**)
 
 			if (event.type == SDL_MOUSEWHEEL)
 				last_mousewheel = (float)event.wheel.y;
+
 			
-			if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE)
+			{
 				tool = TOOL_PAN;
+			}
+			else if ( event.type == SDL_KEYUP && event.key.keysym.sym == SDLK_SPACE)
+			{
+				for (size_t i = 0; i < prev_tools.size(); i++)
+				{
+					if (prev_tools[i] != TOOL_PAN)
+					{
+						tool = prev_tools[i];
+						break;
+					}
+				}
+
+				prev_tools.clear();
+			}
+
+
+
 
 
 			 if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
@@ -714,6 +736,8 @@ int main(int, char**)
 				}
 			}
 		}
+
+
 
 		// Start the Dear ImGui frame
 		ImGui_ImplOpenGL3_NewFrame();
@@ -779,8 +803,6 @@ int main(int, char**)
 		ImGui::RadioButton("Select", &tool, TOOL_SELECT);
 		ImGui::RadioButton("Select Add", &tool, TOOL_SELECT_ADD);
 		ImGui::RadioButton("Select Subtract", &tool, TOOL_SELECT_SUBTRACT);
-
-		ImGui::RadioButton("Pan", &tool, TOOL_PAN);
 
 		ImGui::End();
 
@@ -1139,50 +1161,9 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 				SDL_GetMouseState(&x, &y);
 
 				bool inside = draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
-
-				//	draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
-				//}
 			}
 		}
 
-		//for (size_t i = 0; i < tiles_per_dimension; i++)
-		//{
-		//	for (size_t j = 0; j < tiles_per_dimension; j++)
-		//	{
-		//		size_t index = i * tiles_per_dimension + j;
-
-
-		//		const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
-		//		const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
-
-		//		complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-		//		complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
-		//		complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
-		//		complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
-
-		//		v0w.real(v0w.real() * zoom_factor);
-		//		v0w.imag(v0w.imag() * zoom_factor);
-		//		v1w.real(v1w.real() * zoom_factor);
-		//		v1w.imag(v1w.imag() * zoom_factor);
-		//		v2w.real(v2w.real() * zoom_factor);
-		//		v2w.imag(v2w.imag() * zoom_factor);
-		//		v3w.real(v3w.real() * zoom_factor);
-		//		v3w.imag(v3w.imag() * zoom_factor);
-
-		//		quad q;
-		//		q.vertices[0].x = v0w.real();
-		//		q.vertices[0].y = v0w.imag();
-		//		q.vertices[1].x = v1w.real();
-		//		q.vertices[1].y = v1w.imag();
-		//		q.vertices[2].x = v2w.real();
-		//		q.vertices[2].y = v2w.imag();
-		//		q.vertices[3].x = v3w.real();
-		//		q.vertices[3].y = v3w.imag();
-
-		//		draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-
-		//	}
-		//}
 
 
 
@@ -1194,37 +1175,36 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 			{
 				size_t index = i * tiles_per_dimension + j;
 
-				if (1)//selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
-				{
-					const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
-					const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
 
-					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
-					complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
-					complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+				const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+				const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
 
-					v0w.real(v0w.real() * zoom_factor);
-					v0w.imag(v0w.imag() * zoom_factor);
-					v1w.real(v1w.real() * zoom_factor);
-					v1w.imag(v1w.imag() * zoom_factor);
-					v2w.real(v2w.real() * zoom_factor);
-					v2w.imag(v2w.imag() * zoom_factor);
-					v3w.real(v3w.real() * zoom_factor);
-					v3w.imag(v3w.imag() * zoom_factor);
+				complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+				complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+				complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+				complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
 
-					quad q;
-					q.vertices[0].x = v0w.real();
-					q.vertices[0].y = v0w.imag();
-					q.vertices[1].x = v1w.real();
-					q.vertices[1].y = v1w.imag();
-					q.vertices[2].x = v2w.real();
-					q.vertices[2].y = v2w.imag();
-					q.vertices[3].x = v3w.real();
-					q.vertices[3].y = v3w.imag();
+				v0w.real(v0w.real() * zoom_factor);
+				v0w.imag(v0w.imag() * zoom_factor);
+				v1w.real(v1w.real() * zoom_factor);
+				v1w.imag(v1w.imag() * zoom_factor);
+				v2w.real(v2w.real() * zoom_factor);
+				v2w.imag(v2w.imag() * zoom_factor);
+				v3w.real(v3w.real() * zoom_factor);
+				v3w.imag(v3w.imag() * zoom_factor);
 
-					draw_quad_line_loop(glm::vec3(0.1, 0.1, 0.1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-				}
+				quad q;
+				q.vertices[0].x = v0w.real();
+				q.vertices[0].y = v0w.imag();
+				q.vertices[1].x = v1w.real();
+				q.vertices[1].y = v1w.imag();
+				q.vertices[2].x = v2w.real();
+				q.vertices[2].y = v2w.imag();
+				q.vertices[3].x = v3w.real();
+				q.vertices[3].y = v3w.imag();
+
+				draw_quad_line_loop(glm::vec3(0.1, 0.1, 0.1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 1.0, q);
+
 			}
 		}
 
@@ -1239,7 +1219,7 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 
 
 
-		if (make_selection && ! ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+		if (make_selection && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			make_selection = false;
 			selected_indices.clear();
@@ -1336,7 +1316,7 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 					q.vertices[3].x = v3w.real();
 					q.vertices[3].y = v3w.imag();
 
-					draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+					draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 1.0, q);
 				}
 			}
 		}
