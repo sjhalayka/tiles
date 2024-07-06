@@ -452,10 +452,10 @@ void draw_quad_line_loop(int win_width, int win_height, float line_thickness, qu
 	complex<float> v2w(static_cast<float>(q.vertices[2].x), static_cast<float>(q.vertices[2].y));
 	complex<float> v3w(static_cast<float>(q.vertices[3].x), static_cast<float>(q.vertices[3].y));
 	
-	v0w.imag(win_height - v0w.imag());
-	v1w.imag(win_height - v1w.imag());
-	v2w.imag(win_height - v2w.imag());
-	v3w.imag(win_height - v3w.imag());
+	//v0w.imag(win_height - v0w.imag());
+	//v1w.imag(win_height - v1w.imag());
+	//v2w.imag(win_height - v2w.imag());
+	//v3w.imag(win_height - v3w.imag());
 
 	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
 	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
