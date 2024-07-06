@@ -431,11 +431,11 @@ bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vect
 }
 
 
-void draw_quad_line_loop(int win_width, int win_height, float line_thickness, quad q)
+void draw_quad_line_loop(glm::vec3 colour, int win_width, int win_height, float line_thickness, quad q)
 {
 	glUseProgram(line_shader.get_program());
 
-	glUniform3f(uniforms.line_shader_uniforms.colour, 0.0, 0.5, 1.0);
+	glUniform3f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z);
 	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
 	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
 	glUniform1f(uniforms.line_shader_uniforms.line_thickness, 4.0);
@@ -1178,10 +1178,21 @@ int main(int, char**)
 				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0) * zoom_factor);
 				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0) * zoom_factor);
 
+
+
+				quad qp;
+				qp.vertices[0] = points[0];
+				qp.vertices[1] = points[1];
+				qp.vertices[2] = points[2];
+				qp.vertices[3] = points[3];
+
+				draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, qp);
+
+
 				bool inside = point_in_polygon(quad_centre, points);
 
 				if (inside)
-					draw_quad_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+					draw_quad_line_loop(glm::vec3(0, 0.5, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 
 
 
@@ -1219,16 +1230,16 @@ int main(int, char**)
 			complex<float> v2w(static_cast<float>(selected_end.x), static_cast<float>((int)io.DisplaySize.y - selected_end.y));
 			complex<float> v3w(static_cast<float>(selected_end.x), static_cast<float>((int)io.DisplaySize.y - selected_start.y));
 
-			q.vertices[0].x = v0w.real(); //*zoom_factor;
-			q.vertices[0].y = v0w.imag(); //*zoom_factor;
-			q.vertices[1].x = v1w.real(); //*zoom_factor;
-			q.vertices[1].y = v1w.imag(); //*zoom_factor;
-			q.vertices[2].x = v2w.real(); //*zoom_factor;
-			q.vertices[2].y = v2w.imag(); //*zoom_factor;
-			q.vertices[3].x = v3w.real(); //*zoom_factor;
-			q.vertices[3].y = v3w.imag(); //*zoom_factor;
+			q.vertices[0].x = v0w.real();
+			q.vertices[0].y = v0w.imag();
+			q.vertices[1].x = v1w.real();
+			q.vertices[1].y = v1w.imag();
+			q.vertices[2].x = v2w.real();
+			q.vertices[2].y = v2w.imag();
+			q.vertices[3].x = v3w.real();
+			q.vertices[3].y = v3w.imag();
 
-			draw_quad_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+			draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 
 		}
 
