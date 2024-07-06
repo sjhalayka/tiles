@@ -682,9 +682,9 @@ int main(int, char**)
 			if (event.type == SDL_MOUSEWHEEL)
 				last_mousewheel = (float)event.wheel.y;
 
-			if (event.type == SDL_MOUSEBUTTONDOWN)
+			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
 			{
-				if (event.button.button == SDL_BUTTON_LEFT)
+				if (event.button.button == SDL_BUTTON_LEFT && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 				{
 					int x, y;
 					SDL_GetMouseState(&x, &y);
@@ -697,7 +697,7 @@ int main(int, char**)
 
 			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP)
 			{
-				if (event.button.button == SDL_BUTTON_LEFT)
+				if (event.button.button == SDL_BUTTON_LEFT && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 				{
 					int x, y;
 					SDL_GetMouseState(&x, &y);
@@ -1214,19 +1214,19 @@ int main(int, char**)
 		{
 			quad q;
 
-			complex<float> v0w(static_cast<float>(selected_start.x), static_cast<float>((int)io.DisplaySize.y- selected_start.y));
+			complex<float> v0w(static_cast<float>(selected_start.x), static_cast<float>((int)io.DisplaySize.y - selected_start.y));
 			complex<float> v1w(static_cast<float>(selected_start.x), static_cast<float>((int)io.DisplaySize.y - selected_end.y));
 			complex<float> v2w(static_cast<float>(selected_end.x), static_cast<float>((int)io.DisplaySize.y - selected_end.y));
 			complex<float> v3w(static_cast<float>(selected_end.x), static_cast<float>((int)io.DisplaySize.y - selected_start.y));
 
-			q.vertices[0].x = v0w.real();
-			q.vertices[0].y = v0w.imag();
-			q.vertices[1].x = v1w.real();
-			q.vertices[1].y = v1w.imag();
-			q.vertices[2].x = v2w.real();
-			q.vertices[2].y = v2w.imag();
-			q.vertices[3].x = v3w.real();
-			q.vertices[3].y = v3w.imag();
+			q.vertices[0].x = v0w.real(); //*zoom_factor;
+			q.vertices[0].y = v0w.imag(); //*zoom_factor;
+			q.vertices[1].x = v1w.real(); //*zoom_factor;
+			q.vertices[1].y = v1w.imag(); //*zoom_factor;
+			q.vertices[2].x = v2w.real(); //*zoom_factor;
+			q.vertices[2].y = v2w.imag(); //*zoom_factor;
+			q.vertices[3].x = v3w.real(); //*zoom_factor;
+			q.vertices[3].y = v3w.imag(); //*zoom_factor;
 
 			draw_quad_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 
