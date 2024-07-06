@@ -658,6 +658,7 @@ int main(int, char**)
 
 	static int tool = 0;
 
+	bool panning = false;
 
 
 	while (!done)
@@ -692,6 +693,8 @@ int main(int, char**)
 					selected_start = ImVec2((float)x, (float)y);
 					selected_end = ImVec2((float)x, (float)y);
 
+					panning = true;
+
 				}
 			}
 
@@ -703,6 +706,8 @@ int main(int, char**)
 					SDL_GetMouseState(&x, &y);
 
 					selected_end = ImVec2((float)x, (float)y);
+
+					panning = true;
 				}
 			}
 		}
@@ -944,6 +949,8 @@ int main(int, char**)
 			SDL_GetMouseState(&x, &y);
 
 			selected_end = ImVec2((float)x, (float)y);
+			panning = true;
+
 		}
 
 
@@ -1173,12 +1180,10 @@ int main(int, char**)
 				glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
 
 				vector<glm::vec3> points;
-				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0) * zoom_factor);
-				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0) * zoom_factor);
-				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0) * zoom_factor);
-				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0) * zoom_factor);
-
-
+				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
+				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0) );
+				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0) );
+				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0) );
 
 				quad qp;
 				qp.vertices[0] = points[0];
@@ -1186,7 +1191,7 @@ int main(int, char**)
 				qp.vertices[2] = points[2];
 				qp.vertices[3] = points[3];
 
-				draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, qp);
+				//draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, qp);
 
 
 				bool inside = point_in_polygon(quad_centre, points);
