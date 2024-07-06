@@ -658,11 +658,13 @@ int main(int, char**)
 #define TOOL_PAN 4
 
 	 int tool = 0;
-
+	 int prev_tool = 0;
 
 
 	while (!done)
 	{
+		bool make_selection = false;
+
 		// Poll and handle events (inputs, window resize, etc.)
 		// You can read the io.WantCaptureMouse, io.WantCaptureKeyboard flags to tell if dear imgui wants to use your inputs.
 		// - When io.WantCaptureMouse is true, do not dispatch mouse input data to your main application, or clear/overwrite your copy of the mouse data.
@@ -685,7 +687,18 @@ int main(int, char**)
 			
 			if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 				tool = TOOL_PAN;
-			else if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
+			//else if(tool != TOOL_PAN)
+			//	tool = prev_tool;
+			//{
+			//	continue;
+			//	prev_tool = tool;
+			//}
+			//else
+			//{
+			//	tool = prev_tool;
+			//}
+
+			 if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -694,9 +707,10 @@ int main(int, char**)
 
 					selected_start = ImVec2((float)x, (float)y);
 					selected_end = ImVec2((float)x, (float)y);
+					make_selection = true;
 				}
 			}
-			else if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP)
+			 if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -704,6 +718,8 @@ int main(int, char**)
 					SDL_GetMouseState(&x, &y);
 
 					selected_end = ImVec2((float)x, (float)y);
+
+					make_selection = true;
 				}
 			}
 		}
@@ -1137,6 +1153,47 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 			}
 		}
 
+		//for (size_t i = 0; i < tiles_per_dimension; i++)
+		//{
+		//	for (size_t j = 0; j < tiles_per_dimension; j++)
+		//	{
+		//		size_t index = i * tiles_per_dimension + j;
+
+
+		//		const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+		//		const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+
+		//		complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+		//		complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+		//		complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+		//		complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+
+		//		v0w.real(v0w.real() * zoom_factor);
+		//		v0w.imag(v0w.imag() * zoom_factor);
+		//		v1w.real(v1w.real() * zoom_factor);
+		//		v1w.imag(v1w.imag() * zoom_factor);
+		//		v2w.real(v2w.real() * zoom_factor);
+		//		v2w.imag(v2w.imag() * zoom_factor);
+		//		v3w.real(v3w.real() * zoom_factor);
+		//		v3w.imag(v3w.imag() * zoom_factor);
+
+		//		quad q;
+		//		q.vertices[0].x = v0w.real();
+		//		q.vertices[0].y = v0w.imag();
+		//		q.vertices[1].x = v1w.real();
+		//		q.vertices[1].y = v1w.imag();
+		//		q.vertices[2].x = v2w.real();
+		//		q.vertices[2].y = v2w.imag();
+		//		q.vertices[3].x = v3w.real();
+		//		q.vertices[3].y = v3w.imag();
+
+		//		draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+		//	}
+		//}
+
+
+
 
 
 		for (size_t i = 0; i < tiles_per_dimension; i++)
@@ -1145,78 +1202,150 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 			{
 				size_t index = i * tiles_per_dimension + j;
 
-				const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
-				const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+				if (1)//selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
+				{
+					const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+					const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
 
-				complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-				complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
-				complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
-				complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
 
-				v0w.real(v0w.real() * zoom_factor);
-				v0w.imag(v0w.imag() * zoom_factor);
-				v1w.real(v1w.real() * zoom_factor);
-				v1w.imag(v1w.imag() * zoom_factor);
-				v2w.real(v2w.real() * zoom_factor);
-				v2w.imag(v2w.imag() * zoom_factor);
-				v3w.real(v3w.real() * zoom_factor);
-				v3w.imag(v3w.imag() * zoom_factor);
+					v0w.real(v0w.real() * zoom_factor);
+					v0w.imag(v0w.imag() * zoom_factor);
+					v1w.real(v1w.real() * zoom_factor);
+					v1w.imag(v1w.imag() * zoom_factor);
+					v2w.real(v2w.real() * zoom_factor);
+					v2w.imag(v2w.imag() * zoom_factor);
+					v3w.real(v3w.real() * zoom_factor);
+					v3w.imag(v3w.imag() * zoom_factor);
 
-				quad q;
-				q.vertices[0].x = v0w.real();
-				q.vertices[0].y = v0w.imag();
-				q.vertices[1].x = v1w.real();
-				q.vertices[1].y = v1w.imag();
-				q.vertices[2].x = v2w.real();
-				q.vertices[2].y = v2w.imag();
-				q.vertices[3].x = v3w.real();
-				q.vertices[3].y = v3w.imag();
+					quad q;
+					q.vertices[0].x = v0w.real();
+					q.vertices[0].y = v0w.imag();
+					q.vertices[1].x = v1w.real();
+					q.vertices[1].y = v1w.imag();
+					q.vertices[2].x = v2w.real();
+					q.vertices[2].y = v2w.imag();
+					q.vertices[3].x = v3w.real();
+					q.vertices[3].y = v3w.imag();
 
-
-				glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
-
-				vector<glm::vec3> points;
-				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
-				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0) );
-				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0) );
-				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0) );
-
-				quad qp;
-				qp.vertices[0] = points[0];
-				qp.vertices[1] = points[1];
-				qp.vertices[2] = points[2];
-				qp.vertices[3] = points[3];
-
-				///draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, qp);
-
-
-				bool inside = point_in_polygon(quad_centre, points);
-
-				if (inside)
-					draw_quad_line_loop(glm::vec3(0, 0.5, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+					draw_quad_line_loop(glm::vec3(0.1, 0.1, 0.1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+				}
+			}
+		}
 
 
 
-				//if (selected_indices.end() == std::find(selected_indices.begin(), selected_indices.end(), index))
-				//	continue;
 
-				//quad q;
 
-				//complex<float> v0w(static_cast<float>(selected_start.x), static_cast<float>(selected_start.y));
-				//complex<float> v1w(static_cast<float>(selected_start.x), static_cast<float>(selected_end.y));
-				//complex<float> v2w(static_cast<float>(selected_end.x), static_cast<float>(selected_end.y));
-				//complex<float> v3w(static_cast<float>(selected_end.x), static_cast<float>(selected_start.y));
 
-				//q.vertices[0].x = v0w.real();
-				//q.vertices[0].y = v0w.imag();
-				//q.vertices[1].x = v1w.real();
-				//q.vertices[1].y = v1w.imag();
-				//q.vertices[2].x = v2w.real();
-				//q.vertices[2].y = v2w.imag();
-				//q.vertices[3].x = v3w.real();
-				//q.vertices[3].y = v3w.imag();
 
-				//draw_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+
+
+
+
+		if (make_selection && ! ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+		{
+			make_selection = false;
+			selected_indices.clear();
+
+			for (size_t i = 0; i < tiles_per_dimension; i++)
+			{
+				for (size_t j = 0; j < tiles_per_dimension; j++)
+				{
+					size_t index = i * tiles_per_dimension + j;
+
+					const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+					const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+
+					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+
+					v0w.real(v0w.real() * zoom_factor);
+					v0w.imag(v0w.imag() * zoom_factor);
+					v1w.real(v1w.real() * zoom_factor);
+					v1w.imag(v1w.imag() * zoom_factor);
+					v2w.real(v2w.real() * zoom_factor);
+					v2w.imag(v2w.imag() * zoom_factor);
+					v3w.real(v3w.real() * zoom_factor);
+					v3w.imag(v3w.imag() * zoom_factor);
+
+					quad q;
+					q.vertices[0].x = v0w.real();
+					q.vertices[0].y = v0w.imag();
+					q.vertices[1].x = v1w.real();
+					q.vertices[1].y = v1w.imag();
+					q.vertices[2].x = v2w.real();
+					q.vertices[2].y = v2w.imag();
+					q.vertices[3].x = v3w.real();
+					q.vertices[3].y = v3w.imag();
+
+
+					glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+					vector<glm::vec3> points;
+					points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
+					points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0));
+					points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
+					points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
+
+					quad qp;
+					qp.vertices[0] = points[0];
+					qp.vertices[1] = points[1];
+					qp.vertices[2] = points[2];
+					qp.vertices[3] = points[3];
+
+					bool inside = point_in_polygon(quad_centre, points);
+
+					if (inside)
+						selected_indices.push_back(index);
+
+				}
+			}
+		}
+
+		for (size_t i = 0; i < tiles_per_dimension; i++)
+		{
+			for (size_t j = 0; j < tiles_per_dimension; j++)
+			{
+				size_t index = i * tiles_per_dimension + j;
+
+				if (selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
+				{	
+					const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+					const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+
+					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+
+					v0w.real(v0w.real() * zoom_factor);
+					v0w.imag(v0w.imag() * zoom_factor);
+					v1w.real(v1w.real() * zoom_factor);
+					v1w.imag(v1w.imag() * zoom_factor);
+					v2w.real(v2w.real() * zoom_factor);
+					v2w.imag(v2w.imag() * zoom_factor);
+					v3w.real(v3w.real() * zoom_factor);
+					v3w.imag(v3w.imag() * zoom_factor);
+
+					quad q;
+					q.vertices[0].x = v0w.real();
+					q.vertices[0].y = v0w.imag();
+					q.vertices[1].x = v1w.real();
+					q.vertices[1].y = v1w.imag();
+					q.vertices[2].x = v2w.real();
+					q.vertices[2].y = v2w.imag();
+					q.vertices[3].x = v3w.real();
+					q.vertices[3].y = v3w.imag();
+
+					draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+				}
 			}
 		}
 
