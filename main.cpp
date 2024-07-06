@@ -248,6 +248,8 @@ public:
 	int tile_size;
 	ImVec2 uv_min;
 	ImVec2 uv_max;
+
+	quad q;
 };
 
 int tiles_per_dimension = 20;
@@ -320,7 +322,7 @@ bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
 
 
 
-bool draw_textured_quad(bool draw_outline, glm::vec3 outline_colour, bool quit_upon_collision, int mouse_x, int mouse_y, vector<quad>& quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
+bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vector<quad>& quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
 	static GLuint vao = 0, vbo = 0, ibo = 0;
 
@@ -422,58 +424,6 @@ bool draw_textured_quad(bool draw_outline, glm::vec3 outline_colour, bool quit_u
 
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-	//if (draw_outline)
-	//{
-	//	glUseProgram(line_shader.get_program());
-
-	//	glUniform3f(uniforms.line_shader_uniforms.colour, 0.0, 0.5, 1.0);
-	//	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
-	//	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
-	//	glUniform1f(uniforms.line_shader_uniforms.line_thickness, 4.0);
-
-	//	GLuint components_per_vertex = 3;
-	//	GLuint components_per_position = 3;
-
-	//	GLuint axis_buffer;
-
-	//	glGenBuffers(1, &axis_buffer);
-
-	//	vector<GLfloat> flat_data;
-	//	flat_data.push_back(v0ndc.real());
-	//	flat_data.push_back(v0ndc.imag());
-	//	flat_data.push_back(0.0f);
-
-	//	flat_data.push_back(v1ndc.real());
-	//	flat_data.push_back(v1ndc.imag());
-	//	flat_data.push_back(0.0f);
-
-	//	flat_data.push_back(v2ndc.real());
-	//	flat_data.push_back(v2ndc.imag());
-	//	flat_data.push_back(0.0f);
-
-	//	flat_data.push_back(v3ndc.real());
-	//	flat_data.push_back(v3ndc.imag());
-	//	flat_data.push_back(0.0f);
-
-	//	GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
-
-	//	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
-	//	glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
-
-	//	glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
-	//	glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
-	//		components_per_position,
-	//		GL_FLOAT,
-	//		GL_FALSE,
-	//		components_per_vertex * sizeof(GLfloat),
-	//		NULL);
-
-	//	glDrawArrays(GL_LINE_LOOP, 0, num_vertices);
-
-	//	glDeleteBuffers(1, &axis_buffer);
-
-
-	//}
 
 
 
@@ -481,7 +431,7 @@ bool draw_textured_quad(bool draw_outline, glm::vec3 outline_colour, bool quit_u
 }
 
 
-void draw_line_loop(int win_width, int win_height, float line_thickness, quad q)
+void draw_quad_line_loop(int win_width, int win_height, float line_thickness, quad q)
 {
 	glUseProgram(line_shader.get_program());
 
@@ -701,6 +651,14 @@ int main(int, char**)
 	ImVec2 selected_start;
 	ImVec2 selected_end;
 
+#define TOOL_PAINT 0
+#define TOOL_SELECT 1
+#define TOOL_SELECT_ADD 2
+#define TOOL_SELECT_SUBTRACT 3
+
+	static int tool = 0;
+
+
 
 	while (!done)
 	{
@@ -737,7 +695,7 @@ int main(int, char**)
 				}
 			}
 
-			if (event.type == SDL_MOUSEBUTTONUP)
+			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -803,17 +761,11 @@ int main(int, char**)
 
 
 
-		#define TOOL_PAINT 0
-		#define TOOL_SELECT 1
-		#define TOOL_SELECT_ADD 2
-		#define TOOL_SELECT_SUBTRACT 3
-
 		ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
 		if (ImGui::IsWindowHovered())
 			hovered = true;
 
-		static int tool = 0;
 
 		ImGui::RadioButton("Paint", &tool, TOOL_PAINT);
 		ImGui::RadioButton("Select", &tool, TOOL_SELECT);
@@ -986,14 +938,7 @@ int main(int, char**)
 			ImGui::ResetMouseDragDelta();
 		}
 
-
-
-
-
-
-
-
-		if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);
@@ -1055,7 +1000,7 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					inside = draw_textured_quad(false, glm::vec3(0, 0, 0), true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+					inside = draw_textured_quad(true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 
 					if (inside)
 					{
@@ -1182,42 +1127,13 @@ int main(int, char**)
 				int x, y;
 				SDL_GetMouseState(&x, &y);
 
-				bool inside = draw_textured_quad(false, glm::vec3(0, 0.5, 1.0), true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+				bool inside = draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 
-				if (inside)
-				{
-					draw_textured_quad(false, glm::vec3(0, 0.5, 1.0), false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
-					//draw_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, quads[0]);
-				}
-				else
-				{
-					draw_textured_quad(false, glm::vec3(0, 0.5, 1.0), false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
-				}
+				//	draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+				//}
 			}
 		}
 
-		// Draw selected outline
-		if (tool == TOOL_SELECT && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-		{
-			quad q;
-
-			complex<float> v0w(static_cast<float>(selected_start.x), static_cast<float>(selected_start.y));
-			complex<float> v1w(static_cast<float>(selected_start.x), static_cast<float>(selected_end.y));
-			complex<float> v2w(static_cast<float>(selected_end.x), static_cast<float>(selected_end.y));
-			complex<float> v3w(static_cast<float>(selected_end.x), static_cast<float>(selected_start.y));
-
-			q.vertices[0].x = v0w.real();
-			q.vertices[0].y = v0w.imag();
-			q.vertices[1].x = v1w.real();
-			q.vertices[1].y = v1w.imag();
-			q.vertices[2].x = v2w.real();
-			q.vertices[2].y = v2w.imag();
-			q.vertices[3].x = v3w.real();
-			q.vertices[3].y = v3w.imag();
-
-			draw_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-
-		}
 
 
 		for (size_t i = 0; i < tiles_per_dimension; i++)
@@ -1225,6 +1141,49 @@ int main(int, char**)
 			for (size_t j = 0; j < tiles_per_dimension; j++)
 			{
 				size_t index = i * tiles_per_dimension + j;
+
+				const float x = ( (image_anchor.x) + int(i) * background_tiles[index].tile_size);
+				const float y = ( (image_anchor.y) + int(j) * background_tiles[index].tile_size);
+
+				complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+				complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+				complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+				complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+
+				v0w.real(v0w.real()* zoom_factor);
+				v0w.imag(v0w.imag()* zoom_factor);
+				v1w.real(v1w.real()* zoom_factor);
+				v1w.imag(v1w.imag()* zoom_factor);
+				v2w.real(v2w.real()* zoom_factor);
+				v2w.imag(v2w.imag()* zoom_factor);
+				v3w.real(v3w.real()* zoom_factor);
+				v3w.imag(v3w.imag()* zoom_factor);
+
+				quad q;
+				q.vertices[0].x = v0w.real();
+				q.vertices[0].y =  v0w.imag();
+				q.vertices[1].x = v1w.real();
+				q.vertices[1].y =  v1w.imag();
+				q.vertices[2].x = v2w.real();
+				q.vertices[2].y = v2w.imag();
+				q.vertices[3].x = v3w.real();
+				q.vertices[3].y = v3w.imag();
+
+
+				glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+				vector<glm::vec3> points;
+				points.push_back(glm::vec3(selected_start.x, selected_start.y, 0)*zoom_factor);
+				points.push_back(glm::vec3(selected_start.x, selected_end.y, 0)* zoom_factor);
+				points.push_back(glm::vec3(selected_end.x,   selected_end.y, 0)* zoom_factor);
+				points.push_back(glm::vec3(selected_end.x,   selected_start.y, 0)*zoom_factor);
+
+				bool inside = point_in_polygon(quad_centre, points);
+					
+				if(inside)
+					draw_quad_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+
 
 				//if (selected_indices.end() == std::find(selected_indices.begin(), selected_indices.end(), index))
 				//	continue;
@@ -1249,7 +1208,29 @@ int main(int, char**)
 			}
 		}
 
+		
+		// Draw selected outline
+		if (tool == TOOL_SELECT && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		{
+			quad q;
 
+			complex<float> v0w(static_cast<float>(selected_start.x), static_cast<float>(selected_start.y));
+			complex<float> v1w(static_cast<float>(selected_start.x), static_cast<float>(selected_end.y));
+			complex<float> v2w(static_cast<float>(selected_end.x), static_cast<float>(selected_end.y));
+			complex<float> v3w(static_cast<float>(selected_end.x), static_cast<float>(selected_start.y));
+
+			q.vertices[0].x = v0w.real();
+			q.vertices[0].y = v0w.imag();
+			q.vertices[1].x = v1w.real();
+			q.vertices[1].y = v1w.imag();
+			q.vertices[2].x = v2w.real();
+			q.vertices[2].y = v2w.imag();
+			q.vertices[3].x = v3w.real();
+			q.vertices[3].y = v3w.imag();
+
+			draw_quad_line_loop((int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+		}
 
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
