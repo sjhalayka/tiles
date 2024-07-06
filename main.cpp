@@ -651,6 +651,8 @@ int main(int, char**)
 	ImVec2 selected_start;
 	ImVec2 selected_end;
 
+
+
 #define TOOL_PAINT 0
 #define TOOL_SELECT 1
 #define TOOL_SELECT_ADD 2
@@ -698,10 +700,7 @@ int main(int, char**)
 				for (size_t i = 0; i < prev_tools.size(); i++)
 				{
 					if (prev_tools[i] != TOOL_PAN)
-					{
 						tool = prev_tools[i];
-						//break;
-					}
 				}
 
 				prev_tools.clear();
@@ -1266,17 +1265,14 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 					points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
 					points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
 
-					quad qp;
-					qp.vertices[0] = points[0];
-					qp.vertices[1] = points[1];
-					qp.vertices[2] = points[2];
-					qp.vertices[3] = points[3];
-
-					bool inside = point_in_polygon(quad_centre, points);
-
-					if (inside)
+					if (point_in_polygon(quad_centre, points) ||
+						point_in_polygon(q.vertices[0], points) ||
+						point_in_polygon(q.vertices[1], points) ||
+						point_in_polygon(q.vertices[2], points) ||
+						point_in_polygon(q.vertices[3], points))
+					{
 						selected_indices.push_back(index);
-
+					}
 				}
 			}
 		}
