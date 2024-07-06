@@ -707,7 +707,7 @@ int main(int, char**)
 			}
 
 
-
+				
 
 
 			 if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
@@ -976,6 +976,8 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 			SDL_GetMouseState(&x, &y);
 
 			selected_end = ImVec2((float)x, (float)y);
+
+
 		}
 
 
@@ -1218,9 +1220,11 @@ if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_L
 
 
 
-		if (make_selection && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+		if (tool == TOOL_SELECT && make_selection && !hovered)// && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			make_selection = false;
+
+
 			selected_indices.clear();
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
