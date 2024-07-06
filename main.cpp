@@ -687,7 +687,7 @@ int main(int, char**)
 			if (event.type == SDL_MOUSEWHEEL)
 				last_mousewheel = (float)event.wheel.y;
 
-			
+			prev_tools.push_back(tool);
 
 			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_SPACE)
 			{
@@ -700,7 +700,7 @@ int main(int, char**)
 					if (prev_tools[i] != TOOL_PAN)
 					{
 						tool = prev_tools[i];
-						break;
+						//break;
 					}
 				}
 
