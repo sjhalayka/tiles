@@ -655,10 +655,11 @@ int main(int, char**)
 
 
 #define TOOL_PAINT 0
-#define TOOL_SELECT 1
-#define TOOL_SELECT_ADD 2
-#define TOOL_SELECT_SUBTRACT 3
-#define TOOL_PAN 4
+#define TOOL_PAINT_SQUARE 1
+#define TOOL_SELECT 2
+#define TOOL_SELECT_ADD 3
+#define TOOL_SELECT_SUBTRACT 4
+#define TOOL_PAN 5
 
 	int tool = 0;
 
@@ -799,7 +800,8 @@ int main(int, char**)
 			hovered = true;
 
 
-		ImGui::RadioButton("Paint", &tool, TOOL_PAINT);
+		ImGui::RadioButton("Circle Paint", &tool, TOOL_PAINT);
+		ImGui::RadioButton("Square Paint", &tool, TOOL_PAINT_SQUARE);
 		ImGui::RadioButton("Select", &tool, TOOL_SELECT);
 		ImGui::RadioButton("Select Add", &tool, TOOL_SELECT_ADD);
 		ImGui::RadioButton("Select Subtract", &tool, TOOL_SELECT_SUBTRACT);
@@ -981,7 +983,7 @@ int main(int, char**)
 
 
 		// Paint using left mouse button
-		if (tool == TOOL_PAINT && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
+		if ((tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE) && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
 		{
 			vector<float> weights;
 			float total = 0;
@@ -1105,14 +1107,19 @@ int main(int, char**)
 
 						int square_brush_size = 4;
 
-						glm::vec3 a((float)i, (float)j, 0);
-						glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
+						if (tool == TOOL_PAINT)
+						{
+							glm::vec3 a((float)i, (float)j, 0);
+							glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
 
-						if (distance(a, b) <= (square_brush_size * 0.5))// && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
-							to_draw.insert(index);
-
-						//if (abs(i - centre_index.x) <= (square_brush_size * 0.5) && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
-						//	to_draw.insert(index);
+							if (distance(a, b) <= (square_brush_size * 0.5))// && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
+								to_draw.insert(index);
+						}
+						else if (tool == TOOL_PAINT_SQUARE)
+						{
+							if (abs(i - centre_index.x) <= (square_brush_size * 0.5) && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
+								to_draw.insert(index);
+						}
 					}
 				}
 
