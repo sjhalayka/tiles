@@ -1455,7 +1455,7 @@ int main(int, char**)
 					q.vertices[3].x = v3w.real();
 					q.vertices[3].y = v3w.imag();
 
-					draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 1.0, q);
+					draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 2.0, q);
 				}
 			}
 		}
@@ -1483,12 +1483,29 @@ int main(int, char**)
 			draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 		}
 
-		int x, y;
-		SDL_GetMouseState(&x, &y);
-		glm::vec3 pos(x, (int)io.DisplaySize.y - y, 0);
+		if (tool == TOOL_PAINT)
+		{
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			glm::vec3 pos(x, (int)io.DisplaySize.y - y, 0);
 
-		draw_circle_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, (float)brush_size*block_size*0.5f, 20);
+			draw_circle_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, (float)brush_size * block_size * 0.5f, 20);
+		}
+		else if (tool == TOOL_PAINT_SQUARE)
+		{
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+			glm::vec3 pos(x, (int)io.DisplaySize.y - y, 0);
 
+			quad q;
+
+			//q.vertices[0].x = v0w.real();
+			//q.vertices[0].y = v0w.imag();
+
+			draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+
+		}
 
 
 
