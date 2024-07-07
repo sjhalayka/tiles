@@ -1489,24 +1489,23 @@ int main(int, char**)
 			SDL_GetMouseState(&x, &y);
 			glm::vec3 pos(x, (int)io.DisplaySize.y - y, 0);
 
-			draw_circle_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, (float)brush_size * block_size * 0.5f, 20);
+			draw_circle_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
 		}
 		else if (tool == TOOL_PAINT_SQUARE)
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);
-			glm::vec3 pos(x, (int)io.DisplaySize.y - y, 0);
 
 			quad q;
 
-			q.vertices[0].x = x - (float)brush_size * block_size * 0.5f;
-			q.vertices[0].y = (int)io.DisplaySize.y - y - (float)brush_size * block_size * 0.5f;
-			q.vertices[1].x = x - (float)brush_size * block_size * 0.5f;
-			q.vertices[1].y = (int)io.DisplaySize.y - y + (float)brush_size * block_size * 0.5f;
-			q.vertices[2].x = x + (float)brush_size * block_size * 0.5f;
-			q.vertices[2].y = (int)io.DisplaySize.y - y + (float)brush_size * block_size * 0.5f;
-			q.vertices[3].x = x + (float)brush_size * block_size * 0.5f;
-			q.vertices[3].y = (int)io.DisplaySize.y - y - (float)brush_size * block_size * 0.5f;
+			q.vertices[0].x = x - zoom_factor * (float)brush_size * block_size * 0.5f;
+			q.vertices[0].y = (int)io.DisplaySize.y - y - zoom_factor * (float)brush_size * block_size * 0.5f;
+			q.vertices[1].x = x - zoom_factor * (float)brush_size * block_size * 0.5f;
+			q.vertices[1].y = (int)io.DisplaySize.y - y + zoom_factor * (float)brush_size * block_size * 0.5f;
+			q.vertices[2].x = x + zoom_factor * (float)brush_size * block_size * 0.5f;
+			q.vertices[2].y = (int)io.DisplaySize.y - y + zoom_factor * (float)brush_size * block_size * 0.5f;
+			q.vertices[3].x = x + zoom_factor * (float)brush_size * block_size * 0.5f;
+			q.vertices[3].y = (int)io.DisplaySize.y - y - zoom_factor*(float)brush_size * block_size * 0.5f;
 
 			draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 		}
