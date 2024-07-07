@@ -45,6 +45,8 @@ using namespace cv;
 
 vertex_fragment_shader ortho_shader;
 vertex_geometry_fragment_shader line_shader;
+vertex_geometry_fragment_shader circle_shader;
+
 
 struct
 {
@@ -64,6 +66,15 @@ struct
 		GLint line_thickness;
 	}
 	line_shader_uniforms;
+
+	struct
+	{
+		GLint colour;
+		GLint img_width;
+		GLint img_height;
+		GLint line_thickness;
+	}
+	circle_shader_uniforms;
 }
 uniforms;
 
@@ -503,6 +514,66 @@ void draw_quad_line_loop(glm::vec3 colour, int win_width, int win_height, float 
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, float line_thickness, glm::vec3 centre_point)
+{
+	glUseProgram(circle_shader.get_program());
+
+	glUniform3f(uniforms.circle_shader_uniforms.colour, colour.x, colour.y, colour.z);
+	glUniform1i(uniforms.circle_shader_uniforms.img_width, win_width);
+	glUniform1i(uniforms.circle_shader_uniforms.img_height, win_height);
+	glUniform1f(uniforms.circle_shader_uniforms.line_thickness, 4.0);
+
+	GLuint components_per_vertex = 3;
+	GLuint components_per_position = 3;
+
+	GLuint axis_buffer;
+
+	glGenBuffers(1, &axis_buffer);
+
+
+	complex<float> v0w(static_cast<float>(centre_point.x), static_cast<float>(centre_point.y));
+
+	//v0w.imag(win_height - v0w.imag());
+
+	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
+
+
+
+	vector<GLfloat> flat_data;
+	flat_data.push_back(v0ndc.real());
+	flat_data.push_back(v0ndc.imag());
+	flat_data.push_back(0.0f);
+
+	GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
+
+	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
+	glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(glGetAttribLocation(circle_shader.get_program(), "position"));
+	glVertexAttribPointer(glGetAttribLocation(circle_shader.get_program(), "position"),
+		components_per_position,
+		GL_FLOAT,
+		GL_FALSE,
+		components_per_vertex * sizeof(GLfloat),
+		NULL);
+
+	glDrawArrays(GL_LINE_LOOP, 0, num_vertices);
+
+	glDeleteBuffers(1, &axis_buffer);
+}
+
+
 // Main code
 int main(int, char**)
 {
@@ -563,6 +634,16 @@ int main(int, char**)
 		return false;
 	}
 
+
+
+
+	if (false == circle_shader.init("circles.vs.glsl", "circles.gs.glsl", "circles.fs.glsl"))
+	{
+		cout << "Could not load circle shader" << endl;
+		return false;
+	}
+
+
 	uniforms.ortho_shader_uniforms.tex = glGetUniformLocation(ortho_shader.get_program(), "tex");
 	uniforms.ortho_shader_uniforms.viewport_width = glGetUniformLocation(ortho_shader.get_program(), "viewport_width");
 	uniforms.ortho_shader_uniforms.viewport_height = glGetUniformLocation(ortho_shader.get_program(), "viewport_height");
@@ -571,6 +652,14 @@ int main(int, char**)
 	uniforms.line_shader_uniforms.img_width = glGetUniformLocation(line_shader.get_program(), "img_width");
 	uniforms.line_shader_uniforms.img_height = glGetUniformLocation(line_shader.get_program(), "img_height");
 	uniforms.line_shader_uniforms.line_thickness = glGetUniformLocation(line_shader.get_program(), "line_thickness");
+
+
+	uniforms.circle_shader_uniforms.colour = glGetUniformLocation(circle_shader.get_program(), "colour");
+	uniforms.circle_shader_uniforms.img_width = glGetUniformLocation(circle_shader.get_program(), "img_width");
+	uniforms.circle_shader_uniforms.img_height = glGetUniformLocation(circle_shader.get_program(), "img_height");
+	uniforms.circle_shader_uniforms.line_thickness = glGetUniformLocation(circle_shader.get_program(), "line_thickness");
+
+
 
 
 	// Setup Dear ImGui context
@@ -1112,7 +1201,7 @@ int main(int, char**)
 							glm::vec3 a((float)i, (float)j, 0);
 							glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
 
-							if (distance(a, b) <= (square_brush_size * 0.5))// && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
+							if (distance(a, b) <= (square_brush_size * 0.5))
 								to_draw.insert(index);
 						}
 						else if (tool == TOOL_PAINT_SQUARE)
