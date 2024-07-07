@@ -31,6 +31,7 @@
 #include <vector>
 #include <algorithm>	
 #include <random>
+#include <set>
 using namespace std;
 
 
@@ -647,7 +648,7 @@ int main(int, char**)
 
 	vector<size_t> prev_painted_indices;
 
-	vector<size_t> selected_indices; // use a set instead, for faster lookup
+	set<size_t> selected_indices; // use a set instead, for faster lookup
 	ImVec2 selected_start;
 	ImVec2 selected_end;
 
@@ -710,7 +711,7 @@ int main(int, char**)
 
 
 
-			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD) && event.type == SDL_MOUSEBUTTONDOWN)
+			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && event.type == SDL_MOUSEBUTTONDOWN)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -721,7 +722,7 @@ int main(int, char**)
 					selected_end = ImVec2((float)x, (float)y);
 				}
 			}
-			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD) && event.type == SDL_MOUSEBUTTONUP)
+			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && event.type == SDL_MOUSEBUTTONUP)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -1217,7 +1218,7 @@ int main(int, char**)
 
 
 
-		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD) && make_selection && !hovered)// && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && make_selection && !hovered)// && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			make_selection = false;
 
@@ -1272,8 +1273,10 @@ int main(int, char**)
 						point_in_polygon(q.vertices[2], points) ||
 						point_in_polygon(q.vertices[3], points))
 					{
-						if(selected_indices.end() == std::find(selected_indices.begin(), selected_indices.end(), index))
-							selected_indices.push_back(index);
+						if (tool == TOOL_SELECT_SUBTRACT)
+							selected_indices.erase(index);
+						else
+							selected_indices.insert(index);
 					}
 				}
 			}
@@ -1321,7 +1324,7 @@ int main(int, char**)
 
 
 		// Draw selected outline
-		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD) && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 		{
 			quad q;
 
