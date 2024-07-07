@@ -1105,8 +1105,14 @@ int main(int, char**)
 
 						int square_brush_size = 4;
 
-						if (abs(i - centre_index.x) <= (square_brush_size * 0.5) && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
+						glm::vec3 a((float)i, (float)j, 0);
+						glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
+
+						if (distance(a, b) <= (square_brush_size * 0.5))// && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
 							to_draw.insert(index);
+
+						//if (abs(i - centre_index.x) <= (square_brush_size * 0.5) && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
+						//	to_draw.insert(index);
 					}
 				}
 
@@ -1366,7 +1372,6 @@ int main(int, char**)
 			q.vertices[3].y = v3w.imag();
 
 			draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-
 		}
 
 
