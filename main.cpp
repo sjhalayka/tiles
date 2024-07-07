@@ -66,15 +66,6 @@ struct
 		GLint line_thickness;
 	}
 	line_shader_uniforms;
-
-	struct
-	{
-		GLint colour;
-		GLint img_width;
-		GLint img_height;
-		GLint line_thickness;
-	}
-	circle_shader_uniforms;
 }
 uniforms;
 
@@ -661,11 +652,7 @@ int main(int, char**)
 		return false;
 	}
 
-	if (false == circle_shader.init("circles.vs.glsl", "circles.gs.glsl", "circles.fs.glsl"))
-	{
-		cout << "Could not load circle shader" << endl;
-		return false;
-	}
+
 
 
 	uniforms.ortho_shader_uniforms.tex = glGetUniformLocation(ortho_shader.get_program(), "tex");
@@ -676,12 +663,6 @@ int main(int, char**)
 	uniforms.line_shader_uniforms.img_width = glGetUniformLocation(line_shader.get_program(), "img_width");
 	uniforms.line_shader_uniforms.img_height = glGetUniformLocation(line_shader.get_program(), "img_height");
 	uniforms.line_shader_uniforms.line_thickness = glGetUniformLocation(line_shader.get_program(), "line_thickness");
-
-	uniforms.circle_shader_uniforms.colour = glGetUniformLocation(circle_shader.get_program(), "colour");
-	uniforms.circle_shader_uniforms.img_width = glGetUniformLocation(circle_shader.get_program(), "img_width");
-	uniforms.circle_shader_uniforms.img_height = glGetUniformLocation(circle_shader.get_program(), "img_height");
-	uniforms.circle_shader_uniforms.line_thickness = glGetUniformLocation(circle_shader.get_program(), "line_thickness");
-
 
 
 
@@ -774,6 +755,9 @@ int main(int, char**)
 #define TOOL_PAN 5
 
 	int tool = 0;
+
+	int brush_size = 4;
+
 
 	vector<int> prev_tools;
 
@@ -917,6 +901,13 @@ int main(int, char**)
 		ImGui::RadioButton("Select", &tool, TOOL_SELECT);
 		ImGui::RadioButton("Select Add", &tool, TOOL_SELECT_ADD);
 		ImGui::RadioButton("Select Subtract", &tool, TOOL_SELECT_SUBTRACT);
+
+		static char str1[128] = "5";
+		ImGui::InputText("Brush size", str1, IM_ARRAYSIZE(str1));
+
+		istringstream iss1(str1);
+		iss1 >> brush_size;
+
 
 		ImGui::End();
 
@@ -1217,19 +1208,18 @@ int main(int, char**)
 						if (found_prev_index)
 							continue;
 
-						int square_brush_size = 4;
 
 						if (tool == TOOL_PAINT)
 						{
 							glm::vec3 a((float)i, (float)j, 0);
 							glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
 
-							if (distance(a, b) <= (square_brush_size * 0.5))
+							if (distance(a, b) <= (brush_size * 0.5))
 								to_draw.insert(index);
 						}
 						else if (tool == TOOL_PAINT_SQUARE)
 						{
-							if (abs(i - centre_index.x) <= (square_brush_size * 0.5) && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
+							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
 								to_draw.insert(index);
 						}
 					}
@@ -1497,7 +1487,7 @@ int main(int, char**)
 		SDL_GetMouseState(&x, &y);
 		glm::vec3 pos(x, (int)io.DisplaySize.y - y, 0);
 
-		draw_circle_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, 20, 10);
+		draw_circle_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, (float)brush_size*block_size*0.5f, 20);
 
 
 
