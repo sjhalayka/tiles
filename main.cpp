@@ -1499,12 +1499,16 @@ int main(int, char**)
 
 			quad q;
 
-			//q.vertices[0].x = v0w.real();
-			//q.vertices[0].y = v0w.imag();
+			q.vertices[0].x = x - (float)brush_size * block_size * 0.5f;
+			q.vertices[0].y = (int)io.DisplaySize.y - y - (float)brush_size * block_size * 0.5f;
+			q.vertices[1].x = x - (float)brush_size * block_size * 0.5f;
+			q.vertices[1].y = (int)io.DisplaySize.y - y + (float)brush_size * block_size * 0.5f;
+			q.vertices[2].x = x + (float)brush_size * block_size * 0.5f;
+			q.vertices[2].y = (int)io.DisplaySize.y - y + (float)brush_size * block_size * 0.5f;
+			q.vertices[3].x = x + (float)brush_size * block_size * 0.5f;
+			q.vertices[3].y = (int)io.DisplaySize.y - y - (float)brush_size * block_size * 0.5f;
 
-			draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-
-
+			draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 		}
 
 
