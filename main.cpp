@@ -710,7 +710,7 @@ int main(int, char**)
 
 
 
-			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONDOWN)
+			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD) && event.type == SDL_MOUSEBUTTONDOWN)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -721,7 +721,7 @@ int main(int, char**)
 					selected_end = ImVec2((float)x, (float)y);
 				}
 			}
-			if (tool == TOOL_SELECT && event.type == SDL_MOUSEBUTTONUP)
+			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD) && event.type == SDL_MOUSEBUTTONUP)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -969,14 +969,12 @@ int main(int, char**)
 		}
 
 
-		if (tool == TOOL_SELECT && !hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
+		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
 		{
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
 			selected_end = ImVec2((float)x, (float)y);
-
-
 		}
 
 
@@ -1219,11 +1217,11 @@ int main(int, char**)
 
 
 
-		if (tool == TOOL_SELECT && make_selection && !hovered)// && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD) && make_selection && !hovered)// && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			make_selection = false;
 
-
+			if(tool == TOOL_SELECT )
 			selected_indices.clear();
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
@@ -1274,7 +1272,8 @@ int main(int, char**)
 						point_in_polygon(q.vertices[2], points) ||
 						point_in_polygon(q.vertices[3], points))
 					{
-						selected_indices.push_back(index);
+						if(selected_indices.end() == std::find(selected_indices.begin(), selected_indices.end(), index))
+							selected_indices.push_back(index);
 					}
 				}
 			}
@@ -1322,7 +1321,7 @@ int main(int, char**)
 
 
 		// Draw selected outline
-		if (tool == TOOL_SELECT && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD) && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 		{
 			quad q;
 
