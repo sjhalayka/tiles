@@ -15,6 +15,10 @@ float u_thickness = line_thickness;
 
 void main()
 {
+
+
+
+
     vec4 p1 = gl_in[0].gl_Position;
     vec4 p2 = gl_in[1].gl_Position;
     vec2 dir    = normalize((p2.xy/p2.w - p1.xy/p1.w) * u_viewportSize);

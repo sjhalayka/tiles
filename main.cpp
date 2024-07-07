@@ -450,7 +450,7 @@ void draw_quad_line_loop(glm::vec3 colour, int win_width, int win_height, float 
 	glUniform3f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z);
 	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
 	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
-	glUniform1f(uniforms.line_shader_uniforms.line_thickness, 4.0);
+	glUniform1f(uniforms.line_shader_uniforms.line_thickness, line_thickness);
 
 	GLuint components_per_vertex = 3;
 	GLuint components_per_position = 3;
@@ -518,21 +518,51 @@ void draw_quad_line_loop(glm::vec3 colour, int win_width, int win_height, float 
 
 
 
-
-
-
-
-
-
-
-void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, float line_thickness, glm::vec3 centre_point)
+void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, float line_thickness, glm::vec3 centre_point, float radius, float steps)
 {
-	glUseProgram(circle_shader.get_program());
+	static const float pi = 4.0f * atanf(1.0f);
 
-	glUniform3f(uniforms.circle_shader_uniforms.colour, colour.x, colour.y, colour.z);
-	glUniform1i(uniforms.circle_shader_uniforms.img_width, win_width);
-	glUniform1i(uniforms.circle_shader_uniforms.img_height, win_height);
-	glUniform1f(uniforms.circle_shader_uniforms.line_thickness, 4.0);
+	vector<complex<float>> circle_points;
+
+
+	float slice = 2.0f * pi / steps;
+
+	for (int i = 0; i < steps; i++)
+	{
+		float angle = slice * i;
+		float x = radius * cos(angle);
+		float y = radius * sin(angle);
+
+		circle_points.push_back(complex<float>(x, y));
+	}
+
+
+	cout << circle_points.size() << endl;
+
+	vector<complex<float>> v_points;
+
+	for (int i = 0; i < circle_points.size(); i++)
+	{
+		complex<float> v(static_cast<float>(circle_points[i].real()), static_cast<float>(circle_points[i].imag()));
+		v_points.push_back(v);
+	}
+
+	vector<complex<float>> ndc_points;
+
+	for (int i = 0; i < v_points.size(); i++)
+	{
+		complex<float> ndc = get_ndc_coords_from_window_coords(win_width, win_height, v_points[i]);
+		ndc_points.push_back(ndc);
+	}
+
+
+
+	glUseProgram(line_shader.get_program());
+
+	glUniform3f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z);
+	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
+	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
+	glUniform1f(uniforms.line_shader_uniforms.line_thickness, line_thickness);
 
 	GLuint components_per_vertex = 3;
 	GLuint components_per_position = 3;
@@ -542,26 +572,23 @@ void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, floa
 	glGenBuffers(1, &axis_buffer);
 
 
-	complex<float> v0w(static_cast<float>(centre_point.x), static_cast<float>(centre_point.y));
-
-	//v0w.imag(win_height - v0w.imag());
-
-	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
-
-
-
 	vector<GLfloat> flat_data;
-	flat_data.push_back(v0ndc.real());
-	flat_data.push_back(v0ndc.imag());
-	flat_data.push_back(0.0f);
+
+	for (int i = 0; i < ndc_points.size(); i++)
+	{
+		flat_data.push_back(ndc_points[i].real());
+		flat_data.push_back(ndc_points[i].imag());
+		flat_data.push_back(0.0f);
+	}
+
 
 	GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
 
 	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
 	glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
 
-	glEnableVertexAttribArray(glGetAttribLocation(circle_shader.get_program(), "position"));
-	glVertexAttribPointer(glGetAttribLocation(circle_shader.get_program(), "position"),
+	glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
+	glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
 		components_per_position,
 		GL_FLOAT,
 		GL_FALSE,
@@ -572,6 +599,57 @@ void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, floa
 
 	glDeleteBuffers(1, &axis_buffer);
 }
+
+
+
+
+
+
+
+
+//
+//
+//void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, float line_thickness, glm::vec3 centre_point, float radius, float steps)
+//{
+//	glUseProgram(circle_shader.get_program());
+//
+//	glUniform3f(uniforms.circle_shader_uniforms.colour, colour.x, colour.y, colour.z);
+//	glUniform1i(uniforms.circle_shader_uniforms.img_width, win_width);
+//	glUniform1i(uniforms.circle_shader_uniforms.img_height, win_height);
+//	glUniform1f(uniforms.circle_shader_uniforms.line_thickness, line_thickness);
+//
+//	GLuint components_per_vertex = 3;
+//	GLuint components_per_position = 3;
+//
+//	GLuint axis_buffer;
+//
+//	glGenBuffers(1, &axis_buffer);
+//	
+//	complex<float> v0w(static_cast<float>(centre_point.x), static_cast<float>(centre_point.y));
+//	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
+//
+//	vector<GLfloat> flat_data;
+//	flat_data.push_back(v0ndc.real());
+//	flat_data.push_back(v0ndc.imag());
+//	flat_data.push_back(0.0f);
+//
+//	GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
+//
+//	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
+//	glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(glGetAttribLocation(circle_shader.get_program(), "position"));
+//	glVertexAttribPointer(glGetAttribLocation(circle_shader.get_program(), "position"),
+//		components_per_position,
+//		GL_FLOAT,
+//		GL_FALSE,
+//		components_per_vertex * sizeof(GLfloat),
+//		NULL);
+//
+//	glDrawArrays(GL_POINTS, 0, num_vertices);
+//
+//	glDeleteBuffers(1, &axis_buffer);
+//}
 
 
 // Main code
@@ -621,7 +699,6 @@ int main(int, char**)
 		return false;
 	}
 
-
 	if (false == ortho_shader.init("ortho.vs.glsl", "ortho.fs.glsl"))
 	{
 		cout << "Could not load ortho shader" << endl;
@@ -633,9 +710,6 @@ int main(int, char**)
 		cout << "Could not load line shader" << endl;
 		return false;
 	}
-
-
-
 
 	if (false == circle_shader.init("circles.vs.glsl", "circles.gs.glsl", "circles.fs.glsl"))
 	{
@@ -1469,6 +1543,19 @@ int main(int, char**)
 
 			draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 		}
+
+		int x, y;
+		SDL_GetMouseState(&x, &y);
+		glm::vec3 pos(x, y, 0);
+
+		draw_circle_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, 20, 10);
+
+
+
+
+
+
+
 
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
