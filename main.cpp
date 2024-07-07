@@ -1245,7 +1245,7 @@ int main(int, char**)
 		{
 			make_selection = false;
 
-			if (tool == TOOL_SELECT && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
+			if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
 				selected_indices.clear();
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
