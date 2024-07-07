@@ -647,7 +647,7 @@ int main(int, char**)
 
 	vector<size_t> prev_painted_indices;
 
-	vector<size_t> selected_indices;
+	vector<size_t> selected_indices; // use a set instead, for faster lookup
 	ImVec2 selected_start;
 	ImVec2 selected_end;
 
