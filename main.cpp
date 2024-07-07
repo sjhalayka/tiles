@@ -722,6 +722,7 @@ int main(int, char**)
 					selected_end = ImVec2((float)x, (float)y);
 				}
 			}
+
 			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && event.type == SDL_MOUSEBUTTONUP)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
@@ -1122,9 +1123,6 @@ int main(int, char**)
 					if (to_draw.end() == find(to_draw.begin(), to_draw.end(), index))
 						continue;
 
-					float square_brush_size = 3;
-
-
 					size_t brush_in_use = 0;
 
 					const float r = distribution(generator);
@@ -1247,7 +1245,7 @@ int main(int, char**)
 		{
 			make_selection = false;
 
-			if (tool == TOOL_SELECT)
+			if (tool == TOOL_SELECT && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
 				selected_indices.clear();
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
