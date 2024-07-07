@@ -1094,9 +1094,13 @@ int main(int, char**)
 						if (found_prev_index)
 							continue;
 
-						const int square_brush_size = 4;
+						float square_brush_size = 2;
 
-						if (abs(centre_index.x - i) < (square_brush_size / 2) && abs(centre_index.y - j) < (square_brush_size / 2))
+
+						if (abs(centre_index.x - i) <= (square_brush_size * 0.5f) && abs(centre_index.y - j) <= (square_brush_size * 0.5))
+
+
+//						if (abs(centre_index.x - i) <= (square_brush_size * 0.5f) && abs(centre_index.y - j) <= (square_brush_size * 0.5))
 						{
 							size_t brush_in_use = 0;
 
@@ -1223,7 +1227,7 @@ int main(int, char**)
 			make_selection = false;
 
 			if(tool == TOOL_SELECT )
-			selected_indices.clear();
+				selected_indices.clear();
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
