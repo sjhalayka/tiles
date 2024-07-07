@@ -1006,6 +1006,8 @@ int main(int, char**)
 
 			vector<size_t> curr_painted_indices;
 
+			set<size_t> to_draw;
+
 			// Find brush centre
 			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
@@ -1026,6 +1028,8 @@ int main(int, char**)
 
 					if (found_prev_index)
 						continue;
+
+
 
 					vector<quad> quads;
 
@@ -1060,11 +1064,15 @@ int main(int, char**)
 							background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
 						}
 
+						to_draw.insert(index);
+
 						curr_painted_indices.push_back(index);
 
 						// Abort early
 						i = j = tiles_per_dimension;
 						break;
+
+
 					}
 				}
 			}
@@ -1094,44 +1102,57 @@ int main(int, char**)
 						if (found_prev_index)
 							continue;
 
-						float square_brush_size = 2;
+						int square_brush_size = 4;
 
-
-						if (abs(centre_index.x - i) <= (square_brush_size * 0.5f) && abs(centre_index.y - j) <= (square_brush_size * 0.5))
-
-
-//						if (abs(centre_index.x - i) <= (square_brush_size * 0.5f) && abs(centre_index.y - j) <= (square_brush_size * 0.5))
-						{
-							size_t brush_in_use = 0;
-
-							const float r = distribution(generator);
-
-							float sub_total = 0;
-
-							for (int k = 0; k < left_strings.size(); k++)
-							{
-								sub_total += weights[k];
-
-								if (r <= sub_total)
-								{
-									brush_in_use = k;
-									break;
-								}
-							}
-
-							curr_painted_indices.push_back(index);
-
-							if (selected_indices.size() == 0 || selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
-							{
-								background_tiles[index].uv_min = left_uv_mins[brush_in_use];
-								background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
-							}
-						}
+						if (abs(i - centre_index.x) <= (square_brush_size * 0.5) && abs(j - centre_index.y) <= (square_brush_size) * 0.5)// && !found_prev_index)
+							to_draw.insert(index);
 					}
 				}
 
 				prev_painted_indices = curr_painted_indices;
 			}
+
+
+			for (size_t i = 0; i < tiles_per_dimension; i++)
+			{
+				for (size_t j = 0; j < tiles_per_dimension; j++)
+				{
+					size_t index = i * tiles_per_dimension + j;
+
+					if (to_draw.end() == find(to_draw.begin(), to_draw.end(), index))
+						continue;
+
+					float square_brush_size = 3;
+
+
+					size_t brush_in_use = 0;
+
+					const float r = distribution(generator);
+
+					float sub_total = 0;
+
+					for (int k = 0; k < left_strings.size(); k++)
+					{
+						sub_total += weights[k];
+
+						if (r <= sub_total)
+						{
+							brush_in_use = k;
+							break;
+						}
+					}
+
+					curr_painted_indices.push_back(index);
+
+					if (selected_indices.size() == 0 || selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
+					{
+						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
+						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+					}
+				}
+			}
+
+			to_draw.clear();
 		}
 
 
@@ -1140,10 +1161,10 @@ int main(int, char**)
 
 
 
-		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Right, 0))
-		{
-			// draw using right brush
-		}
+		//if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Right, 0))
+		//{
+		//	// draw using right brush
+		//}
 
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
@@ -1226,7 +1247,7 @@ int main(int, char**)
 		{
 			make_selection = false;
 
-			if(tool == TOOL_SELECT )
+			if (tool == TOOL_SELECT)
 				selected_indices.clear();
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
