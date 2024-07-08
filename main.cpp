@@ -71,58 +71,15 @@ struct
 uniforms;
 
 
-
-
-class sortable_vertex_3
+bool operator< (const glm::vec3& lhs, const glm::vec3& rhs)
 {
-public:
-	inline sortable_vertex_3(void) : x(0.0f), y(0.0f), z(0.0f) { /*default constructor*/ }
-	inline sortable_vertex_3(const float src_x, const float src_y, const float src_z, const size_t src_index) : x(src_x), y(src_y), z(src_z) { /* custom constructor */ }
+	return glm::all(glm::lessThan(lhs, rhs));
+}
 
-	inline bool operator<(const sortable_vertex_3& right) const
-	{
-		if (right.x > x)
-			return true;
-		else if (right.x < x)
-			return false;
-
-		if (right.y > y)
-			return true;
-		else if (right.y < y)
-			return false;
-
-		if (right.z > z)
-			return true;
-		else if (right.z < z)
-			return false;
-
-		return false;
-	}
-
-	inline bool operator>(const sortable_vertex_3& right) const
-	{
-		if (right.x < x)
-			return true;
-		else if (right.x > x)
-			return false;
-
-		if (right.y < y)
-			return true;
-		else if (right.y > y)
-			return false;
-
-		if (right.z < z)
-			return true;
-		else if (right.z > z)
-			return false;
-
-		return false;
-	}
-
-
-	float x, y, z;
-};
-
+bool operator> (const glm::vec3& lhs, const glm::vec3& rhs)
+{
+	return glm::all(glm::greaterThan(lhs, rhs));
+}
 
 
 class sortable_line_segment
@@ -141,16 +98,14 @@ public:
 		else if (right.vertices[1] < vertices[1])
 			return false;
 
-
 		return false;
 	}
 
 	void sort(void)
 	{
-
 		if (vertices[1] < vertices[0])
 		{
-			sortable_vertex_3 tempv = vertices[1];
+			glm::vec3 tempv = vertices[1];
 			vertices[1] = vertices[0];
 			vertices[0] = tempv;
 		}
@@ -158,7 +113,7 @@ public:
 
 	}
 
-	sortable_vertex_3 vertices[2];
+	glm::vec3 vertices[2];
 };
 
 
