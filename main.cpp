@@ -1842,24 +1842,24 @@ int main(int, char**)
 					float half_width = -custom_brush1_img.cols / 2.0f;
 					float half_height = custom_brush1_img.rows / 2.0f;
 
-					q.vertices[0].x = x + block_size * i - block_size*0.5f;// custom_brush1_img.rows;
-					q.vertices[0].y = io.DisplaySize.y - y - block_size * j - block_size * 0.5f;//custom_brush1_img.cols;
-					q.vertices[1].x = x + block_size * i - block_size * 0.5f;// custom_brush1_img.rows;
-					q.vertices[1].y = io.DisplaySize.y - y - block_size * j + block_size * 0.5f;//custom_brush1_img.cols;
-					q.vertices[2].x = x + block_size * i + block_size * 0.5f;// custom_brush1_img.rows;
-					q.vertices[2].y = io.DisplaySize.y - y - block_size * j + block_size * 0.5f;//custom_brush1_img.cols;
-					q.vertices[3].x = x + block_size * i + block_size * 0.5f;// custom_brush1_img.rows;
-					q.vertices[3].y = io.DisplaySize.y - y - block_size * j - block_size * 0.5f;// custom_brush1_img.cols;
+					q.vertices[0].x = x + block_size * zoom_factor * i - block_size*0.5f*zoom_factor;// custom_brush1_img.rows;
+					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					//q.vertices[0].x += block_size;
-					//q.vertices[1].x += block_size;
-					//q.vertices[2].x += block_size;
-					//q.vertices[3].x += block_size;
+					q.vertices[0].x += block_size * 0.5;
+					q.vertices[1].x += block_size * 0.5;
+					q.vertices[2].x += block_size * 0.5;
+					q.vertices[3].x += block_size * 0.5;
 
-					//q.vertices[0].y -= block_size;
-					//q.vertices[1].y -= block_size;
-					//q.vertices[2].y -= block_size;
-					//q.vertices[3].y -= block_size;
+					q.vertices[0].y -= block_size * 0.5;
+					q.vertices[1].y -= block_size * 0.5;
+					q.vertices[2].y -= block_size * 0.5;
+					q.vertices[3].y -= block_size * 0.5;
 
 
 
