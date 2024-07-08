@@ -1737,6 +1737,15 @@ int main(int, char**)
 					q.vertices[3].y = half_height + io.DisplaySize.y - y - j - 1;// custom_brush1_img.cols;
 
 
+					//q.vertices[0].x = x + i - zoom_factor * block_size;
+					//q.vertices[0].y = (int)io.DisplaySize.y - y - j - zoom_factor * block_size;
+					//q.vertices[1].x = x + i - zoom_factor * block_size;
+					//q.vertices[1].y = (int)io.DisplaySize.y - y - j + zoom_factor * block_size;
+					//q.vertices[2].x = x + i + zoom_factor * block_size;
+					//q.vertices[2].y = (int)io.DisplaySize.y - y - j + zoom_factor * block_size;
+					//q.vertices[3].x = x + i + zoom_factor * block_size;
+					//q.vertices[3].y = (int)io.DisplaySize.y - y - j - zoom_factor * block_size;
+
 
 					if (colour == 255)
 						draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
