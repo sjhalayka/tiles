@@ -1695,7 +1695,7 @@ int main(int, char**)
 			q.vertices[2].x = x + zoom_factor * (float)brush_size * block_size * 0.5f;
 			q.vertices[2].y = (int)io.DisplaySize.y - y + zoom_factor * (float)brush_size * block_size * 0.5f;
 			q.vertices[3].x = x + zoom_factor * (float)brush_size * block_size * 0.5f;
-			q.vertices[3].y = (int)io.DisplaySize.y - y - zoom_factor*(float)brush_size * block_size * 0.5f;
+			q.vertices[3].y = (int)io.DisplaySize.y - y - zoom_factor * (float)brush_size * block_size * 0.5f;
 
 			draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 		}
@@ -1729,7 +1729,7 @@ int main(int, char**)
 
 
 
-					q.vertices[0].x = x + block_size*i - block_size;// custom_brush1_img.rows;
+					q.vertices[0].x = x + block_size * i - block_size;// custom_brush1_img.rows;
 					q.vertices[0].y = io.DisplaySize.y - y - block_size * j - block_size;//custom_brush1_img.cols;
 					q.vertices[1].x = x + block_size * i - block_size;// custom_brush1_img.rows;
 					q.vertices[1].y = io.DisplaySize.y - y - block_size * j + block_size;//custom_brush1_img.cols;
@@ -1750,7 +1750,7 @@ int main(int, char**)
 					//q.vertices[3].x = half_width + x + i + 1;// custom_brush1_img.rows;
 					//q.vertices[3].y = half_height + io.DisplaySize.y - y - j - 1;// custom_brush1_img.cols;
 
-				
+
 
 
 					//q.vertices[0].x = x + i - zoom_factor * block_size;
@@ -1763,10 +1763,10 @@ int main(int, char**)
 					//q.vertices[3].y = (int)io.DisplaySize.y - y - j - zoom_factor * block_size;
 
 
-					if (colour == 255)
+					if (colour == 0)
 						draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-					else
-						draw_quad_line_loop(glm::vec3(0, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+					//else
+					//	draw_quad_line_loop(glm::vec3(0, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
 			}
 
