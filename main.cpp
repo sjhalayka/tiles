@@ -1849,27 +1849,15 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					//q.vertices[0].x += half_width;
-					//q.vertices[1].x += half_width;
-					//q.vertices[2].x += half_width;
-					//q.vertices[3].x += half_width;
+					q.vertices[0].x += half_width*zoom_factor;
+					q.vertices[1].x += half_width*zoom_factor;
+					q.vertices[2].x += half_width*zoom_factor;
+					q.vertices[3].x += half_width*zoom_factor;
 
-					//q.vertices[0].y += half_height;
-					//q.vertices[1].y += half_height;
-					//q.vertices[2].y += half_height;
-					//q.vertices[3].y += half_height;
-
-					//q.vertices[0].x += block_size * 0.5;
-					//q.vertices[1].x += block_size * 0.5;
-					//q.vertices[2].x += block_size * 0.5;
-					//q.vertices[3].x += block_size * 0.5;
-
-					//q.vertices[0].y -= block_size * 0.5;
-					//q.vertices[1].y -= block_size * 0.5;
-					//q.vertices[2].y -= block_size * 0.5;
-					//q.vertices[3].y -= block_size * 0.5;
-
-	
+					q.vertices[0].y += half_height*zoom_factor;
+					q.vertices[1].y += half_height*zoom_factor;
+					q.vertices[2].y += half_height*zoom_factor;
+					q.vertices[3].y += half_height*zoom_factor;
 
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
