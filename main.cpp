@@ -1705,38 +1705,40 @@ int main(int, char**)
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
-			for (int i = 0; i < custom_brush1_img.rows; i++)
+			for (int i = 0; i < custom_brush1_img.cols; i++)
 			{
-				for (int j = 0; j < custom_brush1_img.cols; j++)
+				for (int j = 0; j < custom_brush1_img.rows; j++)
 				{
 					unsigned char colour = 0;
 
 					if (custom_brush1_img.channels() == 4)
 					{
-						Vec<unsigned char, 4> p = custom_brush1_img.at<Vec<unsigned char, 4>>(i, j);
+						Vec<unsigned char, 4> p = custom_brush1_img.at<Vec<unsigned char, 4>>(j, i);
 						colour = p[0];
 					}
 					else if (custom_brush1_img.channels() == 3)
 					{
-						Vec<unsigned char, 3> p = custom_brush1_img.at<Vec<unsigned char, 3>>(i, j);
+						Vec<unsigned char, 3> p = custom_brush1_img.at<Vec<unsigned char, 3>>(j, i);
 						colour = p[0];
 					}
 
 					quad q;
 
-					q.vertices[0].x = x + i - custom_brush1_width;
-					q.vertices[0].y = io.DisplaySize.y - y - j - custom_brush1_height;
-					q.vertices[1].x = x + i - custom_brush1_width;
-					q.vertices[1].y = io.DisplaySize.y - y - j + custom_brush1_height;
-					q.vertices[2].x = x + i + custom_brush1_width;
-					q.vertices[2].y = io.DisplaySize.y - y - j + custom_brush1_height;
-					q.vertices[3].x = x + i + custom_brush1_width;
-					q.vertices[3].y = io.DisplaySize.y - y - j - custom_brush1_height;
+					q.vertices[0].x = x + i - 1;// custom_brush1_img.rows;
+					q.vertices[0].y = io.DisplaySize.y - y - j - 1;//custom_brush1_img.cols;
+					q.vertices[1].x = x + i - 1;// custom_brush1_img.rows;
+					q.vertices[1].y = io.DisplaySize.y - y - j + 1;//custom_brush1_img.cols;
+					q.vertices[2].x = x + i + 1;// custom_brush1_img.rows;
+					q.vertices[2].y = io.DisplaySize.y - y - j + 1;//custom_brush1_img.cols;
+					q.vertices[3].x = x + i + 1;// custom_brush1_img.rows;
+					q.vertices[3].y = io.DisplaySize.y - y - j - 1;// custom_brush1_img.cols;
+
+
 
 					if (colour == 255)
 						draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 					else
-						draw_quad_line_loop(glm::vec3(0,0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+						draw_quad_line_loop(glm::vec3(0, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
 			}
 
