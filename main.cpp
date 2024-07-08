@@ -1736,6 +1736,8 @@ int main(int, char**)
 					q.vertices[3].x = half_width + x + i + 1;// custom_brush1_img.rows;
 					q.vertices[3].y = half_height + io.DisplaySize.y - y - j - 1;// custom_brush1_img.cols;
 
+				
+
 
 					//q.vertices[0].x = x + i - zoom_factor * block_size;
 					//q.vertices[0].y = (int)io.DisplaySize.y - y - j - zoom_factor * block_size;
