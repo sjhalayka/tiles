@@ -71,16 +71,15 @@ struct
 uniforms;
 
 
-bool operator< (const glm::vec3& lhs, const glm::vec3& rhs)
-{
-	return glm::all(glm::lessThan(lhs, rhs));
-}
+	bool operator< (const glm::vec3& lhs, const glm::vec3& rhs)
+	{
+		return glm::all(glm::lessThan(lhs, rhs));
+	}
 
-bool operator> (const glm::vec3& lhs, const glm::vec3& rhs)
-{
-	return glm::all(glm::greaterThan(lhs, rhs));
-}
-
+	bool operator> (const glm::vec3& lhs, const glm::vec3& rhs)
+	{
+		return glm::all(glm::lessThan(lhs, rhs));
+	}
 
 class sortable_line_segment
 {
@@ -98,11 +97,13 @@ public:
 		else if (right.vertices[1] < vertices[1])
 			return false;
 
+
 		return false;
 	}
 
 	void sort(void)
 	{
+
 		if (vertices[1] < vertices[0])
 		{
 			glm::vec3 tempv = vertices[1];
@@ -624,6 +625,56 @@ void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, floa
 }
 
 
+
+void draw_line_segment(glm::vec3 colour, int win_width, int win_height, float line_thickness, const sortable_line_segment& ls)
+{
+	glUseProgram(line_shader.get_program());
+
+	glUniform3f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z);
+	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
+	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
+	glUniform1f(uniforms.line_shader_uniforms.line_thickness, line_thickness);
+
+	GLuint components_per_vertex = 3;
+	GLuint components_per_position = 3;
+
+	GLuint axis_buffer;
+
+	glGenBuffers(1, &axis_buffer);
+
+	complex<float> v0w(static_cast<float>(ls.vertices[0].x), static_cast<float>(ls.vertices[0].y));
+	complex<float> v1w(static_cast<float>(ls.vertices[1].x), static_cast<float>(ls.vertices[1].y));
+
+	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
+	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
+
+
+	vector<GLfloat> flat_data;
+	flat_data.push_back(v0ndc.real());
+	flat_data.push_back(v0ndc.imag());
+	flat_data.push_back(0.0f);
+
+	flat_data.push_back(v1ndc.real());
+	flat_data.push_back(v1ndc.imag());
+	flat_data.push_back(0.0f);
+
+	GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
+
+	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
+	glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
+	glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
+		components_per_position,
+		GL_FLOAT,
+		GL_FALSE,
+		components_per_vertex * sizeof(GLfloat),
+		NULL);
+
+	glDrawArrays(GL_LINES, 0, num_vertices);
+
+	glDeleteBuffers(1, &axis_buffer);
+}
 
 
 
@@ -1749,7 +1800,7 @@ int main(int, char**)
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
-			map<sortable_line_segment, int> ls_map;
+			vector<sortable_line_segment> ls_map;
 
 			for (int i = 0; i < custom_brush1_img.cols; i++)
 			{
@@ -1768,6 +1819,9 @@ int main(int, char**)
 						colour = p[0];
 					}
 
+					if (colour != 255)
+						continue;
+					
 					quad q;
 
 					float half_width = -custom_brush1_img.cols / 2.0f;
@@ -1782,45 +1836,43 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * i + block_size;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * j - block_size;// custom_brush1_img.cols;
 
+
 					sortable_line_segment ls;
 
-					ls.vertices[0].x = q.vertices[0].x;
-					ls.vertices[0].y = q.vertices[0].y;
-					ls.vertices[1].x = q.vertices[1].x;
-					ls.vertices[1].y = q.vertices[1].y;
+					ls.vertices[0] = q.vertices[0];
+					ls.vertices[1] = q.vertices[1];
+					
 					ls.sort();
-					ls_map[ls]++;
+					ls_map.push_back(ls);// [ls] ++;
 
-					ls.vertices[0].x = q.vertices[1].x;
-					ls.vertices[0].y = q.vertices[1].y;
-					ls.vertices[1].x = q.vertices[2].x;
-					ls.vertices[1].y = q.vertices[2].y;
+					ls.vertices[0] = q.vertices[1];
+					ls.vertices[1] = q.vertices[2];
 					ls.sort();
-					ls_map[ls]++;
+					ls_map.push_back(ls);//ls_map[ls]++;
 
-					ls.vertices[0].x = q.vertices[2].x;
-					ls.vertices[0].y = q.vertices[2].y;
-					ls.vertices[1].x = q.vertices[3].x;
-					ls.vertices[1].y = q.vertices[3].y;
+					ls.vertices[0] = q.vertices[2];
+					ls.vertices[1] = q.vertices[3];
 					ls.sort();
-					ls_map[ls]++;
+					ls_map.push_back(ls);//ls_map[ls]++;
 
-					ls.vertices[0].x = q.vertices[3].x;
-					ls.vertices[0].y = q.vertices[3].y;
-					ls.vertices[1].x = q.vertices[0].x;
-					ls.vertices[1].y = q.vertices[0].y;
+					ls.vertices[0] = q.vertices[3];
+					ls.vertices[1] = q.vertices[0];
 					ls.sort();
-					ls_map[ls]++;
+					ls_map.push_back(ls);//ls_map[ls]++;
 
-
-
-					if (colour == 255)
-						draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+					//if (colour == 255)
+					//	draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 					//else
 					//	draw_quad_line_loop(glm::vec3(0, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
 			}
 
+
+
+			for (vector<sortable_line_segment>::const_iterator ci = ls_map.begin(); ci != ls_map.end(); ci++)
+			{
+					draw_line_segment(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, *ci);
+			}
 			cout << ls_map.size() << " " << 4 * custom_brush1_width * custom_brush1_height << endl;
 
 
