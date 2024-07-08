@@ -70,11 +70,6 @@ struct
 uniforms;
 
 
-//class triangle
-//{
-//public:
-//	ImVec2 vertices[3];
-//};
 
 class quad
 {
@@ -88,13 +83,13 @@ public:
 
 
 // Simple helper function to load an image into a OpenGL texture with common settings
-bool LoadTextureFromFile(const char* filename, GLuint* out_texture, int* out_width, int* out_height)
+bool LoadTextureFromFile(Mat& img, const char* filename, GLuint* out_texture, int* out_width, int* out_height)
 {
 	// Load from file
 	int image_width = 0;
 	int image_height = 0;
 
-	Mat img = imread(filename, IMREAD_UNCHANGED);
+	img = imread(filename, IMREAD_UNCHANGED);
 
 	if (img.empty())
 		return false;
@@ -707,12 +702,46 @@ int main(int, char**)
 
 
 
-	int my_image_width = 0;
-	int my_image_height = 0;
-	GLuint my_image_texture = 0;
+	int main_tiles_width = 0;
+	int main_tiles_height = 0;
+	GLuint main_tiles_texture = 0;
+	Mat main_tiles_img;
 
-	bool ret = LoadTextureFromFile("goblins.png", &my_image_texture, &my_image_width, &my_image_height);
+	int custom_brush1_width = 0;
+	int custom_brush1_height = 0;
+	GLuint custom_brush1_texture = 0;
+	Mat custom_brush1_img;
 
+	int custom_brush2_width = 0;
+	int custom_brush2_height = 0;
+	GLuint custom_brush2_texture = 0;
+	Mat custom_brush2_img;
+
+
+
+	bool ret = LoadTextureFromFile(main_tiles_img, "goblins.png", &main_tiles_texture, &main_tiles_width, &main_tiles_height);
+
+	if (ret == false)
+	{
+		cout << "Could not load goblins.png" << endl;
+		return false;
+	}
+
+	ret = LoadTextureFromFile(custom_brush1_img, "custom_brush_1.png", &custom_brush1_texture, &custom_brush1_width, &custom_brush1_height);
+
+	if (ret == false)
+	{
+		cout << "Could not load custom_brush_1.png" << endl;
+		return false;
+	}
+
+	ret = LoadTextureFromFile(custom_brush2_img, "custom_brush_1.png", &custom_brush2_texture, &custom_brush2_width, &custom_brush2_height);
+
+	if (ret == false)
+	{
+		cout << "Could not load custom_brush_2.png" << endl;
+		return false;
+	}
 
 
 	background_tiles.resize(tiles_per_dimension * tiles_per_dimension);
@@ -726,7 +755,7 @@ int main(int, char**)
 
 			background_tiles[index].tile_size = 36;
 			background_tiles[index].uv_min = ImVec2(0, 0);
-			background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / my_image_width, float(background_tiles[index].tile_size) / my_image_height);
+			background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
 		}
 	}
 
@@ -749,10 +778,11 @@ int main(int, char**)
 
 #define TOOL_PAINT 0
 #define TOOL_PAINT_SQUARE 1
-#define TOOL_SELECT 2
-#define TOOL_SELECT_ADD 3
-#define TOOL_SELECT_SUBTRACT 4
-#define TOOL_PAN 5
+#define TOOL_PAINT_CUSTOM 2
+#define TOOL_SELECT 3
+#define TOOL_SELECT_ADD 4
+#define TOOL_SELECT_SUBTRACT 5
+#define TOOL_PAN 6
 
 	int tool = 0;
 
@@ -849,7 +879,7 @@ int main(int, char**)
 		if (ImGui::IsWindowHovered())
 			hovered = true;
 
-		const ImVec2 img_size = { float(my_image_width), float(my_image_height) };
+		const ImVec2 img_size = { float(main_tiles_width), float(main_tiles_height) };
 
 		static char str0[128] = "36";
 		ImGui::InputText("Tile size", str0, IM_ARRAYSIZE(str0));
@@ -864,7 +894,7 @@ int main(int, char**)
 			ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
 			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
 
-			ImGui::Image((void*)(intptr_t)my_image_texture, img_size, uv_min, uv_max, tint_col, border_col);
+			ImGui::Image((void*)(intptr_t)main_tiles_texture, img_size, uv_min, uv_max, tint_col, border_col);
 		}
 
 		const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
@@ -898,6 +928,8 @@ int main(int, char**)
 
 		ImGui::RadioButton("Circle Paint", &tool, TOOL_PAINT);
 		ImGui::RadioButton("Square Paint", &tool, TOOL_PAINT_SQUARE);
+		ImGui::RadioButton("Custom Paint", &tool, TOOL_PAINT_CUSTOM);
+
 		ImGui::RadioButton("Select", &tool, TOOL_SELECT);
 		ImGui::RadioButton("Select Add", &tool, TOOL_SELECT_ADD);
 		ImGui::RadioButton("Select Subtract", &tool, TOOL_SELECT_SUBTRACT);
@@ -957,9 +989,9 @@ int main(int, char**)
 			const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 			if (i == left_selected)
-				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, selected_border_col);
+				ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, selected_border_col);
 			else
-				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, border_col);
+				ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, border_col);
 
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 				left_selected = i;
@@ -1021,9 +1053,9 @@ int main(int, char**)
 			const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
 
 			if (i == right_selected)
-				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, selected_border_col);
+				ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, selected_border_col);
 			else
-				ImGui::Image((void*)(intptr_t)my_image_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, border_col);
+				ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, border_col);
 
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 				right_selected = i;
@@ -1142,7 +1174,7 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					inside = draw_textured_quad(true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+					inside = draw_textured_quad(true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, main_tiles_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 
 					if (inside)
 					{
@@ -1228,7 +1260,6 @@ int main(int, char**)
 				prev_painted_indices = curr_painted_indices;
 			}
 
-
 			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
 				for (size_t j = 0; j < tiles_per_dimension; j++)
@@ -1270,13 +1301,181 @@ int main(int, char**)
 
 
 
+		//if ((tool == TOOL_PAINT_CUSTOM) && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
+		//{
+		//	vector<float> weights;
+		//	float total = 0;
+
+		//	for (int i = 0; i < left_strings.size(); i++)
+		//	{
+		//		const float weight = stof(left_strings[i]);
+		//		weights.push_back(weight);
+		//		total += weight;
+		//	}
+
+		//	if (total != 0.0f && total != -0.0f)
+		//	{
+		//		for (int i = 0; i < left_strings.size(); i++)
+		//			weights[i] /= total;
+		//	}
+
+		//	ImVec2 centre_index;
+		//	glm::vec3 centre_location;
+		//	bool inside = false;
+
+		//	size_t brush_in_use = 0;
+
+		//	vector<size_t> curr_painted_indices;
+
+		//	set<size_t> to_draw;
+
+		//	// Find brush centre
+		//	for (size_t i = 0; i < tiles_per_dimension; i++)
+		//	{
+		//		for (size_t j = 0; j < tiles_per_dimension; j++)
+		//		{
+		//			size_t index = i * tiles_per_dimension + j;
+
+		//			//bool found_prev_index = false;
+
+		//			//for (size_t k = 0; k < prev_painted_indices.size(); k++)
+		//			//{
+		//			//	if (prev_painted_indices[k] == index)
+		//			//	{
+		//			//		found_prev_index = true;
+		//			//		break;
+		//			//	}
+		//			//}
+
+		//			//if (found_prev_index)
+		//			//	continue;
+
+
+
+		//			vector<quad> quads;
+
+		//			int x, y;
+		//			SDL_GetMouseState(&x, &y);
+
+		//			inside = draw_textured_quad(true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, main_tiles_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+
+		//			if (inside)
+		//			{
+		//				const float r = distribution(generator);
+
+		//				float sub_total = 0;
+
+		//				for (int k = 0; k < left_strings.size(); k++)
+		//				{
+		//					sub_total += weights[k];
+
+		//					if (r <= sub_total)
+		//					{
+		//						brush_in_use = k;
+		//						break;
+		//					}
+		//				}
+
+		//				centre_index = ImVec2((float)i, (float)j);
+		//				centre_location = glm::vec3((quads[0].vertices[0] + quads[0].vertices[1] + quads[0].vertices[2] + quads[0].vertices[3]) * 0.25f);
+
+		//				if (selected_indices.size() == 0 || selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
+		//				{
+		//					background_tiles[index].uv_min = left_uv_mins[brush_in_use];
+		//					background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+		//				}
+
+		//				to_draw.insert(index);
+
+		//				curr_painted_indices.push_back(index);
+
+		//				// Abort early
+		//				i = j = tiles_per_dimension;
+		//				break;
+
+
+		//			}
+		//		}
+		//	}
+
+		//	// if found a brush centre
+		//	// then go through the other tiles to see if it's
+		//	// within reach of the brush size
+		//	if (inside == true)
+		//	{
+		//		for (size_t i = 0; i < tiles_per_dimension; i++)
+		//		{
+		//			for (size_t j = 0; j < tiles_per_dimension; j++)
+		//			{
+		//				size_t index = i * tiles_per_dimension + j;
+
+		//				bool found_prev_index = false;
+
+		//				for (size_t k = 0; k < prev_painted_indices.size(); k++)
+		//				{
+		//					if (prev_painted_indices[k] == index)
+		//					{
+		//						found_prev_index = true;
+		//						break;
+		//					}
+		//				}
+
+		//				if (found_prev_index)
+		//					continue;
+
+		//					to_draw.insert(index);
+		//			}
+		//		}
+
+		//		prev_painted_indices = curr_painted_indices;
+		//	}
+
+		//	for (size_t i = 0; i < tiles_per_dimension; i++)
+		//	{
+		//		for (size_t j = 0; j < tiles_per_dimension; j++)
+		//		{
+		//			size_t index = i * tiles_per_dimension + j;
+
+		//			if (to_draw.end() == find(to_draw.begin(), to_draw.end(), index))
+		//				continue;
+
+		//			size_t brush_in_use = 0;
+
+		//			const float r = distribution(generator);
+
+		//			float sub_total = 0;
+
+		//			for (int k = 0; k < left_strings.size(); k++)
+		//			{
+		//				sub_total += weights[k];
+
+		//				if (r <= sub_total)
+		//				{
+		//					brush_in_use = k;
+		//					break;
+		//				}
+		//			}
+
+		//			curr_painted_indices.push_back(index);
+
+		//			if (selected_indices.size() == 0 || selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
+		//			{
+		//				background_tiles[index].uv_min = left_uv_mins[brush_in_use];
+		//				background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+		//			}
+		//		}
+		//	}
+
+		//	to_draw.clear();
+		//}
+
 
 
 
 
 		//if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Right, 0))
 		//{
-		//	// draw using right brush
+		//	// paint using right mouse button
 		//}
 
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
@@ -1297,7 +1496,7 @@ int main(int, char**)
 				int x, y;
 				SDL_GetMouseState(&x, &y);
 
-				bool inside = draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, my_image_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+				bool inside = draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, main_tiles_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
 			}
 		}
 
@@ -1461,7 +1660,7 @@ int main(int, char**)
 		}
 
 
-		// Draw selected outline
+		// Draw selected outline 
 		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 		{
 			quad q;
@@ -1483,6 +1682,7 @@ int main(int, char**)
 			draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 		}
 
+		// Draw brush outline
 		if (tool == TOOL_PAINT)
 		{
 			int x, y;
@@ -1510,7 +1710,119 @@ int main(int, char**)
 			draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 		}
 
+		else if (tool == TOOL_PAINT_CUSTOM)
+		{
+			int x, y;
+			SDL_GetMouseState(&x, &y);
 
+			for (int i = 0; i < custom_brush1_img.rows; i++)
+			{
+				for (int j = 0; j < custom_brush1_img.cols; j++)
+				{
+					unsigned char colour = 0;
+
+					if (custom_brush1_img.channels() == 4)
+					{
+						Vec<unsigned char, 4> p = custom_brush1_img.at<Vec<unsigned char, 4>>(i, j);
+						colour = p[0];
+					}
+					else if (custom_brush1_img.channels() == 3)
+					{
+						Vec<unsigned char, 3> p = custom_brush1_img.at<Vec<unsigned char, 3>>(i, j);
+						colour = p[0];
+					}
+
+					if (colour == 255)
+					{
+						quad q;
+
+						q.vertices[0].x = x + i - custom_brush1_width;
+						q.vertices[0].y = io.DisplaySize.y - y - j - custom_brush1_height;
+						q.vertices[1].x = x + i - custom_brush1_width;
+						q.vertices[1].y = io.DisplaySize.y - y - j + custom_brush1_height;
+						q.vertices[2].x = x + i + custom_brush1_width;
+						q.vertices[2].y = io.DisplaySize.y - y - j + custom_brush1_height;
+						q.vertices[3].x = x + i + custom_brush1_width;
+						q.vertices[3].y = io.DisplaySize.y - y - j - custom_brush1_height;
+
+
+
+						draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+					}
+					else
+					{
+						quad q;
+
+
+						q.vertices[0].x = x + i - custom_brush1_width;
+						q.vertices[0].y = io.DisplaySize.y - y - j - custom_brush1_height;
+						q.vertices[1].x = x + i - custom_brush1_width;
+						q.vertices[1].y = io.DisplaySize.y - y - j + custom_brush1_height;
+						q.vertices[2].x = x + i + custom_brush1_width;
+						q.vertices[2].y = io.DisplaySize.y - y - j + custom_brush1_height;
+						q.vertices[3].x = x + i + custom_brush1_width;
+						q.vertices[3].y = io.DisplaySize.y - y - j - custom_brush1_height;
+
+
+
+						draw_quad_line_loop(glm::vec3(0,0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+					}
+
+
+
+					//q.vertices[0].x = x + i * block_size;
+					//q.vertices[0].y = y + (int)io.DisplaySize.y - j*(float)brush_size* block_size * 0.5f;
+					//q.vertices[1].x = x + i;// -zoom_factor;//* (float)brush_size * block_size * 0.5f;
+					//q.vertices[1].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
+					//q.vertices[2].x = x + i;// +zoom_factor;//* (float)brush_size * block_size * 0.5f;
+					//q.vertices[2].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
+					//q.vertices[3].x = x + i;// +zoom_factor;//* (float)brush_size * block_size * 0.5f;
+					//q.vertices[3].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
+
+					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+
+					//q.vertices[0].x = x + float(i - 10);// zoom_factor* (float)brush_size* block_size * 0.5f;
+					//q.vertices[0].y = y + float(j - 10);// zoom_factor* (float)brush_size* block_size * 0.5f;
+					//q.vertices[1].x = x + float(i - 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
+					//q.vertices[1].y = y + float(j + 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
+					//q.vertices[2].x = x + float(i + 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
+					//q.vertices[2].y = y + float(j + 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
+					//q.vertices[3].x = x + float(i + 10);// zoom_factor* (float)brush_size* block_size * 0.5f;
+					//q.vertices[3].y = y + float(j - 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
+
+					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+					//quad q;
+
+					//q.vertices[0].x = x + i; // *(float)brush_size* block_size * 0.5f;
+					//q.vertices[0].y = y + (int)io.DisplaySize.y - j;// *(float)brush_size* block_size * 0.5f;
+					//q.vertices[1].x = x + i;// -zoom_factor;//* (float)brush_size * block_size * 0.5f;
+					//q.vertices[1].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
+					//q.vertices[2].x = x + i;// +zoom_factor;//* (float)brush_size * block_size * 0.5f;
+					//q.vertices[2].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
+					//q.vertices[3].x = x + i;// +zoom_factor;//* (float)brush_size * block_size * 0.5f;
+					//q.vertices[3].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
+
+					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+				}
+			}
+
+
+
+			//quad q;
+
+			//q.vertices[0].x = x - zoom_factor * (float)brush_size * block_size * 0.5f;
+			//q.vertices[0].y = (int)io.DisplaySize.y - y - zoom_factor * (float)brush_size * block_size * 0.5f;
+			//q.vertices[1].x = x - zoom_factor * (float)brush_size * block_size * 0.5f;
+			//q.vertices[1].y = (int)io.DisplaySize.y - y + zoom_factor * (float)brush_size * block_size * 0.5f;
+			//q.vertices[2].x = x + zoom_factor * (float)brush_size * block_size * 0.5f;
+			//q.vertices[2].y = (int)io.DisplaySize.y - y + zoom_factor * (float)brush_size * block_size * 0.5f;
+			//q.vertices[3].x = x + zoom_factor * (float)brush_size * block_size * 0.5f;
+			//q.vertices[3].y = (int)io.DisplaySize.y - y - zoom_factor * (float)brush_size * block_size * 0.5f;
+
+			//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+		}
 
 
 
