@@ -712,10 +712,7 @@ int main(int, char**)
 	GLuint custom_brush1_texture = 0;
 	Mat custom_brush1_img;
 
-	int custom_brush2_width = 0;
-	int custom_brush2_height = 0;
-	GLuint custom_brush2_texture = 0;
-	Mat custom_brush2_img;
+
 
 
 
@@ -735,13 +732,6 @@ int main(int, char**)
 		return false;
 	}
 
-	ret = LoadTextureFromFile(custom_brush2_img, "custom_brush_1.png", &custom_brush2_texture, &custom_brush2_width, &custom_brush2_height);
-
-	if (ret == false)
-	{
-		cout << "Could not load custom_brush_2.png" << endl;
-		return false;
-	}
 
 
 	background_tiles.resize(tiles_per_dimension * tiles_per_dimension);
@@ -1732,79 +1722,21 @@ int main(int, char**)
 						colour = p[0];
 					}
 
+					quad q;
+
+					q.vertices[0].x = x + i - custom_brush1_width;
+					q.vertices[0].y = io.DisplaySize.y - y - j - custom_brush1_height;
+					q.vertices[1].x = x + i - custom_brush1_width;
+					q.vertices[1].y = io.DisplaySize.y - y - j + custom_brush1_height;
+					q.vertices[2].x = x + i + custom_brush1_width;
+					q.vertices[2].y = io.DisplaySize.y - y - j + custom_brush1_height;
+					q.vertices[3].x = x + i + custom_brush1_width;
+					q.vertices[3].y = io.DisplaySize.y - y - j - custom_brush1_height;
+
 					if (colour == 255)
-					{
-						quad q;
-
-						q.vertices[0].x = x + i - custom_brush1_width;
-						q.vertices[0].y = io.DisplaySize.y - y - j - custom_brush1_height;
-						q.vertices[1].x = x + i - custom_brush1_width;
-						q.vertices[1].y = io.DisplaySize.y - y - j + custom_brush1_height;
-						q.vertices[2].x = x + i + custom_brush1_width;
-						q.vertices[2].y = io.DisplaySize.y - y - j + custom_brush1_height;
-						q.vertices[3].x = x + i + custom_brush1_width;
-						q.vertices[3].y = io.DisplaySize.y - y - j - custom_brush1_height;
-
-
-
 						draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-					}
 					else
-					{
-						quad q;
-
-
-						q.vertices[0].x = x + i - custom_brush1_width;
-						q.vertices[0].y = io.DisplaySize.y - y - j - custom_brush1_height;
-						q.vertices[1].x = x + i - custom_brush1_width;
-						q.vertices[1].y = io.DisplaySize.y - y - j + custom_brush1_height;
-						q.vertices[2].x = x + i + custom_brush1_width;
-						q.vertices[2].y = io.DisplaySize.y - y - j + custom_brush1_height;
-						q.vertices[3].x = x + i + custom_brush1_width;
-						q.vertices[3].y = io.DisplaySize.y - y - j - custom_brush1_height;
-
-
-
 						draw_quad_line_loop(glm::vec3(0,0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-					}
-
-
-
-					//q.vertices[0].x = x + i * block_size;
-					//q.vertices[0].y = y + (int)io.DisplaySize.y - j*(float)brush_size* block_size * 0.5f;
-					//q.vertices[1].x = x + i;// -zoom_factor;//* (float)brush_size * block_size * 0.5f;
-					//q.vertices[1].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
-					//q.vertices[2].x = x + i;// +zoom_factor;//* (float)brush_size * block_size * 0.5f;
-					//q.vertices[2].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
-					//q.vertices[3].x = x + i;// +zoom_factor;//* (float)brush_size * block_size * 0.5f;
-					//q.vertices[3].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
-
-					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-
-
-					//q.vertices[0].x = x + float(i - 10);// zoom_factor* (float)brush_size* block_size * 0.5f;
-					//q.vertices[0].y = y + float(j - 10);// zoom_factor* (float)brush_size* block_size * 0.5f;
-					//q.vertices[1].x = x + float(i - 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
-					//q.vertices[1].y = y + float(j + 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
-					//q.vertices[2].x = x + float(i + 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
-					//q.vertices[2].y = y + float(j + 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
-					//q.vertices[3].x = x + float(i + 10);// zoom_factor* (float)brush_size* block_size * 0.5f;
-					//q.vertices[3].y = y + float(j - 10);//zoom_factor * (float)brush_size * block_size * 0.5f;
-
-					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-
-					//quad q;
-
-					//q.vertices[0].x = x + i; // *(float)brush_size* block_size * 0.5f;
-					//q.vertices[0].y = y + (int)io.DisplaySize.y - j;// *(float)brush_size* block_size * 0.5f;
-					//q.vertices[1].x = x + i;// -zoom_factor;//* (float)brush_size * block_size * 0.5f;
-					//q.vertices[1].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
-					//q.vertices[2].x = x + i;// +zoom_factor;//* (float)brush_size * block_size * 0.5f;
-					//q.vertices[2].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
-					//q.vertices[3].x = x + i;// +zoom_factor;//* (float)brush_size * block_size * 0.5f;
-					//q.vertices[3].y = y + (int)io.DisplaySize.y - j;// * (float)brush_size * block_size * 0.5f;
-
-					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
 			}
 
