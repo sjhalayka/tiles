@@ -1810,8 +1810,6 @@ int main(int, char**)
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
-			vector<sortable_line_segment> ls_map;
-
 			for (int i = 0; i < custom_brush1_img.cols; i++)
 			{
 				for (int j = 0; j < custom_brush1_img.rows; j++)
@@ -1839,10 +1837,10 @@ int main(int, char**)
 
 					quad q;
 
-					float half_width = -custom_brush1_img.cols / 2.0f;
-					float half_height = custom_brush1_img.rows / 2.0f;
+					float half_width = -custom_brush1_img.cols * block_size / 2.0f;
+					float half_height = custom_brush1_img.rows * block_size / 2.0f;
 
-					q.vertices[0].x = x + block_size * zoom_factor * i - block_size*0.5f*zoom_factor;// custom_brush1_img.rows;
+					q.vertices[0].x = x + block_size* zoom_factor * i - block_size*0.5f*zoom_factor;// custom_brush1_img.rows;
 					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
@@ -1851,101 +1849,31 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					q.vertices[0].x += block_size * 0.5;
-					q.vertices[1].x += block_size * 0.5;
-					q.vertices[2].x += block_size * 0.5;
-					q.vertices[3].x += block_size * 0.5;
+					//q.vertices[0].x += half_width;
+					//q.vertices[1].x += half_width;
+					//q.vertices[2].x += half_width;
+					//q.vertices[3].x += half_width;
 
-					q.vertices[0].y -= block_size * 0.5;
-					q.vertices[1].y -= block_size * 0.5;
-					q.vertices[2].y -= block_size * 0.5;
-					q.vertices[3].y -= block_size * 0.5;
+					//q.vertices[0].y += half_height;
+					//q.vertices[1].y += half_height;
+					//q.vertices[2].y += half_height;
+					//q.vertices[3].y += half_height;
 
+					//q.vertices[0].x += block_size * 0.5;
+					//q.vertices[1].x += block_size * 0.5;
+					//q.vertices[2].x += block_size * 0.5;
+					//q.vertices[3].x += block_size * 0.5;
 
+					//q.vertices[0].y -= block_size * 0.5;
+					//q.vertices[1].y -= block_size * 0.5;
+					//q.vertices[2].y -= block_size * 0.5;
+					//q.vertices[3].y -= block_size * 0.5;
 
-					sortable_line_segment ls;
-					vector<sortable_line_segment>::const_iterator k;
+	
 
-					ls.vertices[0] = q.vertices[0];
-					ls.vertices[1] = q.vertices[1];
-					ls.sort();
-
-					k = find(ls_map.begin(), ls_map.end(), ls);
-
-					if (ls_map.end() == k)
-						ls_map.push_back(ls);
-					else
-						ls_map.erase(k);
-;
-
-					ls.vertices[0] = q.vertices[1];
-					ls.vertices[1] = q.vertices[2];
-					ls.sort();
-
-					k = find(ls_map.begin(), ls_map.end(), ls);
-
-					if (ls_map.end() == k)
-						ls_map.push_back(ls);
-					else
-						ls_map.erase(k);
-
-
-					ls.vertices[0] = q.vertices[2];
-					ls.vertices[1] = q.vertices[3];
-					ls.sort();
-
-					k = find(ls_map.begin(), ls_map.end(), ls);
-
-					if (ls_map.end() == k)
-						ls_map.push_back(ls);
-					else
-						ls_map.erase(k);
-
-
-
-					ls.vertices[0] = q.vertices[3];
-					ls.vertices[1] = q.vertices[0];
-					ls.sort();
-
-					k = find(ls_map.begin(), ls_map.end(), ls);
-
-					if (ls_map.end() == k)
-						ls_map.push_back(ls);
-					else
-						ls_map.erase(k);
-
-
-
-
-					//if (colour == 255)
-					//	draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-					//else
-					//	draw_quad_line_loop(glm::vec3(0, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
 			}
-
-
-
-			for (vector<sortable_line_segment>::const_iterator ci = ls_map.begin(); ci != ls_map.end(); ci++)
-			{
-				draw_line_segment(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, *ci);
-			}
-
-			cout << ls_map.size() << " " << 4 * custom_brush1_width * custom_brush1_height << endl;
-
-
-			//quad q;
-
-			//q.vertices[0].x = x - zoom_factor * (float)brush_size * block_size * 0.5f;
-			//q.vertices[0].y = (int)io.DisplaySize.y - y - zoom_factor * (float)brush_size * block_size * 0.5f;
-			//q.vertices[1].x = x - zoom_factor * (float)brush_size * block_size * 0.5f;
-			//q.vertices[1].y = (int)io.DisplaySize.y - y + zoom_factor * (float)brush_size * block_size * 0.5f;
-			//q.vertices[2].x = x + zoom_factor * (float)brush_size * block_size * 0.5f;
-			//q.vertices[2].y = (int)io.DisplaySize.y - y + zoom_factor * (float)brush_size * block_size * 0.5f;
-			//q.vertices[3].x = x + zoom_factor * (float)brush_size * block_size * 0.5f;
-			//q.vertices[3].y = (int)io.DisplaySize.y - y - zoom_factor * (float)brush_size * block_size * 0.5f;
-
-			//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 		}
 
 
