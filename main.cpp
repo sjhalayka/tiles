@@ -1727,14 +1727,28 @@ int main(int, char**)
 					float half_width = -custom_brush1_img.cols / 2.0f;
 					float half_height = custom_brush1_img.rows / 2.0f;
 
-					q.vertices[0].x = half_width + x + i - 1;// custom_brush1_img.rows;
-					q.vertices[0].y = half_height + io.DisplaySize.y - y - j - 1;//custom_brush1_img.cols;
-					q.vertices[1].x = half_width + x + i - 1;// custom_brush1_img.rows;
-					q.vertices[1].y = half_height + io.DisplaySize.y - y - j + 1;//custom_brush1_img.cols;
-					q.vertices[2].x = half_width + x + i + 1;// custom_brush1_img.rows;
-					q.vertices[2].y = half_height + io.DisplaySize.y - y - j + 1;//custom_brush1_img.cols;
-					q.vertices[3].x = half_width + x + i + 1;// custom_brush1_img.rows;
-					q.vertices[3].y = half_height + io.DisplaySize.y - y - j - 1;// custom_brush1_img.cols;
+
+
+					q.vertices[0].x = x + block_size*i - 1;// custom_brush1_img.rows;
+					q.vertices[0].y = io.DisplaySize.y - y - block_size * j - 1;//custom_brush1_img.cols;
+					q.vertices[1].x = x + block_size * i - 1;// custom_brush1_img.rows;
+					q.vertices[1].y = io.DisplaySize.y - y - block_size * j + 1;//custom_brush1_img.cols;
+					q.vertices[2].x = x + block_size * i + 1;// custom_brush1_img.rows;
+					q.vertices[2].y = io.DisplaySize.y - y - block_size * j + 1;//custom_brush1_img.cols;
+					q.vertices[3].x = x + block_size * i + 1;// custom_brush1_img.rows;
+					q.vertices[3].y = io.DisplaySize.y - y - block_size * j - 1;// custom_brush1_img.cols;
+
+
+
+
+					//q.vertices[0].x = half_width + x + i - 1;// custom_brush1_img.rows;
+					//q.vertices[0].y = half_height + io.DisplaySize.y - y - j - 1;//custom_brush1_img.cols;
+					//q.vertices[1].x = half_width + x + i - 1;// custom_brush1_img.rows;
+					//q.vertices[1].y = half_height + io.DisplaySize.y - y - j + 1;//custom_brush1_img.cols;
+					//q.vertices[2].x = half_width + x + i + 1;// custom_brush1_img.rows;
+					//q.vertices[2].y = half_height + io.DisplaySize.y - y - j + 1;//custom_brush1_img.cols;
+					//q.vertices[3].x = half_width + x + i + 1;// custom_brush1_img.rows;
+					//q.vertices[3].y = half_height + io.DisplaySize.y - y - j - 1;// custom_brush1_img.cols;
 
 				
 
