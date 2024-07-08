@@ -32,6 +32,7 @@
 #include <algorithm>	
 #include <random>
 #include <set>
+#include <map>
 using namespace std;
 
 
@@ -69,6 +70,96 @@ struct
 }
 uniforms;
 
+
+
+
+class sortable_vertex_3
+{
+public:
+	inline sortable_vertex_3(void) : x(0.0f), y(0.0f), z(0.0f) { /*default constructor*/ }
+	inline sortable_vertex_3(const float src_x, const float src_y, const float src_z, const size_t src_index) : x(src_x), y(src_y), z(src_z) { /* custom constructor */ }
+
+	inline bool operator<(const sortable_vertex_3& right) const
+	{
+		if (right.x > x)
+			return true;
+		else if (right.x < x)
+			return false;
+
+		if (right.y > y)
+			return true;
+		else if (right.y < y)
+			return false;
+
+		if (right.z > z)
+			return true;
+		else if (right.z < z)
+			return false;
+
+		return false;
+	}
+
+	inline bool operator>(const sortable_vertex_3& right) const
+	{
+		if (right.x < x)
+			return true;
+		else if (right.x > x)
+			return false;
+
+		if (right.y < y)
+			return true;
+		else if (right.y > y)
+			return false;
+
+		if (right.z < z)
+			return true;
+		else if (right.z > z)
+			return false;
+
+		return false;
+	}
+
+
+	float x, y, z;
+};
+
+
+
+class sortable_line_segment
+{
+public:
+
+	inline bool operator<(const sortable_line_segment& right) const
+	{
+		if (right.vertices[0] > vertices[0])
+			return true;
+		else if (right.vertices[0] < vertices[0])
+			return false;
+
+		if (right.vertices[1] > vertices[1])
+			return true;
+		else if (right.vertices[1] < vertices[1])
+			return false;
+
+
+		return false;
+	}
+
+	void sort(void)
+	{
+
+		if (vertices[1] < vertices[0])
+		{
+			sortable_vertex_3 tempv = vertices[1];
+			vertices[1] = vertices[0];
+			vertices[0] = tempv;
+		}
+
+
+	}
+
+	sortable_vertex_3 vertices[2];
+};
 
 
 class quad
@@ -246,8 +337,6 @@ public:
 	int tile_size;
 	ImVec2 uv_min;
 	ImVec2 uv_max;
-
-	quad q;
 };
 
 int tiles_per_dimension = 20;
@@ -1705,6 +1794,8 @@ int main(int, char**)
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
+			map<sortable_line_segment, int> ls_map;
+
 			for (int i = 0; i < custom_brush1_img.cols; i++)
 			{
 				for (int j = 0; j < custom_brush1_img.rows; j++)
@@ -1727,8 +1818,6 @@ int main(int, char**)
 					float half_width = -custom_brush1_img.cols / 2.0f;
 					float half_height = custom_brush1_img.rows / 2.0f;
 
-
-
 					q.vertices[0].x = x + block_size * i - block_size;// custom_brush1_img.rows;
 					q.vertices[0].y = io.DisplaySize.y - y - block_size * j - block_size;//custom_brush1_img.cols;
 					q.vertices[1].x = x + block_size * i - block_size;// custom_brush1_img.rows;
@@ -1738,38 +1827,46 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * i + block_size;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * j - block_size;// custom_brush1_img.cols;
 
+					sortable_line_segment ls;
+
+					ls.vertices[0].x = q.vertices[0].x;
+					ls.vertices[0].y = q.vertices[0].y;
+					ls.vertices[1].x = q.vertices[1].x;
+					ls.vertices[1].y = q.vertices[1].y;
+					ls.sort();
+					ls_map[ls]++;
+
+					ls.vertices[0].x = q.vertices[1].x;
+					ls.vertices[0].y = q.vertices[1].y;
+					ls.vertices[1].x = q.vertices[2].x;
+					ls.vertices[1].y = q.vertices[2].y;
+					ls.sort();
+					ls_map[ls]++;
+
+					ls.vertices[0].x = q.vertices[2].x;
+					ls.vertices[0].y = q.vertices[2].y;
+					ls.vertices[1].x = q.vertices[3].x;
+					ls.vertices[1].y = q.vertices[3].y;
+					ls.sort();
+					ls_map[ls]++;
+
+					ls.vertices[0].x = q.vertices[3].x;
+					ls.vertices[0].y = q.vertices[3].y;
+					ls.vertices[1].x = q.vertices[0].x;
+					ls.vertices[1].y = q.vertices[0].y;
+					ls.sort();
+					ls_map[ls]++;
 
 
 
-					//q.vertices[0].x = half_width + x + i - 1;// custom_brush1_img.rows;
-					//q.vertices[0].y = half_height + io.DisplaySize.y - y - j - 1;//custom_brush1_img.cols;
-					//q.vertices[1].x = half_width + x + i - 1;// custom_brush1_img.rows;
-					//q.vertices[1].y = half_height + io.DisplaySize.y - y - j + 1;//custom_brush1_img.cols;
-					//q.vertices[2].x = half_width + x + i + 1;// custom_brush1_img.rows;
-					//q.vertices[2].y = half_height + io.DisplaySize.y - y - j + 1;//custom_brush1_img.cols;
-					//q.vertices[3].x = half_width + x + i + 1;// custom_brush1_img.rows;
-					//q.vertices[3].y = half_height + io.DisplaySize.y - y - j - 1;// custom_brush1_img.cols;
-
-
-
-
-					//q.vertices[0].x = x + i - zoom_factor * block_size;
-					//q.vertices[0].y = (int)io.DisplaySize.y - y - j - zoom_factor * block_size;
-					//q.vertices[1].x = x + i - zoom_factor * block_size;
-					//q.vertices[1].y = (int)io.DisplaySize.y - y - j + zoom_factor * block_size;
-					//q.vertices[2].x = x + i + zoom_factor * block_size;
-					//q.vertices[2].y = (int)io.DisplaySize.y - y - j + zoom_factor * block_size;
-					//q.vertices[3].x = x + i + zoom_factor * block_size;
-					//q.vertices[3].y = (int)io.DisplaySize.y - y - j - zoom_factor * block_size;
-
-
-					if (colour == 0)
+					if (colour == 255)
 						draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 					//else
 					//	draw_quad_line_loop(glm::vec3(0, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
 			}
 
+			cout << ls_map.size() << " " << 4 * custom_brush1_width * custom_brush1_height << endl;
 
 
 			//quad q;
