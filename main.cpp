@@ -85,6 +85,16 @@ class sortable_line_segment
 {
 public:
 
+
+	inline bool operator==(const sortable_line_segment& right) const
+	{
+		if (right.vertices[0] == vertices[0] && right.vertices[1] == vertices[1])
+			return true;
+		else
+			return false;
+	}
+
+
 	inline bool operator<(const sortable_line_segment& right) const
 	{
 		if (right.vertices[0] > vertices[0])
@@ -671,7 +681,7 @@ void draw_line_segment(glm::vec3 colour, int win_width, int win_height, float li
 		components_per_vertex * sizeof(GLfloat),
 		NULL);
 
-	glDrawArrays(GL_LINES, 0, num_vertices);
+	glDrawArrays(GL_LINE_LOOP, 0, num_vertices);
 
 	glDeleteBuffers(1, &axis_buffer);
 }
@@ -1819,46 +1829,93 @@ int main(int, char**)
 						colour = p[0];
 					}
 
+
+
+
 					if (colour != 255)
 						continue;
-					
+
+
+
 					quad q;
 
 					float half_width = -custom_brush1_img.cols / 2.0f;
 					float half_height = custom_brush1_img.rows / 2.0f;
 
-					q.vertices[0].x = x + block_size * i - block_size;// custom_brush1_img.rows;
-					q.vertices[0].y = io.DisplaySize.y - y - block_size * j - block_size;//custom_brush1_img.cols;
-					q.vertices[1].x = x + block_size * i - block_size;// custom_brush1_img.rows;
-					q.vertices[1].y = io.DisplaySize.y - y - block_size * j + block_size;//custom_brush1_img.cols;
-					q.vertices[2].x = x + block_size * i + block_size;// custom_brush1_img.rows;
-					q.vertices[2].y = io.DisplaySize.y - y - block_size * j + block_size;//custom_brush1_img.cols;
-					q.vertices[3].x = x + block_size * i + block_size;// custom_brush1_img.rows;
-					q.vertices[3].y = io.DisplaySize.y - y - block_size * j - block_size;// custom_brush1_img.cols;
+					q.vertices[0].x = x + block_size * i - block_size*0.5f;// custom_brush1_img.rows;
+					q.vertices[0].y = io.DisplaySize.y - y - block_size * j - block_size * 0.5f;//custom_brush1_img.cols;
+					q.vertices[1].x = x + block_size * i - block_size * 0.5f;// custom_brush1_img.rows;
+					q.vertices[1].y = io.DisplaySize.y - y - block_size * j + block_size * 0.5f;//custom_brush1_img.cols;
+					q.vertices[2].x = x + block_size * i + block_size * 0.5f;// custom_brush1_img.rows;
+					q.vertices[2].y = io.DisplaySize.y - y - block_size * j + block_size * 0.5f;//custom_brush1_img.cols;
+					q.vertices[3].x = x + block_size * i + block_size * 0.5f;// custom_brush1_img.rows;
+					q.vertices[3].y = io.DisplaySize.y - y - block_size * j - block_size * 0.5f;// custom_brush1_img.cols;
+
+					//q.vertices[0].x += block_size;
+					//q.vertices[1].x += block_size;
+					//q.vertices[2].x += block_size;
+					//q.vertices[3].x += block_size;
+
+					//q.vertices[0].y -= block_size;
+					//q.vertices[1].y -= block_size;
+					//q.vertices[2].y -= block_size;
+					//q.vertices[3].y -= block_size;
+
 
 
 					sortable_line_segment ls;
+					vector<sortable_line_segment>::const_iterator k;
 
 					ls.vertices[0] = q.vertices[0];
 					ls.vertices[1] = q.vertices[1];
-					
 					ls.sort();
-					ls_map.push_back(ls);// [ls] ++;
+
+					k = find(ls_map.begin(), ls_map.end(), ls);
+
+					if (ls_map.end() == k)
+						ls_map.push_back(ls);
+					else
+						ls_map.erase(k);
+;
 
 					ls.vertices[0] = q.vertices[1];
 					ls.vertices[1] = q.vertices[2];
 					ls.sort();
-					ls_map.push_back(ls);//ls_map[ls]++;
+
+					k = find(ls_map.begin(), ls_map.end(), ls);
+
+					if (ls_map.end() == k)
+						ls_map.push_back(ls);
+					else
+						ls_map.erase(k);
+
 
 					ls.vertices[0] = q.vertices[2];
 					ls.vertices[1] = q.vertices[3];
 					ls.sort();
-					ls_map.push_back(ls);//ls_map[ls]++;
+
+					k = find(ls_map.begin(), ls_map.end(), ls);
+
+					if (ls_map.end() == k)
+						ls_map.push_back(ls);
+					else
+						ls_map.erase(k);
+
+
 
 					ls.vertices[0] = q.vertices[3];
 					ls.vertices[1] = q.vertices[0];
 					ls.sort();
-					ls_map.push_back(ls);//ls_map[ls]++;
+
+					k = find(ls_map.begin(), ls_map.end(), ls);
+
+					if (ls_map.end() == k)
+						ls_map.push_back(ls);
+					else
+						ls_map.erase(k);
+
+
+
 
 					//if (colour == 255)
 					//	draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
@@ -1871,8 +1928,9 @@ int main(int, char**)
 
 			for (vector<sortable_line_segment>::const_iterator ci = ls_map.begin(); ci != ls_map.end(); ci++)
 			{
-					draw_line_segment(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, *ci);
+				draw_line_segment(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, *ci);
 			}
+
 			cout << ls_map.size() << " " << 4 * custom_brush1_width * custom_brush1_height << endl;
 
 
