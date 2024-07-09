@@ -313,7 +313,19 @@ vector<background_tile> background_tiles;
 float zoom_factor = 1.0f;
 float last_mousewheel = 0.0f;
 
-
+//
+//bool point_in_quad(const glm::vec3& point, const quad& q)
+//{
+//	bool inside = false;
+//	
+//	if (point.x < q.vertices[0].x || point.x > q.vertices[3].x)
+//		return false;
+//
+//	if (point.y < q.vertices[2].y || point.y > q.vertices[3].y)
+//		return false;
+//
+//	return true;
+//}
 
 bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
 {
@@ -717,7 +729,7 @@ void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, floa
 //		components_per_vertex * sizeof(GLfloat),
 //		NULL);
 //
-//	glDrawArrays(GL_LINE_LOOP, 0, num_vertices);
+//	glDrawArrays(GL_LINES, 0, num_vertices);
 //
 //	glDeleteBuffers(1, &axis_buffer);
 //}
@@ -839,11 +851,6 @@ void draw_quad_ndc_data(vector<float>& vertex_data, vector<GLuint>& index_data, 
 	glBindVertexArray(vao);
 
 	glDrawElements(GL_TRIANGLES, index_data.size(), GL_UNSIGNED_INT, 0);
-
-
-
-
-	//return inside;
 }
 
 
@@ -1657,77 +1664,75 @@ int main(int, char**)
 
 
 
-if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && make_selection && !hovered)// && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
-{
-	make_selection = false;
-
-	if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
-		selected_indices.clear();
-
-	for (size_t i = 0; i < tiles_per_dimension; i++)
-	{
-		for (size_t j = 0; j < tiles_per_dimension; j++)
+		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && make_selection && !hovered)// && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
-			size_t index = i * tiles_per_dimension + j;
+			make_selection = false;
 
-			const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
-			const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+			if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
+				selected_indices.clear();
 
-
-
-			complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-			complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
-			complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
-			complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
-
-			v0w.real(v0w.real() * zoom_factor);
-			v0w.imag(v0w.imag() * zoom_factor);
-			v1w.real(v1w.real() * zoom_factor);
-			v1w.imag(v1w.imag() * zoom_factor);
-			v2w.real(v2w.real() * zoom_factor);
-			v2w.imag(v2w.imag() * zoom_factor);
-			v3w.real(v3w.real() * zoom_factor);
-			v3w.imag(v3w.imag() * zoom_factor);
-
-			quad q;
-			q.vertices[0].x = v0w.real();
-			q.vertices[0].y = v0w.imag();
-			q.vertices[1].x = v1w.real();
-			q.vertices[1].y = v1w.imag();
-			q.vertices[2].x = v2w.real();
-			q.vertices[2].y = v2w.imag();
-			q.vertices[3].x = v3w.real();
-			q.vertices[3].y = v3w.imag();
-
-
-			glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
-			
-		//	if (x < selected_start.x || x > selected_end.x || y < ((int)io.DisplaySize.y - selected_start.y) || y >((int)io.DisplaySize.y - selected_end.y))
-		//		continue;
-
-		//if (quad_centre.x < selected_start.x || quad_centre.x > selected_end.x || quad_centre.y < selected_start.y || quad_centre.y > selected_end.y)
-		//		continue;
-
-			vector<glm::vec3> points;
-			points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
-			points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0));
-			points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
-			points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
-
-			if (point_in_polygon(quad_centre, points) ||
-				point_in_polygon(q.vertices[0], points) ||
-				point_in_polygon(q.vertices[1], points) ||
-				point_in_polygon(q.vertices[2], points) ||
-				point_in_polygon(q.vertices[3], points))
+			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
-				if (tool == TOOL_SELECT_SUBTRACT)
-					selected_indices.erase(index);
-				else
-					selected_indices.insert(index);
+
+				for (size_t j = 0; j < tiles_per_dimension; j++)
+				{
+					size_t index = i * tiles_per_dimension + j;
+
+					const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+					const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+
+					if (x < 0 || x > (int)io.DisplaySize.x / zoom_factor)
+						break;
+
+					if (y < 0 || y > (int)io.DisplaySize.y / zoom_factor)
+						break;
+
+					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+
+					v0w.real(v0w.real() * zoom_factor);
+					v0w.imag(v0w.imag() * zoom_factor);
+					v1w.real(v1w.real() * zoom_factor);
+					v1w.imag(v1w.imag() * zoom_factor);
+					v2w.real(v2w.real() * zoom_factor);
+					v2w.imag(v2w.imag() * zoom_factor);
+					v3w.real(v3w.real() * zoom_factor);
+					v3w.imag(v3w.imag() * zoom_factor);
+
+					quad q;
+					q.vertices[0].x = v0w.real();
+					q.vertices[0].y = v0w.imag();
+					q.vertices[1].x = v1w.real();
+					q.vertices[1].y = v1w.imag();
+					q.vertices[2].x = v2w.real();
+					q.vertices[2].y = v2w.imag();
+					q.vertices[3].x = v3w.real();
+					q.vertices[3].y = v3w.imag();
+
+					glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+					vector<glm::vec3> points;
+					points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
+					points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0));
+					points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
+					points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
+
+					if (point_in_polygon(quad_centre, points) ||
+						point_in_polygon(q.vertices[0], points) ||
+						point_in_polygon(q.vertices[1], points) ||
+						point_in_polygon(q.vertices[2], points) ||
+						point_in_polygon(q.vertices[3], points))
+					{
+						if (tool == TOOL_SELECT_SUBTRACT)
+							selected_indices.erase(index);
+						else
+							selected_indices.insert(index);
+					}
+				}
 			}
 		}
-	}
-}
 
 
 		//if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Right, 0))
