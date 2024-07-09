@@ -305,7 +305,7 @@ public:
 	ImVec2 uv_max;
 };
 
-int tiles_per_dimension = 100;
+int tiles_per_dimension = 200;
 
 
 vector<background_tile> background_tiles;
@@ -397,7 +397,27 @@ bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vect
 	v3w.real(v3w.real() * zoom_factor);
 	v3w.imag(v3w.imag() * zoom_factor);
 
+	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
+	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
+	complex<float> v2ndc = get_ndc_coords_from_window_coords(win_width, win_height, v2w);
+	complex<float> v3ndc = get_ndc_coords_from_window_coords(win_width, win_height, v3w);
 
+	size_t count = 0;
+
+	if (!(v0ndc.real() < -1 || v0ndc.real() > 1 || v0ndc.imag() < -1 || v0ndc.imag() > 1))
+		count++;
+
+	if (!(v1ndc.real() < -1 || v1ndc.real() > 1 || v1ndc.imag() < -1 || v1ndc.imag() > 1))
+		count++;
+
+	if (!(v2ndc.real() < -1 || v2ndc.real() > 1 || v2ndc.imag() < -1 || v2ndc.imag() > 1))
+		count++;
+
+	if (!(v3ndc.real() < -1 || v3ndc.real() > 1 || v3ndc.imag() < -1 || v3ndc.imag() > 1))
+		count++;
+
+	if (count == 0)
+		return false;
 
 
 	quad q;
@@ -423,30 +443,6 @@ bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vect
 
 	if (quit_upon_collision)
 		return inside;
-
-
-	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
-	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
-	complex<float> v2ndc = get_ndc_coords_from_window_coords(win_width, win_height, v2w);
-	complex<float> v3ndc = get_ndc_coords_from_window_coords(win_width, win_height, v3w);
-
-
-	size_t count = 0;
-
-	if (!(v0ndc.real() < -1 || v0ndc.real() > 1 || v0ndc.imag() < -1 || v0ndc.imag() > 1))
-		count++;
-
-	if (!(v1ndc.real() < -1 || v1ndc.real() > 1 || v1ndc.imag() < -1 || v1ndc.imag() > 1))
-		count++;
-
-	if (!(v2ndc.real() < -1 || v2ndc.real() > 1 || v2ndc.imag() < -1 || v2ndc.imag() > 1))
-		count++;
-
-	if (!(v3ndc.real() < -1 || v3ndc.real() > 1 || v3ndc.imag() < -1 || v3ndc.imag() > 1))
-		count++;
-
-	if (count == 0)
-		return true;
 
 	static GLuint vao = 0, vbo = 0, ibo = 0;
 
@@ -679,56 +675,56 @@ void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, floa
 }
 
 
-
-void draw_line_segment(glm::vec3 colour, int win_width, int win_height, float line_thickness, const sortable_line_segment& ls)
-{
-	glUseProgram(line_shader.get_program());
-
-	glUniform3f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z);
-	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
-	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
-	glUniform1f(uniforms.line_shader_uniforms.line_thickness, line_thickness);
-
-	GLuint components_per_vertex = 3;
-	GLuint components_per_position = 3;
-
-	GLuint axis_buffer;
-
-	glGenBuffers(1, &axis_buffer);
-
-	complex<float> v0w(static_cast<float>(ls.vertices[0].x), static_cast<float>(ls.vertices[0].y));
-	complex<float> v1w(static_cast<float>(ls.vertices[1].x), static_cast<float>(ls.vertices[1].y));
-
-	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
-	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
-
-
-	vector<GLfloat> flat_data;
-	flat_data.push_back(v0ndc.real());
-	flat_data.push_back(v0ndc.imag());
-	flat_data.push_back(0.0f);
-
-	flat_data.push_back(v1ndc.real());
-	flat_data.push_back(v1ndc.imag());
-	flat_data.push_back(0.0f);
-
-	GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
-
-	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
-	glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
-
-	glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
-	glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
-		components_per_position,
-		GL_FLOAT,
-		GL_FALSE,
-		components_per_vertex * sizeof(GLfloat),
-		NULL);
-
-	glDrawArrays(GL_LINE_LOOP, 0, num_vertices);
-
-	glDeleteBuffers(1, &axis_buffer);
-}
+//
+//void draw_line_segment(glm::vec3 colour, int win_width, int win_height, float line_thickness, const sortable_line_segment& ls)
+//{
+//	glUseProgram(line_shader.get_program());
+//
+//	glUniform3f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z);
+//	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
+//	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
+//	glUniform1f(uniforms.line_shader_uniforms.line_thickness, line_thickness);
+//
+//	GLuint components_per_vertex = 3;
+//	GLuint components_per_position = 3;
+//
+//	GLuint axis_buffer;
+//
+//	glGenBuffers(1, &axis_buffer);
+//
+//	complex<float> v0w(static_cast<float>(ls.vertices[0].x), static_cast<float>(ls.vertices[0].y));
+//	complex<float> v1w(static_cast<float>(ls.vertices[1].x), static_cast<float>(ls.vertices[1].y));
+//
+//	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
+//	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
+//
+//
+//	vector<GLfloat> flat_data;
+//	flat_data.push_back(v0ndc.real());
+//	flat_data.push_back(v0ndc.imag());
+//	flat_data.push_back(0.0f);
+//
+//	flat_data.push_back(v1ndc.real());
+//	flat_data.push_back(v1ndc.imag());
+//	flat_data.push_back(0.0f);
+//
+//	GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
+//
+//	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
+//	glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
+//
+//	glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
+//	glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
+//		components_per_position,
+//		GL_FLOAT,
+//		GL_FALSE,
+//		components_per_vertex * sizeof(GLfloat),
+//		NULL);
+//
+//	glDrawArrays(GL_LINE_LOOP, 0, num_vertices);
+//
+//	glDeleteBuffers(1, &axis_buffer);
+//}
 
 
 
