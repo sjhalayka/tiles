@@ -305,7 +305,7 @@ public:
 	ImVec2 uv_max;
 };
 
-int tiles_per_dimension = 200;
+int tiles_per_dimension = 2000;
 
 
 vector<background_tile> background_tiles;
@@ -723,6 +723,128 @@ void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, floa
 //}
 
 
+bool get_quad_ndc_data(vector<float>& vertex_data, vector<GLuint>& index_data, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, ImVec2 uv_min, ImVec2 uv_max)
+{
+	complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+	complex<float> v1w(static_cast<float>(x), static_cast<float>(y + tile_size));
+	complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
+	complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
+
+	v0w.real(v0w.real() * zoom_factor);
+	v0w.imag(v0w.imag() * zoom_factor);
+	v1w.real(v1w.real() * zoom_factor);
+	v1w.imag(v1w.imag() * zoom_factor);
+	v2w.real(v2w.real() * zoom_factor);
+	v2w.imag(v2w.imag() * zoom_factor);
+	v3w.real(v3w.real() * zoom_factor);
+	v3w.imag(v3w.imag() * zoom_factor);
+
+	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
+	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
+	complex<float> v2ndc = get_ndc_coords_from_window_coords(win_width, win_height, v2w);
+	complex<float> v3ndc = get_ndc_coords_from_window_coords(win_width, win_height, v3w);
+
+	size_t count = 0;
+
+	if (!(v0ndc.real() < -1 || v0ndc.real() > 1 || v0ndc.imag() < -1 || v0ndc.imag() > 1))
+		count++;
+
+	if (!(v1ndc.real() < -1 || v1ndc.real() > 1 || v1ndc.imag() < -1 || v1ndc.imag() > 1))
+		count++;
+
+	if (!(v2ndc.real() < -1 || v2ndc.real() > 1 || v2ndc.imag() < -1 || v2ndc.imag() > 1))
+		count++;
+
+	if (!(v3ndc.real() < -1 || v3ndc.real() > 1 || v3ndc.imag() < -1 || v3ndc.imag() > 1))
+		count++;
+
+	if (count == 0)
+		return false;
+
+	vertex_data.push_back(v0ndc.real());
+	vertex_data.push_back(v0ndc.imag());
+	vertex_data.push_back(0);
+	vertex_data.push_back(uv_min.x);
+	vertex_data.push_back(uv_max.y);
+
+	vertex_data.push_back(v1ndc.real());
+	vertex_data.push_back(v1ndc.imag());
+	vertex_data.push_back(0);
+	vertex_data.push_back(uv_min.x);
+	vertex_data.push_back(uv_min.y);
+
+	vertex_data.push_back(v2ndc.real());
+	vertex_data.push_back(v2ndc.imag());
+	vertex_data.push_back(0);
+	vertex_data.push_back(uv_max.x);
+	vertex_data.push_back(uv_min.y);
+
+	vertex_data.push_back(v3ndc.real());
+	vertex_data.push_back(v3ndc.imag());
+	vertex_data.push_back(0);
+	vertex_data.push_back(uv_max.x);
+	vertex_data.push_back(uv_max.y);
+
+	size_t vertex_data_index = vertex_data.size();
+
+	index_data.push_back(0 + vertex_data_index / 5 - 4);
+	index_data.push_back(1 + vertex_data_index / 5 - 4);
+	index_data.push_back(2 + vertex_data_index / 5 - 4);
+	index_data.push_back(0 + vertex_data_index / 5 - 4);
+	index_data.push_back(2 + vertex_data_index / 5 - 4);
+	index_data.push_back(3 + vertex_data_index / 5 - 4);
+
+	return true;
+}
+
+
+void draw_quad_ndc_data(vector<float>& vertex_data, vector<GLuint>& index_data, GLuint tex_handle, long signed int win_width, long signed int win_height)
+{
+	static GLuint vao = 0, vbo = 0, ibo = 0;
+
+	if (!glIsVertexArray(vao))
+	{
+		glGenVertexArrays(1, &vao);
+		glGenBuffers(1, &vbo);
+		glGenBuffers(1, &ibo);
+	}
+
+	// https://raw.githubusercontent.com/progschj/OpenGL-Examples/master/03texture.cpp
+
+	glBindVertexArray(vao);
+	glBindBuffer(GL_ARRAY_BUFFER, vbo);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * vertex_data.size(), &vertex_data[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (char*)0 + 0 * sizeof(GLfloat));
+	glEnableVertexAttribArray(1);
+	glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (char*)0 + 3 * sizeof(GLfloat));
+
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ibo);
+
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(GLuint) * index_data.size(), &index_data[0], GL_STATIC_DRAW);
+
+	glBindVertexArray(0);
+
+	glUseProgram(ortho_shader.get_program());
+
+	glActiveTexture(GL_TEXTURE0);
+	glBindTexture(GL_TEXTURE_2D, tex_handle);
+
+	glUniform1i(uniforms.ortho_shader_uniforms.tex, 0);
+	glUniform1i(uniforms.ortho_shader_uniforms.viewport_width, win_width);
+	glUniform1i(uniforms.ortho_shader_uniforms.viewport_height, win_height);
+
+	glBindVertexArray(vao);
+
+	glDrawElements(GL_TRIANGLES, index_data.size(), GL_UNSIGNED_INT, 0);
+
+
+
+
+	//return inside;
+}
 
 
 
@@ -1222,7 +1344,7 @@ int main(int, char**)
 		{
 			if (last_mousewheel < 0)
 				zoom_factor *= 0.5;// last_mousewheel * 0.1f;
-			else if(last_mousewheel > 0)
+			else if (last_mousewheel > 0)
 				zoom_factor *= 2.0;
 
 			//if (last_mousewheel != 0)
@@ -1714,8 +1836,8 @@ int main(int, char**)
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-
-
+		vector<float> vertex_data;
+		vector<GLuint> index_data;
 
 		for (size_t i = 0; i < tiles_per_dimension; i++)
 		{
@@ -1723,18 +1845,40 @@ int main(int, char**)
 			{
 				size_t index = i * tiles_per_dimension + j;
 
-				vector<quad> quads;
-
-				int x, y;
-				SDL_GetMouseState(&x, &y);
-
-				int x_ = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
-				int y_ = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
+				int x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
+				int y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
 
 				//if(x_ >= 0 && x_ <= (int)io.DisplaySize.x && y_ >= 0 && y_ <= (int)io.DisplaySize.y)
-				bool inside = draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, main_tiles_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+				//bool inside = draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, main_tiles_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+
+				bool draw = get_quad_ndc_data(vertex_data, index_data, x, y, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, background_tiles[index].uv_min, background_tiles[index].uv_max);
 			}
 		}
+
+		draw_quad_ndc_data(vertex_data, index_data, main_tiles_texture, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+
+
+
+
+
+		//for (size_t i = 0; i < tiles_per_dimension; i++)
+		//{
+		//	for (size_t j = 0; j < tiles_per_dimension; j++)
+		//	{
+		//		size_t index = i * tiles_per_dimension + j;
+
+		//		vector<quad> quads;
+
+		//		int x, y;
+		//		SDL_GetMouseState(&x, &y);
+
+		//		int x_ = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
+		//		int y_ = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
+
+		//		//if(x_ >= 0 && x_ <= (int)io.DisplaySize.x && y_ >= 0 && y_ <= (int)io.DisplaySize.y)
+		//		bool inside = draw_textured_quad(false, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, main_tiles_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+		//	}
+		//}
 
 
 
@@ -1777,7 +1921,7 @@ int main(int, char**)
 
 				//if (x >= 0 && x <= (int)io.DisplaySize.x && y >= 0 && y <= (int)io.DisplaySize.y)
 				if (zoom_factor > 0.5)
-				draw_quad_line_loop(glm::vec3(0.1, 0.1, 0.1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 1.0, q);
+					draw_quad_line_loop(glm::vec3(0.1, 0.1, 0.1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 1.0, q);
 			}
 		}
 
@@ -2001,7 +2145,7 @@ int main(int, char**)
 					q.vertices[2].y += half_height * zoom_factor;
 					q.vertices[3].y += half_height * zoom_factor;
 
-	
+
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
 			}
