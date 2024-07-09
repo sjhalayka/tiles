@@ -1278,14 +1278,14 @@ int main(int, char**)
 			set<size_t> to_draw;
 
 
-			float width_factor = 1.0f;// (float)brush_size / io.DisplaySize.x;
-			float height_factor = 1.0f;// (float)brush_size / io.DisplaySize.y;
+			float width_factor = 2.0f/zoom_factor;// (float)brush_size / io.DisplaySize.x;
+			float height_factor = 2.0f/zoom_factor;// (float)brush_size / io.DisplaySize.y;
 
-			if (brush_size >= io.DisplaySize.x)
-				width_factor = (float)brush_size / io.DisplaySize.x;
+			//if (brush_size >= io.DisplaySize.x)
+			//	width_factor = (float)brush_size / io.DisplaySize.x;
 
-			if (brush_size >= io.DisplaySize.y)
-				height_factor = (float)brush_size / io.DisplaySize.y;
+			//if (brush_size >= io.DisplaySize.y)
+			//	height_factor = (float)brush_size / io.DisplaySize.y;
 
 
 			// Find brush centre
@@ -1315,7 +1315,7 @@ int main(int, char**)
 
 					//cout << width_factor << " " << height_factor << endl;
 
-					if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
+					if (v0ndc.real() < -width_factor  || v0ndc.real() > width_factor  || v0ndc.imag() < -height_factor  || v0ndc.imag() > height_factor)
 					{
 						continue;
 					}
@@ -1351,9 +1351,6 @@ int main(int, char**)
 						complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
 
 						size_t count = 0;
-
-						float width_factor = 1.0f;// (float)brush_size / io.DisplaySize.x;
-						float height_factor = 1.0f;// (float)brush_size / io.DisplaySize.y;
 
 						//cout << width_factor << " " << height_factor << endl;
 					
@@ -1428,6 +1425,7 @@ int main(int, char**)
 
 						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
 
+
 						complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
 						complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
 
@@ -1437,6 +1435,69 @@ int main(int, char**)
 						{
 							continue;
 						}
+						else
+						{
+
+						}
+						
+						
+						
+						
+						/*
+
+
+						int max_brush_size = brush_size;
+
+						if (tool == TOOL_PAINT_CUSTOM)
+						{
+							if (custom_brush1_width > max_brush_size)
+								max_brush_size = custom_brush1_width;
+
+							if (custom_brush1_height > max_brush_size)
+								max_brush_size = custom_brush1_height;
+						}
+
+
+						glm::vec3 a((int)x, (int)y, 0);
+						glm::vec3 b((float)(int)io.DisplaySize.x * 0.5f / zoom_factor, (float)(int)io.DisplaySize.y * 0.5f / zoom_factor, 0);
+
+						if (distance(a, b) <= max_brush_size)
+							to_draw.insert(index);
+							
+							
+							
+						*/
+
+
+
+						//continue;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+						//complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
+						//complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
+
+						////cout << width_factor << " " << height_factor << endl;
+
+						//if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
+						//{
+						//	continue;
+						//}
 
 
 
