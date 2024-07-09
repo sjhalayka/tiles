@@ -71,15 +71,15 @@ struct
 uniforms;
 
 
-	bool operator< (const glm::vec3& lhs, const glm::vec3& rhs)
-	{
-		return glm::all(glm::lessThan(lhs, rhs));
-	}
+bool operator< (const glm::vec3& lhs, const glm::vec3& rhs)
+{
+	return glm::all(glm::lessThan(lhs, rhs));
+}
 
-	bool operator> (const glm::vec3& lhs, const glm::vec3& rhs)
-	{
-		return glm::all(glm::lessThan(lhs, rhs));
-	}
+bool operator> (const glm::vec3& lhs, const glm::vec3& rhs)
+{
+	return glm::all(glm::lessThan(lhs, rhs));
+}
 
 class sortable_line_segment
 {
@@ -305,7 +305,7 @@ public:
 	ImVec2 uv_max;
 };
 
-int tiles_per_dimension = 2000;
+int tiles_per_dimension = 200;
 
 
 vector<background_tile> background_tiles;
@@ -1278,14 +1278,25 @@ int main(int, char**)
 			set<size_t> to_draw;
 
 
-			float width_factor = 2.0f/zoom_factor;// (float)brush_size / io.DisplaySize.x;
-			float height_factor = 2.0f/zoom_factor;// (float)brush_size / io.DisplaySize.y;
+			float width_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (io.DisplaySize.x* brush_size)* zoom_factor;// (float)brush_size / io.DisplaySize.x;
+			float height_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (float)brush_size / io.DisplaySize.y;
 
-			//if (brush_size >= io.DisplaySize.x)
-			//	width_factor = (float)brush_size / io.DisplaySize.x;
+			float max_brush_size = brush_size;
 
-			//if (brush_size >= io.DisplaySize.y)
-			//	height_factor = (float)brush_size / io.DisplaySize.y;
+			if (custom_brush1_width > max_brush_size)
+				max_brush_size = custom_brush1_width;
+
+			if (custom_brush1_height > max_brush_size)
+				max_brush_size = custom_brush1_height;
+
+			if (max_brush_size >= io.DisplaySize.x)
+				width_factor = (float)max_brush_size / io.DisplaySize.x;
+
+			if (max_brush_size >= io.DisplaySize.y)
+				height_factor = (float)max_brush_size / io.DisplaySize.y;
+
+			width_factor *= 2.0f / zoom_factor;
+			height_factor *= 2.0f / zoom_factor;
 
 
 			// Find brush centre
@@ -1313,9 +1324,9 @@ int main(int, char**)
 					complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
 					complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
 
-					//cout << width_factor << " " << height_factor << endl;
+//					cout << width_factor << " " << height_factor << endl;
 
-					if (v0ndc.real() < -width_factor  || v0ndc.real() > width_factor  || v0ndc.imag() < -height_factor  || v0ndc.imag() > height_factor)
+					if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
 					{
 						continue;
 					}
@@ -1351,9 +1362,9 @@ int main(int, char**)
 						complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
 
 						size_t count = 0;
-
+;
 						//cout << width_factor << " " << height_factor << endl;
-					
+
 						if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
 						{
 							continue;
@@ -1425,7 +1436,6 @@ int main(int, char**)
 
 						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
 
-
 						complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
 						complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
 
@@ -1435,69 +1445,6 @@ int main(int, char**)
 						{
 							continue;
 						}
-						else
-						{
-
-						}
-						
-						
-						
-						
-						/*
-
-
-						int max_brush_size = brush_size;
-
-						if (tool == TOOL_PAINT_CUSTOM)
-						{
-							if (custom_brush1_width > max_brush_size)
-								max_brush_size = custom_brush1_width;
-
-							if (custom_brush1_height > max_brush_size)
-								max_brush_size = custom_brush1_height;
-						}
-
-
-						glm::vec3 a((int)x, (int)y, 0);
-						glm::vec3 b((float)(int)io.DisplaySize.x * 0.5f / zoom_factor, (float)(int)io.DisplaySize.y * 0.5f / zoom_factor, 0);
-
-						if (distance(a, b) <= max_brush_size)
-							to_draw.insert(index);
-							
-							
-							
-						*/
-
-
-
-						//continue;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-						//complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
-						//complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
-
-						////cout << width_factor << " " << height_factor << endl;
-
-						//if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
-						//{
-						//	continue;
-						//}
 
 
 
@@ -1516,7 +1463,7 @@ int main(int, char**)
 							continue;
 
 
-			
+
 
 
 
@@ -1823,7 +1770,7 @@ int main(int, char**)
 				q.vertices[3].x = v3w.real();
 				q.vertices[3].y = v3w.imag();
 
-				//if (x >= 0 && x <= (int)io.DisplaySize.x && y >= 0 && y <= (int)io.DisplaySize.y)
+				if(zoom_factor >= 0.5f)
 				draw_quad_line_loop(glm::vec3(0.1, 0.1, 0.1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 1.0, q);
 			}
 		}
@@ -2029,7 +1976,7 @@ int main(int, char**)
 					float half_width = -custom_brush1_img.cols * block_size / 2.0f;
 					float half_height = custom_brush1_img.rows * block_size / 2.0f;
 
-					q.vertices[0].x = x + block_size* zoom_factor * i - block_size*0.5f*zoom_factor;// custom_brush1_img.rows;
+					q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
@@ -2038,15 +1985,15 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					q.vertices[0].x += half_width*zoom_factor;
-					q.vertices[1].x += half_width*zoom_factor;
-					q.vertices[2].x += half_width*zoom_factor;
-					q.vertices[3].x += half_width*zoom_factor;
+					q.vertices[0].x += half_width * zoom_factor;
+					q.vertices[1].x += half_width * zoom_factor;
+					q.vertices[2].x += half_width * zoom_factor;
+					q.vertices[3].x += half_width * zoom_factor;
 
-					q.vertices[0].y += half_height*zoom_factor;
-					q.vertices[1].y += half_height*zoom_factor;
-					q.vertices[2].y += half_height*zoom_factor;
-					q.vertices[3].y += half_height*zoom_factor;
+					q.vertices[0].y += half_height * zoom_factor;
+					q.vertices[1].y += half_height * zoom_factor;
+					q.vertices[2].y += half_height * zoom_factor;
+					q.vertices[3].y += half_height * zoom_factor;
 
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
