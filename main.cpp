@@ -1220,7 +1220,10 @@ int main(int, char**)
 
 		if (!hovered)
 		{
-			zoom_factor += last_mousewheel * 0.1f;
+			if (last_mousewheel < 0)
+				zoom_factor *= 0.5;// last_mousewheel * 0.1f;
+			else if(last_mousewheel > 0)
+				zoom_factor *= 2.0;
 
 			//if (last_mousewheel != 0)
 			//{
@@ -1277,7 +1280,6 @@ int main(int, char**)
 
 			set<size_t> to_draw;
 
-
 			float width_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (io.DisplaySize.x* brush_size)* zoom_factor;// (float)brush_size / io.DisplaySize.x;
 			float height_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (float)brush_size / io.DisplaySize.y;
 
@@ -1324,7 +1326,7 @@ int main(int, char**)
 					complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
 					complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
 
-//					cout << width_factor << " " << height_factor << endl;
+					//cout << width_factor << " " << height_factor << endl;
 
 					if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
 					{
@@ -1362,7 +1364,10 @@ int main(int, char**)
 						complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
 
 						size_t count = 0;
-;
+
+						float width_factor = 1.0f;// (float)brush_size / io.DisplaySize.x;
+						float height_factor = 1.0f;// (float)brush_size / io.DisplaySize.y;
+
 						//cout << width_factor << " " << height_factor << endl;
 
 						if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
@@ -1770,7 +1775,8 @@ int main(int, char**)
 				q.vertices[3].x = v3w.real();
 				q.vertices[3].y = v3w.imag();
 
-				if(zoom_factor >= 0.5f)
+				//if (x >= 0 && x <= (int)io.DisplaySize.x && y >= 0 && y <= (int)io.DisplaySize.y)
+				if (zoom_factor > 0.5)
 				draw_quad_line_loop(glm::vec3(0.1, 0.1, 0.1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 1.0, q);
 			}
 		}
@@ -1995,6 +2001,7 @@ int main(int, char**)
 					q.vertices[2].y += half_height * zoom_factor;
 					q.vertices[3].y += half_height * zoom_factor;
 
+	
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
 			}
