@@ -377,16 +377,10 @@ bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
 
 bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vector<quad>& quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
 {
-
-
 	complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
 	complex<float> v1w(static_cast<float>(x), static_cast<float>(y + tile_size));
 	complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
 	complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
-
-
-
-
 
 	v0w.real(v0w.real() * zoom_factor);
 	v0w.imag(v0w.imag() * zoom_factor);
@@ -396,6 +390,8 @@ bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vect
 	v2w.imag(v2w.imag() * zoom_factor);
 	v3w.real(v3w.real() * zoom_factor);
 	v3w.imag(v3w.imag() * zoom_factor);
+
+
 
 	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
 	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
@@ -921,7 +917,7 @@ int main(int, char**)
 
 	int tool = 0;
 
-	int brush_size = 4;
+	int brush_size = 20;
 
 
 	vector<int> prev_tools;
@@ -1281,12 +1277,48 @@ int main(int, char**)
 
 			set<size_t> to_draw;
 
+
+			float width_factor = 1.0f;// (float)brush_size / io.DisplaySize.x;
+			float height_factor = 1.0f;// (float)brush_size / io.DisplaySize.y;
+
+			if (brush_size >= io.DisplaySize.x)
+				width_factor = (float)brush_size / io.DisplaySize.x;
+
+			if (brush_size >= io.DisplaySize.y)
+				height_factor = (float)brush_size / io.DisplaySize.y;
+
+
 			// Find brush centre
 			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
 				for (size_t j = 0; j < tiles_per_dimension; j++)
 				{
 					size_t index = i * tiles_per_dimension + j;
+
+					int pixel_x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
+					int pixel_y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
+
+					quad q;
+					q.vertices[0].x = pixel_x;
+					q.vertices[0].y = pixel_y;
+					q.vertices[1].x = pixel_x;
+					q.vertices[1].y = pixel_y + background_tiles[index].tile_size;
+					q.vertices[2].x = pixel_x + background_tiles[index].tile_size;
+					q.vertices[2].y = pixel_y + background_tiles[index].tile_size;
+					q.vertices[3].x = pixel_x + background_tiles[index].tile_size;
+					q.vertices[3].y = pixel_y;
+
+					glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+					complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
+					complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
+
+					//cout << width_factor << " " << height_factor << endl;
+
+					if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
+					{
+						continue;
+					}
 
 					bool found_prev_index = false;
 
@@ -1310,6 +1342,26 @@ int main(int, char**)
 					SDL_GetMouseState(&x, &y);
 
 					inside = draw_textured_quad(true, x, y, quads, ortho_shader.get_program(), int(image_anchor.x) + int(i) * background_tiles[index].tile_size, int(image_anchor.y) + int(j) * background_tiles[index].tile_size, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, main_tiles_texture, background_tiles[index].uv_min, background_tiles[index].uv_max);
+
+					if (quads.size() > 0)
+					{
+						glm::vec3 quad_centre = (quads[0].vertices[0] + quads[0].vertices[1] + quads[0].vertices[2] + quads[0].vertices[3]) * 0.25f;
+
+						complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
+						complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
+
+						size_t count = 0;
+
+						float width_factor = 1.0f;// (float)brush_size / io.DisplaySize.x;
+						float height_factor = 1.0f;// (float)brush_size / io.DisplaySize.y;
+
+						//cout << width_factor << " " << height_factor << endl;
+					
+						if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
+						{
+							continue;
+						}
+					}
 
 					if (inside)
 					{
@@ -1361,6 +1413,33 @@ int main(int, char**)
 					{
 						size_t index = i * tiles_per_dimension + j;
 
+						int x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
+						int y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
+
+						quad q;
+						q.vertices[0].x = x;
+						q.vertices[0].y = y;
+						q.vertices[1].x = x;
+						q.vertices[1].y = y + background_tiles[index].tile_size;
+						q.vertices[2].x = x + background_tiles[index].tile_size;
+						q.vertices[2].y = y + background_tiles[index].tile_size;
+						q.vertices[3].x = x + background_tiles[index].tile_size;
+						q.vertices[3].y = y;
+
+						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+						complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
+						complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
+
+						//cout << width_factor << " " << height_factor << endl;
+
+						if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
+						{
+							continue;
+						}
+
+
+
 						bool found_prev_index = false;
 
 						for (size_t k = 0; k < prev_painted_indices.size(); k++)
@@ -1374,6 +1453,11 @@ int main(int, char**)
 
 						if (found_prev_index)
 							continue;
+
+
+			
+
+
 
 
 						if (tool == TOOL_PAINT)
