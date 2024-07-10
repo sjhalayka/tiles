@@ -166,8 +166,12 @@ int main(int, char**)
 	{
 		for (size_t j = 0; j < tiles_per_dimension; j++)
 		{
-			size_t background_chunk_x = i / num_chunks_per_map_dimension;
-			size_t background_chunk_y = j / num_chunks_per_map_dimension;
+			size_t background_chunk_x = i / tiles_per_chunk_dimension;
+			size_t background_chunk_y = j / tiles_per_chunk_dimension;
+
+
+
+
 			size_t background_chunk_index = background_chunk_x * num_chunks_per_map_dimension + background_chunk_y;
 
 			background_chunks[background_chunk_index].indices.push_back(ImVec2(i, j));
@@ -180,35 +184,50 @@ int main(int, char**)
 		}
 	}
 
-	for (size_t i = 0; i < background_chunks.size(); i++)
+
+
+	for (size_t k = 0; k < num_chunks_per_map_dimension; k++)
 	{
-		float min_x = FLT_MAX;
-		float max_x = -FLT_MAX;
-		float min_y = FLT_MAX;
-		float max_y = -FLT_MAX;
-
-		for (size_t j = 0; j < background_chunks[i].indices.size(); j++)
+		for (size_t l = 0; l < num_chunks_per_map_dimension; l++)
 		{
-			ImVec2 indices = background_chunks[i].indices[j];
-			size_t index = indices.x * tiles_per_dimension + indices.y;
+			size_t index = k * num_chunks_per_map_dimension + l;
 
-			float pixel_x = int(image_anchor.x) + int(indices.x) * background_tiles[index].tile_size;
-			float pixel_y = int(image_anchor.y) + int(indices.y) * background_tiles[index].tile_size;
+			float min_x = FLT_MAX;
+			float max_x = -FLT_MAX;
+			float min_y = FLT_MAX;
+			float max_y = -FLT_MAX;
 
-			if (pixel_x < min_x)
-				min_x = pixel_x;
-			if (pixel_x > max_x)
-				max_x = pixel_x;
+			for (size_t m = 0; m < background_chunks[index].indices.size(); m++)
+			{
+				ImVec2 indices = background_chunks[index].indices[m];
+				size_t tile_index = indices.x * tiles_per_dimension + indices.y;
 
-			if (pixel_y < min_y)
-				min_y = pixel_y;
-			if (pixel_y > max_y)
-				max_y = pixel_y;
+				float pixel_x = int(image_anchor.x) + int(indices.x) * background_tiles[tile_index].tile_size;
+				float pixel_y = int(image_anchor.y) + int(indices.y) * background_tiles[tile_index].tile_size;
+
+				if (pixel_x < min_x)
+					min_x = pixel_x;
+				if (pixel_x > max_x)
+					max_x = pixel_x;
+
+				if (pixel_y < min_y)
+					min_y = pixel_y;
+				if (pixel_y > max_y)
+					max_y = pixel_y;
+
+				//cout << min_x << " " << min_y << endl;
+			}
+
+			background_chunks[index].region_min = ImVec2(min_x, min_y);
+			background_chunks[index].region_max = ImVec2(max_x, max_y);
+
+			//cout << "min " << min_x << " " << min_y << endl;
+
+			//cout << "max " << max_x << " " << max_y << endl;
+			//cout << endl;
 		}
-
-		background_chunks[i].region_min = ImVec2(min_x, min_y);
-		background_chunks[i].region_max = ImVec2(max_x, max_y);
 	}
+
 
 
 
@@ -870,69 +889,214 @@ int main(int, char**)
 			if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
 				selected_indices.clear();
 
-			for (size_t k = 0; k < background_chunks.size(); k++)
+			glm::vec3 start_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
+			glm::vec3 end_chunk;// = glm::vec3(num_chunks_per_map_dimension, num_chunks_per_map_dimension, 0);
+
+			for (size_t k = 0; k < num_chunks_per_map_dimension; k++)
 			{
-				for (size_t l = 0; l < background_chunks[k].indices.size(); l++)
+				for (size_t l = 0; l < num_chunks_per_map_dimension; l++)
 				{
-					size_t i = background_chunks[k].indices[l].x;
-					size_t j = background_chunks[k].indices[l].y;
-
-					size_t index = i * tiles_per_dimension + j;
-
-					const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
-					const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
-
-	/*				if (x < 0 || x >(int)io.DisplaySize.x / zoom_factor)
-						break;
-
-					if (y < 0 || y >(int)io.DisplaySize.y / zoom_factor)
-						break;*/
-
-					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
-					complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
-					complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
-
-					v0w.real(v0w.real() * zoom_factor);
-					v0w.imag(v0w.imag() * zoom_factor);
-					v1w.real(v1w.real() * zoom_factor);
-					v1w.imag(v1w.imag() * zoom_factor);
-					v2w.real(v2w.real() * zoom_factor);
-					v2w.imag(v2w.imag() * zoom_factor);
-					v3w.real(v3w.real() * zoom_factor);
-					v3w.imag(v3w.imag() * zoom_factor);
-
-					quad q;
-					q.vertices[0].x = v0w.real();
-					q.vertices[0].y = v0w.imag();
-					q.vertices[1].x = v1w.real();
-					q.vertices[1].y = v1w.imag();
-					q.vertices[2].x = v2w.real();
-					q.vertices[2].y = v2w.imag();
-					q.vertices[3].x = v3w.real();
-					q.vertices[3].y = v3w.imag();
-
-					glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+					size_t index = k * num_chunks_per_map_dimension + l;
 
 					vector<glm::vec3> points;
-					points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
-					points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0));
-					points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
-					points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_min.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_max.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_max.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_min.y, 0));
 
-					if (point_in_polygon(quad_centre, points) ||
-						point_in_polygon(q.vertices[0], points) ||
-						point_in_polygon(q.vertices[1], points) ||
-						point_in_polygon(q.vertices[2], points) ||
-						point_in_polygon(q.vertices[3], points))
+					quad q;
+					q.vertices[0] = points[0];
+					q.vertices[1] = points[1];
+					q.vertices[2] = points[2];
+					q.vertices[3] = points[3];
+
+					//cout << background_chunks[index].region_min.x << " " << background_chunks[index].region_max.x << endl;
+					//cout << background_chunks[index].region_min.y << " " << background_chunks[index].region_max.y << endl;
+					//cout << endl;
+
+					glm::vec3 ss;
+					ss.x = selected_start.x;
+					ss.y = selected_start.y;
+
+
+
+
+					//if (point_in_quad(ss, q))
+					if (point_in_polygon(ss, points))
 					{
-						if (tool == TOOL_SELECT_SUBTRACT)
-							selected_indices.erase(index);
-						else
-							selected_indices.insert(index);
+						cout << "found start_chnunk" << endl;
+
+						start_chunk = glm::vec3(k, l, 0);
+						k = l = num_chunks_per_map_dimension;
+						break;
 					}
 				}
 			}
+
+			for (size_t k = 0; k < num_chunks_per_map_dimension; k++)
+			{
+				for (size_t l = 0; l < num_chunks_per_map_dimension; l++)
+				{
+					size_t index = k * num_chunks_per_map_dimension + l;
+
+					vector<glm::vec3> points;
+					points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_min.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_min.x,  background_chunks[index].region_max.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_max.x,  background_chunks[index].region_max.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_max.x,  background_chunks[index].region_min.y, 0));
+
+					glm::vec3 se;
+					se.x = selected_end.x;
+					se.y = selected_end.y;
+
+
+					quad q;
+					q.vertices[0] = points[0];
+					q.vertices[1] = points[1];
+					q.vertices[2] = points[2];
+					q.vertices[3] = points[3];
+
+					//if (point_in_quad(se, q))
+					if (point_in_polygon(se, points))
+					{
+						cout << "found end_chunk" << endl;
+						end_chunk = glm::vec3(k, l, 0);
+						k = l = num_chunks_per_map_dimension;
+						break;
+					}
+				}
+			}
+
+			cout << "ss " << start_chunk.x << " " << start_chunk.y << endl;
+			cout << "se " << end_chunk.x << " " << end_chunk.y << endl;
+			cout << endl;
+
+			for (size_t k = start_chunk.x; k < end_chunk.x; k++)
+			{
+				for (size_t l = start_chunk.y; l < end_chunk.y; l++)
+				{
+					size_t chunk_index = k * num_chunks_per_map_dimension + l;
+
+					for (size_t m = 0; m < background_chunks[chunk_index].indices.size(); m++)
+					{
+						size_t i = background_chunks[chunk_index].indices[m].x;
+						size_t j = background_chunks[chunk_index].indices[m].y;
+
+						size_t index = i * tiles_per_dimension + j;
+
+						const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+						const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+
+						complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+						complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+						complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+						complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+
+						v0w.real(v0w.real() * zoom_factor);
+						v0w.imag(v0w.imag() * zoom_factor);
+						v1w.real(v1w.real() * zoom_factor);
+						v1w.imag(v1w.imag() * zoom_factor);
+						v2w.real(v2w.real() * zoom_factor);
+						v2w.imag(v2w.imag() * zoom_factor);
+						v3w.real(v3w.real() * zoom_factor);
+						v3w.imag(v3w.imag() * zoom_factor);
+
+						quad q;
+						q.vertices[0].x = v0w.real();
+						q.vertices[0].y = v0w.imag();
+						q.vertices[1].x = v1w.real();
+						q.vertices[1].y = v1w.imag();
+						q.vertices[2].x = v2w.real();
+						q.vertices[2].y = v2w.imag();
+						q.vertices[3].x = v3w.real();
+						q.vertices[3].y = v3w.imag();
+
+						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+						vector<glm::vec3> points;
+						points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
+						points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0));
+						points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
+						points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
+
+						if (point_in_polygon(quad_centre, points) ||
+							point_in_polygon(q.vertices[0], points) ||
+							point_in_polygon(q.vertices[1], points) ||
+							point_in_polygon(q.vertices[2], points) ||
+							point_in_polygon(q.vertices[3], points))
+						{
+							if (tool == TOOL_SELECT_SUBTRACT)
+								selected_indices.erase(index);
+							else
+								selected_indices.insert(index);
+						}
+					}
+				}
+			}
+
+	//		for (size_t k = 0; k < background_chunks.size(); k++)
+	//		{
+	//			for (size_t l = 0; l < background_chunks[k].indices.size(); l++)
+	//			{
+	//				size_t i = background_chunks[k].indices[l].x;
+	//				size_t j = background_chunks[k].indices[l].y;
+
+	//				size_t index = i * tiles_per_dimension + j;
+
+	//				const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+	//				const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+
+	///*				if (x < 0 || x >(int)io.DisplaySize.x / zoom_factor)
+	//					break;
+
+	//				if (y < 0 || y >(int)io.DisplaySize.y / zoom_factor)
+	//					break;*/
+
+	//				complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+	//				complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+	//				complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+	//				complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+
+	//				v0w.real(v0w.real() * zoom_factor);
+	//				v0w.imag(v0w.imag() * zoom_factor);
+	//				v1w.real(v1w.real() * zoom_factor);
+	//				v1w.imag(v1w.imag() * zoom_factor);
+	//				v2w.real(v2w.real() * zoom_factor);
+	//				v2w.imag(v2w.imag() * zoom_factor);
+	//				v3w.real(v3w.real() * zoom_factor);
+	//				v3w.imag(v3w.imag() * zoom_factor);
+
+	//				quad q;
+	//				q.vertices[0].x = v0w.real();
+	//				q.vertices[0].y = v0w.imag();
+	//				q.vertices[1].x = v1w.real();
+	//				q.vertices[1].y = v1w.imag();
+	//				q.vertices[2].x = v2w.real();
+	//				q.vertices[2].y = v2w.imag();
+	//				q.vertices[3].x = v3w.real();
+	//				q.vertices[3].y = v3w.imag();
+
+	//				glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+	//				vector<glm::vec3> points;
+	//				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
+	//				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0));
+	//				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
+	//				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
+
+	//				if (point_in_polygon(quad_centre, points) ||
+	//					point_in_polygon(q.vertices[0], points) ||
+	//					point_in_polygon(q.vertices[1], points) ||
+	//					point_in_polygon(q.vertices[2], points) ||
+	//					point_in_polygon(q.vertices[3], points))
+	//				{
+	//					if (tool == TOOL_SELECT_SUBTRACT)
+	//						selected_indices.erase(index);
+	//					else
+	//						selected_indices.insert(index);
+	//				}
+	//			}
+	//		}
 
 			//for (size_t i = 0; i < tiles_per_dimension; i++)
 			//{

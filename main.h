@@ -318,7 +318,7 @@ public:
 };
 
 int tiles_per_dimension = 2000;
-int tiles_per_chunk_dimension = 10;
+int tiles_per_chunk_dimension = 100;
 
 
 vector<background_chunk> background_chunks;
@@ -327,19 +327,17 @@ vector<background_tile> background_tiles;
 float zoom_factor = 1.0f;
 float last_mousewheel = 0.0f;
 
-//
-//bool point_in_quad(const glm::vec3& point, const quad& q)
-//{
-//	bool inside = false;
-//	
-//	if (point.x < q.vertices[0].x || point.x > q.vertices[3].x)
-//		return false;
-//
-//	if (point.y < q.vertices[2].y || point.y > q.vertices[3].y)
-//		return false;
-//
-//	return true;
-//}
+
+bool point_in_quad(const glm::vec3& point, const quad& q)
+{
+	if (point.x < q.vertices[0].x || point.x > q.vertices[3].x)
+		return false;
+
+	if (point.y < q.vertices[2].y || point.y > q.vertices[3].y)
+		return false;
+
+	return true;
+}
 
 bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
 {
