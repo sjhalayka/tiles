@@ -870,20 +870,23 @@ int main(int, char**)
 			if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
 				selected_indices.clear();
 
-			for (size_t i = 0; i < tiles_per_dimension; i++)
+			for (size_t k = 0; k < background_chunks.size(); k++)
 			{
-				for (size_t j = 0; j < tiles_per_dimension; j++)
+				for (size_t l = 0; l < background_chunks[k].indices.size(); l++)
 				{
+					size_t i = background_chunks[k].indices[l].x;
+					size_t j = background_chunks[k].indices[l].y;
+
 					size_t index = i * tiles_per_dimension + j;
 
 					const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
 					const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
 
-					if (x < 0 || x > (int)io.DisplaySize.x / zoom_factor)
+	/*				if (x < 0 || x >(int)io.DisplaySize.x / zoom_factor)
 						break;
 
-					if (y < 0 || y > (int)io.DisplaySize.y / zoom_factor)
-						break;
+					if (y < 0 || y >(int)io.DisplaySize.y / zoom_factor)
+						break;*/
 
 					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
 					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
@@ -930,6 +933,14 @@ int main(int, char**)
 					}
 				}
 			}
+
+			//for (size_t i = 0; i < tiles_per_dimension; i++)
+			//{
+			//	for (size_t j = 0; j < tiles_per_dimension; j++)
+			//	{
+
+			//	}
+			//}
 		}
 
 
