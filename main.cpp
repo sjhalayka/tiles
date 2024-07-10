@@ -166,17 +166,13 @@ int main(int, char**)
 	{
 		for (size_t j = 0; j < tiles_per_dimension; j++)
 		{
-			size_t background_chunk_x = i / tiles_per_chunk_dimension;
-			size_t background_chunk_y = j / tiles_per_chunk_dimension;
-
-
-
-
-			size_t background_chunk_index = background_chunk_x * num_chunks_per_map_dimension + background_chunk_y;
+			const size_t background_chunk_x = i / tiles_per_chunk_dimension;
+			const size_t background_chunk_y = j / tiles_per_chunk_dimension;
+			const size_t background_chunk_index = background_chunk_x * num_chunks_per_map_dimension + background_chunk_y;
 
 			background_chunks[background_chunk_index].indices.push_back(ImVec2(i, j));
 	
-			size_t index = i * tiles_per_dimension + j;
+			const size_t index = i * tiles_per_dimension + j;
 			
 			background_tiles[index].tile_size = 36;
 			background_tiles[index].uv_min = ImVec2(0, 0);
@@ -207,24 +203,19 @@ int main(int, char**)
 
 				if (pixel_x < min_x)
 					min_x = pixel_x;
+
 				if (pixel_x > max_x)
 					max_x = pixel_x;
 
 				if (pixel_y < min_y)
 					min_y = pixel_y;
+
 				if (pixel_y > max_y)
 					max_y = pixel_y;
-
-				//cout << min_x << " " << min_y << endl;
 			}
 
 			background_chunks[index].region_min = ImVec2(min_x, min_y);
 			background_chunks[index].region_max = ImVec2(max_x, max_y);
-
-			//cout << "min " << min_x << " " << min_y << endl;
-
-			//cout << "max " << max_x << " " << max_y << endl;
-			//cout << endl;
 		}
 	}
 
@@ -889,8 +880,8 @@ int main(int, char**)
 			if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
 				selected_indices.clear();
 
-			glm::vec3 start_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
-			glm::vec3 end_chunk;// = glm::vec3(num_chunks_per_map_dimension, num_chunks_per_map_dimension, 0);
+			glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
+			glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
 
 			for (size_t k = 0; k < num_chunks_per_map_dimension; k++)
 			{
@@ -910,21 +901,14 @@ int main(int, char**)
 					q.vertices[2] = points[2];
 					q.vertices[3] = points[3];
 
-					//cout << background_chunks[index].region_min.x << " " << background_chunks[index].region_max.x << endl;
-					//cout << background_chunks[index].region_min.y << " " << background_chunks[index].region_max.y << endl;
-					//cout << endl;
-
 					glm::vec3 ss;
 					ss.x = selected_start.x;
 					ss.y = selected_start.y;
 
-
-
-
 					//if (point_in_quad(ss, q))
 					if (point_in_polygon(ss, points))
 					{
-						cout << "found start_chnunk" << endl;
+						cout << "found start_chunk" << endl;
 
 						start_chunk = glm::vec3(k, l, 0);
 						k = l = num_chunks_per_map_dimension;
@@ -967,15 +951,30 @@ int main(int, char**)
 				}
 			}
 
-			cout << "ss " << start_chunk.x << " " << start_chunk.y << endl;
-			cout << "se " << end_chunk.x << " " << end_chunk.y << endl;
-			cout << endl;
-
-			for (size_t k = start_chunk.x; k < end_chunk.x; k++)
+			if (end_chunk.x < start_chunk.x)
 			{
-				for (size_t l = start_chunk.y; l < end_chunk.y; l++)
+				float temp = end_chunk.x;
+				end_chunk.x = start_chunk.x;
+				start_chunk.x = temp;
+			}
+
+			if (end_chunk.y < start_chunk.y)
+			{
+				float temp = end_chunk.y;
+				end_chunk.y = start_chunk.y;
+				start_chunk.y = temp;
+			}
+
+			cout << start_chunk.x << " " << end_chunk.x << endl;
+			cout << start_chunk.y << " " << end_chunk.y << endl;
+
+			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
+			{
+				for (size_t l = start_chunk.y; l <= end_chunk.y; l++)
 				{
 					size_t chunk_index = k * num_chunks_per_map_dimension + l;
+
+					cout << background_chunks[chunk_index].indices.size() << endl;
 
 					for (size_t m = 0; m < background_chunks[chunk_index].indices.size(); m++)
 					{
