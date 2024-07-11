@@ -888,8 +888,8 @@ int main(int, char**)
 			glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
 			glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			start_chunk.x = int(selected_start.x) / (tiles_per_chunk_dimension / block_size);
-			start_chunk.y = int(selected_start.y) / (tiles_per_chunk_dimension / block_size);
+			start_chunk.x = int(selected_start.x) / block_size / (tiles_per_chunk_dimension);
+			start_chunk.y = int(selected_start.y) / block_size / (tiles_per_chunk_dimension);
 			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
 			
 			//for (int k = 0; k < num_chunks_per_map_dimension; k++)
@@ -912,11 +912,11 @@ int main(int, char**)
 			//			k = l = num_chunks_per_map_dimension;
 			//			break;
 			//		}
-			//	}
+			//	}	
 			//}
 
-			end_chunk.x = int(selected_end.x) / (tiles_per_chunk_dimension/block_size);
-			end_chunk.y = int(selected_end.y) / (tiles_per_chunk_dimension/block_size);
+			end_chunk.x = int(selected_end.x) / (block_size) / (tiles_per_chunk_dimension);
+			end_chunk.y = int(selected_end.y) / (block_size) / (tiles_per_chunk_dimension);
 			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
 
 
