@@ -891,14 +891,16 @@ int main(int, char**)
 			glm::vec3 start_chunk = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
 			glm::vec3 end_chunk = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			start_chunk.x = (selected_start.x / zoom_factor / block_size / (tiles_per_chunk_dimension));
-			start_chunk.y = (((int)io.DisplaySize.y - selected_start.y) / zoom_factor / block_size / (tiles_per_chunk_dimension));
+			start_chunk.x = (selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension));
+			start_chunk.y = (selected_start.y / (block_size * zoom_factor) / (tiles_per_chunk_dimension));
 
 			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
 
 
-			end_chunk.x = (selected_end.x / zoom_factor / block_size / (tiles_per_chunk_dimension));
-			end_chunk.y = (((int)io.DisplaySize.y - selected_end.y) / zoom_factor / block_size / (tiles_per_chunk_dimension));
+			end_chunk.x = (selected_end.x / (block_size*zoom_factor) / (tiles_per_chunk_dimension));
+			end_chunk.y = (selected_end.y / (block_size * zoom_factor) / (tiles_per_chunk_dimension));
+
+
 
 			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
 
@@ -917,15 +919,15 @@ int main(int, char**)
 			}
 
 
-			start_chunk.x = glm::clamp(start_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
-			start_chunk.y = glm::clamp(start_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+			//start_chunk.x = glm::clamp(start_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
+			//start_chunk.y = glm::clamp(start_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
 
-			end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
-			end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+			//end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
+			//end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
 
-			cout << "start chunk " << start_chunk.x << " " << start_chunk.y << endl;
-			cout << "end chunk " << end_chunk.x << " " << end_chunk.y << endl;
-			cout << endl;
+			//cout << "start chunk " << start_chunk.x << " " << start_chunk.y << endl;
+			//cout << "end chunk " << end_chunk.x << " " << end_chunk.y << endl;
+			//cout << endl;
 
 			for (int k = start_chunk.x; k < end_chunk.x; k++)
 			{
