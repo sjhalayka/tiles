@@ -891,13 +891,15 @@ int main(int, char**)
 			glm::vec3 start_chunk = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
 			glm::vec3 end_chunk = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			start_chunk.x = floorf(selected_start.x / block_size / (tiles_per_chunk_dimension));
-			start_chunk.y = floorf(selected_start.y / block_size / (tiles_per_chunk_dimension));
+			start_chunk.x = (selected_start.x / zoom_factor / block_size / (tiles_per_chunk_dimension));
+			start_chunk.y = (((int)io.DisplaySize.y - selected_start.y) / zoom_factor / block_size / (tiles_per_chunk_dimension));
 
 			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
 
-			end_chunk.x = ceil(selected_end.x / block_size / (tiles_per_chunk_dimension));
-			end_chunk.y = ceil(selected_end.y / block_size / (tiles_per_chunk_dimension));
+
+			end_chunk.x = (selected_end.x / zoom_factor / block_size / (tiles_per_chunk_dimension));
+			end_chunk.y = (((int)io.DisplaySize.y - selected_end.y) / zoom_factor / block_size / (tiles_per_chunk_dimension));
+
 			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
 
 			if (end_chunk.x < start_chunk.x)
@@ -914,8 +916,6 @@ int main(int, char**)
 				start_chunk.y = temp;
 			}
 
-			start_chunk -= 1.0;
-			end_chunk += 1.0;
 
 			start_chunk.x = glm::clamp(start_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
 			start_chunk.y = glm::clamp(start_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
@@ -1131,16 +1131,6 @@ int main(int, char**)
 					draw_quad_line_loop(glm::vec3(0.1, 0.1, 0.1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 1.0, q);
 			}
 		}
-
-
-
-
-
-
-
-
-
-
 
 		for (set<pair<size_t, size_t>>::const_iterator ci = selected_indices.begin(); ci != selected_indices.end(); ci++)
 		{
