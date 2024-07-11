@@ -182,44 +182,43 @@ int main(int, char**)
 
 
 
-	for (size_t k = 0; k < num_chunks_per_map_dimension; k++)
-	{
-		for (size_t l = 0; l < num_chunks_per_map_dimension; l++)
-		{
-			size_t index = k * num_chunks_per_map_dimension + l;
+	//for (size_t k = 0; k < num_chunks_per_map_dimension; k++)
+	//{
+	//	for (size_t l = 0; l < num_chunks_per_map_dimension; l++)
+	//	{
+	//		size_t index = k * num_chunks_per_map_dimension + l;
 
-			float min_x = FLT_MAX;
-			float max_x = -FLT_MAX;
-			float min_y = FLT_MAX;
-			float max_y = -FLT_MAX;
+	//		float min_x = FLT_MAX;
+	//		float max_x = -FLT_MAX;
+	//		float min_y = FLT_MAX;
+	//		float max_y = -FLT_MAX;
 
-			for (size_t m = 0; m < background_chunks[index].indices.size(); m++)
-			{
-				ImVec2 indices = background_chunks[index].indices[m];
-				size_t tile_index = indices.x * tiles_per_dimension + indices.y;
+	//		for (size_t m = 0; m < background_chunks[index].indices.size(); m++)
+	//		{
+	//			ImVec2 indices = background_chunks[index].indices[m];
+	//			size_t tile_index = indices.x * tiles_per_dimension + indices.y;
 
-				float pixel_x = int(image_anchor.x) + int(indices.x) * background_tiles[tile_index].tile_size;
-				float pixel_y = int(image_anchor.y) + int(indices.y) * background_tiles[tile_index].tile_size;
+	//			float pixel_x = int(image_anchor.x) + int(indices.x) * background_tiles[tile_index].tile_size;
+	//			float pixel_y = int(image_anchor.y) + int(indices.y) * background_tiles[tile_index].tile_size;
 
-				if (pixel_x < min_x)
-					min_x = pixel_x;
+	//			if (pixel_x < min_x)
+	//				min_x = pixel_x;
 
-				if (pixel_x > max_x)
-					max_x = pixel_x;
+	//			if (pixel_x > max_x)
+	//				max_x = pixel_x;
 
-				if (pixel_y < min_y)
-					min_y = pixel_y;
+	//			if (pixel_y < min_y)
+	//				min_y = pixel_y;
 
-				if (pixel_y > max_y)
-					max_y = pixel_y;
-			}
+	//			if (pixel_y > max_y)
+	//				max_y = pixel_y;
+	//		}
 
-			//cout << "min " << min_x << " " << min_y << endl;
-			//cout << "max " << max_x << " " << max_y << endl;
-			background_chunks[index].region_min = ImVec2(min_x, min_y);
-			background_chunks[index].region_max = ImVec2(max_x, max_y);
-		}
-	}
+	//		//cout << "min " << min_x << " " << min_y << endl;
+	//		//cout << "max " << max_x << " " << max_y << endl;
+	//
+	//	}
+	//}
 
 
 
@@ -1056,6 +1055,8 @@ int main(int, char**)
 			}
 		}
 
+
+
 		vertex_data.clear();
 
 		for (set<pair<size_t, size_t>>::const_iterator ci = selected_indices.begin(); ci != selected_indices.end(); ci++)
@@ -1093,12 +1094,9 @@ int main(int, char**)
 			q.vertices[3].y = v3w.imag();
 
 			get_quad_lines_ndc_data(vertex_data, x, y, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
-
-
-			//draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 2.0, q);
 		}
 
-		draw_quad_line_ndc_data(vertex_data, (int)io.DisplaySize.x, (int)io.DisplaySize.y);// , main_tiles_texture, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+		draw_quad_line_ndc_data(vertex_data, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 
 		// Draw selected outline 
 		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && ImGui::IsMouseDown(ImGuiMouseButton_Left))

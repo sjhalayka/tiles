@@ -258,8 +258,7 @@ class background_chunk
 {
 public:
 	vector<ImVec2> indices;
-	ImVec2 region_min;
-	ImVec2 region_max;
+
 };
 
 class background_tile
