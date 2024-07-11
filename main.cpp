@@ -897,13 +897,6 @@ int main(int, char**)
 			end_chunk.x = (selected_end.x / (block_size*zoom_factor) / (tiles_per_chunk_dimension));
 			end_chunk.y = (((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension));
 
-
-			start_chunk.x = (start_chunk.x);
-			start_chunk.y = (start_chunk.y);
-
-			end_chunk.x = (end_chunk.x);
-			end_chunk.y = (end_chunk.y);
-
 			if (end_chunk.x < start_chunk.x)
 			{
 				float temp = end_chunk.x;
