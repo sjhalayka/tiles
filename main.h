@@ -63,6 +63,9 @@ struct
 		GLint tex;
 		GLint viewport_width;
 		GLint viewport_height;
+		GLint projection;
+		GLint view;
+		GLint model;
 	}
 	ortho_shader_uniforms;
 
@@ -77,7 +80,9 @@ struct
 }
 uniforms;
 
-
+glm::mat4x4 projection;// = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1000.0f, 1000.0f);
+glm::mat4x4 view;// = glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, 0), glm::vec3(0, 1, 0));
+glm::mat4x4 model;// = glm::mat4x4();
 
 bool operator< (const glm::vec3& lhs, const glm::vec3& rhs)
 {
@@ -464,9 +469,15 @@ bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vect
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, tex_handle);
 
+
+
 	glUniform1i(uniforms.ortho_shader_uniforms.tex, 0);
 	glUniform1i(uniforms.ortho_shader_uniforms.viewport_width, win_width);
 	glUniform1i(uniforms.ortho_shader_uniforms.viewport_height, win_height);
+	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.projection, 1, GL_FALSE, &projection[0][0]);
+	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.view, 1, GL_FALSE, &view[0][0]);
+	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.model, 1, GL_FALSE, &model[0][0]);
+
 
 	glBindVertexArray(vao);
 
@@ -925,6 +936,9 @@ void draw_quad_ndc_data(vector<float>& vertex_data, vector<GLuint>& index_data, 
 	glUniform1i(uniforms.ortho_shader_uniforms.tex, 0);
 	glUniform1i(uniforms.ortho_shader_uniforms.viewport_width, win_width);
 	glUniform1i(uniforms.ortho_shader_uniforms.viewport_height, win_height);
+	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.projection, 1, GL_FALSE, &projection[0][0]);
+	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.view, 1, GL_FALSE, &view[0][0]);
+	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.model, 1, GL_FALSE, &model[0][0]);
 
 	glBindVertexArray(vao);
 

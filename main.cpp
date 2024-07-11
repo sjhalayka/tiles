@@ -69,6 +69,11 @@ int main(int, char**)
 	uniforms.ortho_shader_uniforms.tex = glGetUniformLocation(ortho_shader.get_program(), "tex");
 	uniforms.ortho_shader_uniforms.viewport_width = glGetUniformLocation(ortho_shader.get_program(), "viewport_width");
 	uniforms.ortho_shader_uniforms.viewport_height = glGetUniformLocation(ortho_shader.get_program(), "viewport_height");
+	uniforms.ortho_shader_uniforms.projection = glGetUniformLocation(ortho_shader.get_program(), "projection");
+	uniforms.ortho_shader_uniforms.view = glGetUniformLocation(ortho_shader.get_program(), "view");
+	uniforms.ortho_shader_uniforms.model = glGetUniformLocation(ortho_shader.get_program(), "model");
+
+
 
 	uniforms.line_shader_uniforms.colour = glGetUniformLocation(line_shader.get_program(), "colour");
 	uniforms.line_shader_uniforms.img_width = glGetUniformLocation(line_shader.get_program(), "img_width");
@@ -897,8 +902,8 @@ int main(int, char**)
 
 						size_t index = i * tiles_per_dimension + j;
 
-						const float x = (-(image_anchor.x) + int(i) * background_tiles[index].tile_size);
-						const float y = (-(image_anchor.y) + int(j) * background_tiles[index].tile_size);
+						const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
+						const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
 
 						complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
 						complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
@@ -953,6 +958,10 @@ int main(int, char**)
 		//{
 		//	// paint using right mouse button
 		//}
+
+		projection = glm::mat4x4();// glm::ortho(0.0f, io.DisplaySize.x, -io.DisplaySize.y, 0.0f, -1.0f, 1.0f);
+		view = glm::lookAt(glm::vec3( 0, 0, 1), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+		model = glm::mat4x4();
 
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
