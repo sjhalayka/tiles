@@ -1223,7 +1223,7 @@ int main(int, char**)
 					q.vertices[3].x = v3w.real();
 					q.vertices[3].y = v3w.imag();
 
-					draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 2.0, q);
+					//draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 2.0, q);
 				}
 			}
 		}
