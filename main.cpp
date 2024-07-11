@@ -883,84 +883,22 @@ int main(int, char**)
 
 			if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
 			{
-				//prev_tools.clear();
+				prev_tools.clear();
+				prev_tools.push_back(TOOL_SELECT);
 				selected_indices.clear();
 			}
 
-			glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
-			glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
+			glm::vec3 start_chunk = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
+			glm::vec3 end_chunk = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			start_chunk.x = ceilf(selected_start.x) / block_size;;// / (tiles_per_chunk_dimension);
-			start_chunk.y = ceilf(selected_start.y) / block_size;;// / (tiles_per_chunk_dimension);
+			start_chunk.x = floorf(selected_start.x / block_size / (tiles_per_chunk_dimension));
+			start_chunk.y = floorf(selected_start.y / block_size / (tiles_per_chunk_dimension));
 
 			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
 
-			end_chunk.x = floorf(selected_end.x) / block_size / (tiles_per_chunk_dimension);
-			end_chunk.y = floorf(selected_end.y) / block_size / (tiles_per_chunk_dimension);
+			end_chunk.x = ceil(selected_end.x / block_size / (tiles_per_chunk_dimension));
+			end_chunk.y = ceil(selected_end.y / block_size / (tiles_per_chunk_dimension));
 			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
-
-
-			//for (int k = 0; k < num_chunks_per_map_dimension; k++)
-			//{
-			//	for (int l = 0; l < num_chunks_per_map_dimension; l++)
-			//	{
-			//		size_t index = k * num_chunks_per_map_dimension + l;
-
-			//		vector<glm::vec3> points;
-			//		points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_min.y, 0));
-			//		points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_max.y, 0));
-			//		points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_max.y, 0));
-			//		points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_min.y, 0));
-
-			//		if (point_in_polygon(selected_start, points))
-			//		{
-			//			cout << "found start_chunk" << endl;
-			//			cout << k << " " << l << endl;
-			//			start_chunk = glm::vec3(k, l, 0);
-			//			k = l = num_chunks_per_map_dimension;
-			//			break;
-			//		}
-			//	}	
-			//}
-
-
-
-
-			//for (int k = 0; k < num_chunks_per_map_dimension; k++)
-			//{
-			//	for (int l = 0; l < num_chunks_per_map_dimension; l++)
-			//	{
-			//		size_t index = k * num_chunks_per_map_dimension + l;
-
-			//		vector<glm::vec3> points;
-			//		points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_min.y, 0));
-			//		points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_max.y, 0));
-			//		points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_max.y, 0));
-			//		points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_min.y, 0));
-
-			//		if (point_in_polygon(selected_end, points))
-			//		{
-
-			//			cout << "found end_chunk" << endl;
-
-			//			//cout << selected_end.x << " " << selected_end.y << endl;
-			//			cout << k << " " << l << endl;
-			//			end_chunk = glm::vec3(k, l, 0);
-			//			k = l = num_chunks_per_map_dimension;
-			//			break;
-			//		}
-			//	}
-			//}
-
-
-
-			////if (start_chunk < end_chunk)
-			////{
-			////	glm::vec3 temp = end_chunk;
-			////	end_chunk = start_chunk;
-			////	start_chunk = temp;
-			////}
-
 
 			if (end_chunk.x < start_chunk.x)
 			{
@@ -989,9 +927,9 @@ int main(int, char**)
 			cout << "end chunk " << end_chunk.x << " " << end_chunk.y << endl;
 			cout << endl;
 
-			for (float k = start_chunk.x; k <= end_chunk.x; k++)
+			for (int k = start_chunk.x; k < end_chunk.x; k++)
 			{
-				for (float l = start_chunk.y; l <= end_chunk.y; l++)
+				for (int l = start_chunk.y; l < end_chunk.y; l++)
 				{
 					size_t chunk_index = k * num_chunks_per_map_dimension + l;
 
