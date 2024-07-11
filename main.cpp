@@ -985,78 +985,6 @@ int main(int, char**)
 					}
 				}
 			}
-
-			//		for (size_t k = 0; k < background_chunks.size(); k++)
-			//		{
-			//			for (size_t l = 0; l < background_chunks[k].indices.size(); l++)
-			//			{
-			//				size_t i = background_chunks[k].indices[l].x;
-			//				size_t j = background_chunks[k].indices[l].y;
-
-			//				size_t index = i * tiles_per_dimension + j;
-
-			//				const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
-			//				const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
-
-			///*				if (x < 0 || x >(int)io.DisplaySize.x / zoom_factor)
-			//					break;
-
-			//				if (y < 0 || y >(int)io.DisplaySize.y / zoom_factor)
-			//					break;*/
-
-			//				complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-			//				complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
-			//				complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
-			//				complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
-
-			//				v0w.real(v0w.real() * zoom_factor);
-			//				v0w.imag(v0w.imag() * zoom_factor);
-			//				v1w.real(v1w.real() * zoom_factor);
-			//				v1w.imag(v1w.imag() * zoom_factor);
-			//				v2w.real(v2w.real() * zoom_factor);
-			//				v2w.imag(v2w.imag() * zoom_factor);
-			//				v3w.real(v3w.real() * zoom_factor);
-			//				v3w.imag(v3w.imag() * zoom_factor);
-
-			//				quad q;
-			//				q.vertices[0].x = v0w.real();
-			//				q.vertices[0].y = v0w.imag();
-			//				q.vertices[1].x = v1w.real();
-			//				q.vertices[1].y = v1w.imag();
-			//				q.vertices[2].x = v2w.real();
-			//				q.vertices[2].y = v2w.imag();
-			//				q.vertices[3].x = v3w.real();
-			//				q.vertices[3].y = v3w.imag();
-
-			//				glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
-
-			//				vector<glm::vec3> points;
-			//				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
-			//				points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0));
-			//				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
-			//				points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
-
-			//				if (point_in_polygon(quad_centre, points) ||
-			//					point_in_polygon(q.vertices[0], points) ||
-			//					point_in_polygon(q.vertices[1], points) ||
-			//					point_in_polygon(q.vertices[2], points) ||
-			//					point_in_polygon(q.vertices[3], points))
-			//				{
-			//					if (tool == TOOL_SELECT_SUBTRACT)
-			//						selected_indices.erase(index);
-			//					else
-			//						selected_indices.insert(index);
-			//				}
-			//			}
-			//		}
-
-					//for (size_t i = 0; i < tiles_per_dimension; i++)
-					//{
-					//	for (size_t j = 0; j < tiles_per_dimension; j++)
-					//	{
-
-					//	}
-					//}
 		}
 
 
@@ -1128,6 +1056,8 @@ int main(int, char**)
 			}
 		}
 
+		vertex_data.clear();
+
 		for (set<pair<size_t, size_t>>::const_iterator ci = selected_indices.begin(); ci != selected_indices.end(); ci++)
 		{
 			int i = ci->first;
@@ -1162,9 +1092,13 @@ int main(int, char**)
 			q.vertices[3].x = v3w.real();
 			q.vertices[3].y = v3w.imag();
 
-			draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 2.0, q);
+			get_quad_lines_ndc_data(vertex_data, x, y, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
+
+
+			//draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 2.0, q);
 		}
 
+		draw_quad_line_ndc_data(vertex_data, (int)io.DisplaySize.x, (int)io.DisplaySize.y);// , main_tiles_texture, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 
 		// Draw selected outline 
 		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && ImGui::IsMouseDown(ImGuiMouseButton_Left))

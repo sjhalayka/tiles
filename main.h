@@ -700,6 +700,80 @@ void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, floa
 //}
 
 
+
+
+bool get_quad_lines_ndc_data(vector<float>& vertex_data, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height)
+{
+	complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+	complex<float> v1w(static_cast<float>(x), static_cast<float>(y + tile_size));
+	complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
+	complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
+
+	v0w.real(v0w.real() * zoom_factor);
+	v0w.imag(v0w.imag() * zoom_factor);
+	v1w.real(v1w.real() * zoom_factor);
+	v1w.imag(v1w.imag() * zoom_factor);
+	v2w.real(v2w.real() * zoom_factor);
+	v2w.imag(v2w.imag() * zoom_factor);
+	v3w.real(v3w.real() * zoom_factor);
+	v3w.imag(v3w.imag() * zoom_factor);
+
+	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
+	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
+	complex<float> v2ndc = get_ndc_coords_from_window_coords(win_width, win_height, v2w);
+	complex<float> v3ndc = get_ndc_coords_from_window_coords(win_width, win_height, v3w);
+
+	size_t count = 0;
+
+	if (!(v0ndc.real() < -1 || v0ndc.real() > 1 || v0ndc.imag() < -1 || v0ndc.imag() > 1))
+		count++;
+
+	if (!(v1ndc.real() < -1 || v1ndc.real() > 1 || v1ndc.imag() < -1 || v1ndc.imag() > 1))
+		count++;
+
+	if (!(v2ndc.real() < -1 || v2ndc.real() > 1 || v2ndc.imag() < -1 || v2ndc.imag() > 1))
+		count++;
+
+	if (!(v3ndc.real() < -1 || v3ndc.real() > 1 || v3ndc.imag() < -1 || v3ndc.imag() > 1))
+		count++;
+
+	if (count == 0)
+		return false;
+
+	vertex_data.push_back(v0ndc.real());
+	vertex_data.push_back(v0ndc.imag());
+	vertex_data.push_back(0);
+	vertex_data.push_back(v1ndc.real());
+	vertex_data.push_back(v1ndc.imag());
+	vertex_data.push_back(0);
+
+	vertex_data.push_back(v1ndc.real());
+	vertex_data.push_back(v1ndc.imag());
+	vertex_data.push_back(0);
+	vertex_data.push_back(v2ndc.real());
+	vertex_data.push_back(v2ndc.imag());
+	vertex_data.push_back(0);
+
+	vertex_data.push_back(v2ndc.real());
+	vertex_data.push_back(v2ndc.imag());
+	vertex_data.push_back(0);
+	vertex_data.push_back(v3ndc.real());
+	vertex_data.push_back(v3ndc.imag());
+	vertex_data.push_back(0);
+
+	vertex_data.push_back(v3ndc.real());
+	vertex_data.push_back(v3ndc.imag());
+	vertex_data.push_back(0);
+	vertex_data.push_back(v0ndc.real());
+	vertex_data.push_back(v0ndc.imag());
+	vertex_data.push_back(0);
+
+	return true;
+}
+
+
+
+
 bool get_quad_ndc_data(vector<float>& vertex_data, vector<GLuint>& index_data, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, ImVec2 uv_min, ImVec2 uv_max)
 {
 	complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
@@ -773,6 +847,46 @@ bool get_quad_ndc_data(vector<float>& vertex_data, vector<GLuint>& index_data, l
 
 	return true;
 }
+
+
+
+
+
+void draw_quad_line_ndc_data(vector<float>& vertex_data, int win_width, int win_height)
+{
+	glUseProgram(line_shader.get_program());
+
+	glUniform3f(uniforms.line_shader_uniforms.colour, 0, 0, 1);
+	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
+	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
+	glUniform1f(uniforms.line_shader_uniforms.line_thickness, 4.0);
+
+	GLuint components_per_vertex = 3;
+	GLuint components_per_position = 3;
+
+	static GLuint axis_buffer = 0;
+
+	if (!glIsBuffer(axis_buffer))
+		glGenBuffers(1, &axis_buffer);
+
+	GLuint num_vertices = static_cast<GLuint>(vertex_data.size()) / components_per_vertex;
+	
+		glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
+		glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(GLfloat), &vertex_data[0], GL_STATIC_DRAW);
+	
+		glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
+		glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
+			components_per_position,
+			GL_FLOAT,
+			GL_FALSE,
+			components_per_vertex * sizeof(GLfloat),
+			NULL);
+	
+		glDrawArrays(GL_LINES, 0, num_vertices);
+	
+		//glDeleteBuffers(1, &axis_buffer);
+}
+
 
 
 void draw_quad_ndc_data(vector<float>& vertex_data, vector<GLuint>& index_data, GLuint tex_handle, long signed int win_width, long signed int win_height)
