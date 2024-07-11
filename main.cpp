@@ -888,93 +888,97 @@ int main(int, char**)
 			glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
 			glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			for (size_t k = 0; k < num_chunks_per_map_dimension; k++)
+			start_chunk.x = int(selected_start.x) / (tiles_per_chunk_dimension / block_size);
+			start_chunk.y = int(selected_start.y) / (tiles_per_chunk_dimension / block_size);
+			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
+			
+			//for (int k = 0; k < num_chunks_per_map_dimension; k++)
+			//{
+			//	for (int l = 0; l < num_chunks_per_map_dimension; l++)
+			//	{
+			//		size_t index = k * num_chunks_per_map_dimension + l;
+
+			//		vector<glm::vec3> points;
+			//		points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_min.y, 0));
+			//		points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_max.y, 0));
+			//		points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_max.y, 0));
+			//		points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_min.y, 0));
+
+			//		if (point_in_polygon(selected_start, points))
+			//		{
+			//			cout << "found start_chunk" << endl;
+			//			cout << k << " " << l << endl;
+			//			start_chunk = glm::vec3(k, l, 0);
+			//			k = l = num_chunks_per_map_dimension;
+			//			break;
+			//		}
+			//	}
+			//}
+
+			end_chunk.x = int(selected_end.x) / (tiles_per_chunk_dimension/block_size);
+			end_chunk.y = int(selected_end.y) / (tiles_per_chunk_dimension/block_size);
+			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
+
+
+
+			//for (int k = 0; k < num_chunks_per_map_dimension; k++)
+			//{
+			//	for (int l = 0; l < num_chunks_per_map_dimension; l++)
+			//	{
+			//		size_t index = k * num_chunks_per_map_dimension + l;
+
+			//		vector<glm::vec3> points;
+			//		points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_min.y, 0));
+			//		points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_max.y, 0));
+			//		points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_max.y, 0));
+			//		points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_min.y, 0));
+
+			//		if (point_in_polygon(selected_end, points))
+			//		{
+
+			//			cout << "found end_chunk" << endl;
+
+			//			//cout << selected_end.x << " " << selected_end.y << endl;
+			//			cout << k << " " << l << endl;
+			//			end_chunk = glm::vec3(k, l, 0);
+			//			k = l = num_chunks_per_map_dimension;
+			//			break;
+			//		}
+			//	}
+			//}
+
+
+
+			if (end_chunk < start_chunk)
 			{
-				for (size_t l = 0; l < num_chunks_per_map_dimension; l++)
-				{
-					size_t index = k * num_chunks_per_map_dimension + l;
-
-					vector<glm::vec3> points;
-					points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_min.y, 0));
-					points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_max.y, 0));
-					points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_max.y, 0));
-					points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_min.y, 0));
-
-					quad q;
-					q.vertices[0] = points[0];
-					q.vertices[1] = points[1];
-					q.vertices[2] = points[2];
-					q.vertices[3] = points[3];
-
-					glm::vec3 ss;
-					ss.x = selected_start.x;
-					ss.y = selected_start.y;
-
-					//if (point_in_quad(ss, q))
-					if (point_in_polygon(selected_start, points))
-					{
-						cout << "found start_chunk" << endl;
-						cout << k << " " << l << endl;
-						start_chunk = glm::vec3(k, l, 0);
-						k = l = num_chunks_per_map_dimension;
-						break;
-					}
-				}
+				glm::vec3 temp = end_chunk;
+				end_chunk = start_chunk;
+				start_chunk = temp;
 			}
 
-			for (size_t k = 0; k < num_chunks_per_map_dimension; k++)
-			{
-				for (size_t l = 0; l < num_chunks_per_map_dimension; l++)
-				{
-					size_t index = k * num_chunks_per_map_dimension + l;
 
-					vector<glm::vec3> points;
-					points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_min.y, 0));
-					points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_max.y, 0));
-					points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_max.y, 0));
-					points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_min.y, 0));
+			//if (end_chunk.x > start_chunk.x)
+			//{
+			//	float temp = end_chunk.x;
+			//	end_chunk.x = start_chunk.x;
+			//	start_chunk.x = temp;
+			//}
 
-					glm::vec3 se;
-					se.x = selected_end.x;
-					se.y = selected_end.y;
-
-					quad q;
-					q.vertices[0] = points[0];
-					q.vertices[1] = points[1];
-					q.vertices[2] = points[2];
-					q.vertices[3] = points[3];
-
-					//if (point_in_quad(se, q))
-					if (point_in_polygon(selected_end, points))
-					{
-						cout << "found end_chunk" << endl;
-						cout << k << " " << l << endl;
-						end_chunk = glm::vec3(k, l, 0);
-						k = l = num_chunks_per_map_dimension;
-						break;
-					}
-				}
-			}
-
-			if (end_chunk.x > start_chunk.x)
-			{
-				float temp = end_chunk.x;
-				end_chunk.x = start_chunk.x;
-				start_chunk.x = temp;
-			}
-
-			if (end_chunk.y > start_chunk.y)
-			{
-				float temp = end_chunk.y;
-				end_chunk.y = start_chunk.y;
-				start_chunk.y = temp;
-			}
+			//if (end_chunk.y > start_chunk.y)
+			//{
+			//	float temp = end_chunk.y;
+			//	end_chunk.y = start_chunk.y;
+			//	start_chunk.y = temp;
+			//}
 
 			cout << "start chunk " << start_chunk.x << " " << start_chunk.y << endl;
 			cout << "end chunk " << end_chunk.x << " " << end_chunk.y << endl;
+			cout << endl;
 
-			end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
-			end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+
+
+			end_chunk.x = glm::clamp(end_chunk.x + 1, (float)0, (float)num_chunks_per_map_dimension - 1);
+			end_chunk.y = glm::clamp(end_chunk.y + 1, (float)0, (float)num_chunks_per_map_dimension - 1);
 
 			for (float k = start_chunk.x; k <= end_chunk.x; k++)
 			{
