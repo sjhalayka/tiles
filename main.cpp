@@ -890,10 +890,15 @@ int main(int, char**)
 			glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
 			glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			start_chunk.x = int(selected_start.x) / block_size;;// / (tiles_per_chunk_dimension);
-			start_chunk.y = int(selected_start.y) / block_size;;// / (tiles_per_chunk_dimension);
+			start_chunk.x = ceilf(selected_start.x) / block_size;;// / (tiles_per_chunk_dimension);
+			start_chunk.y = ceilf(selected_start.y) / block_size;;// / (tiles_per_chunk_dimension);
 
 			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
+
+			end_chunk.x = floorf(selected_end.x) / block_size / (tiles_per_chunk_dimension);
+			end_chunk.y = floorf(selected_end.y) / block_size / (tiles_per_chunk_dimension);
+			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
+
 
 			//for (int k = 0; k < num_chunks_per_map_dimension; k++)
 			//{
@@ -918,9 +923,6 @@ int main(int, char**)
 			//	}	
 			//}
 
-			end_chunk.x = int(selected_end.x) / block_size / (tiles_per_chunk_dimension);
-			end_chunk.y = int(selected_end.y) / block_size / (tiles_per_chunk_dimension);
-			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
 
 
 
@@ -952,12 +954,12 @@ int main(int, char**)
 
 
 
-			//if (start_chunk < end_chunk)
-			//{
-			//	glm::vec3 temp = end_chunk;
-			//	end_chunk = start_chunk;
-			//	start_chunk = temp;
-			//}
+			////if (start_chunk < end_chunk)
+			////{
+			////	glm::vec3 temp = end_chunk;
+			////	end_chunk = start_chunk;
+			////	start_chunk = temp;
+			////}
 
 
 			if (end_chunk.x < start_chunk.x)
@@ -973,6 +975,9 @@ int main(int, char**)
 				end_chunk.y = start_chunk.y;
 				start_chunk.y = temp;
 			}
+
+			start_chunk -= 1.0;
+			end_chunk += 1.0;
 
 			start_chunk.x = glm::clamp(start_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
 			start_chunk.y = glm::clamp(start_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
