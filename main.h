@@ -38,6 +38,8 @@
 #include <random>
 #include <set>
 #include <map>
+#include <tuple>
+#include <algorithm>
 using namespace std;
 
 
@@ -76,61 +78,12 @@ struct
 uniforms;
 
 
+
 bool operator< (const glm::vec3& lhs, const glm::vec3& rhs)
 {
 	return glm::all(glm::lessThan(lhs, rhs));
 }
 
-bool operator> (const glm::vec3& lhs, const glm::vec3& rhs)
-{
-	return glm::all(glm::lessThan(lhs, rhs));
-}
-
-class sortable_line_segment
-{
-public:
-
-
-	inline bool operator==(const sortable_line_segment& right) const
-	{
-		if (right.vertices[0] == vertices[0] && right.vertices[1] == vertices[1])
-			return true;
-		else
-			return false;
-	}
-
-
-	inline bool operator<(const sortable_line_segment& right) const
-	{
-		if (right.vertices[0] > vertices[0])
-			return true;
-		else if (right.vertices[0] < vertices[0])
-			return false;
-
-		if (right.vertices[1] > vertices[1])
-			return true;
-		else if (right.vertices[1] < vertices[1])
-			return false;
-
-
-		return false;
-	}
-
-	void sort(void)
-	{
-
-		if (vertices[1] < vertices[0])
-		{
-			glm::vec3 tempv = vertices[1];
-			vertices[1] = vertices[0];
-			vertices[0] = tempv;
-		}
-
-
-	}
-
-	glm::vec3 vertices[2];
-};
 
 
 class quad
@@ -318,7 +271,7 @@ public:
 };
 
 int tiles_per_dimension = 2000;
-int tiles_per_chunk_dimension = 10;
+int tiles_per_chunk_dimension = 100;
 
 
 vector<background_chunk> background_chunks;
@@ -811,12 +764,12 @@ bool get_quad_ndc_data(vector<float>& vertex_data, vector<GLuint>& index_data, l
 
 	size_t vertex_data_index = vertex_data.size();
 
-	index_data.push_back(0 + vertex_data_index / 5 - 4);
-	index_data.push_back(1 + vertex_data_index / 5 - 4);
-	index_data.push_back(2 + vertex_data_index / 5 - 4);
-	index_data.push_back(0 + vertex_data_index / 5 - 4);
-	index_data.push_back(2 + vertex_data_index / 5 - 4);
-	index_data.push_back(3 + vertex_data_index / 5 - 4);
+	index_data.push_back(0 + (vertex_data_index / 5) - 4);
+	index_data.push_back(1 + (vertex_data_index / 5) - 4);
+	index_data.push_back(2 + (vertex_data_index / 5) - 4);
+	index_data.push_back(0 + (vertex_data_index / 5) - 4);
+	index_data.push_back(2 + (vertex_data_index / 5) - 4);
+	index_data.push_back(3 + (vertex_data_index / 5) - 4);
 
 	return true;
 }

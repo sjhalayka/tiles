@@ -235,9 +235,9 @@ int main(int, char**)
 
 	vector<size_t> prev_painted_indices;
 
-	set<size_t> selected_indices; // use a set instead, for faster lookup
-	ImVec2 selected_start;
-	ImVec2 selected_end;
+	set<pair<size_t, size_t>> selected_indices;
+	glm::vec3 selected_start;
+	glm::vec3 selected_end;
 
 
 
@@ -310,8 +310,8 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					selected_start = ImVec2((float)x, (float)y);
-					selected_end = ImVec2((float)x, (float)y);
+					selected_start = glm::vec3((float)x, (float)y, 0);
+					selected_end = glm::vec3((float)x, (float)y, 0);
 				}
 			}
 
@@ -322,7 +322,7 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					selected_end = ImVec2((float)x, (float)y);
+					selected_end = glm::vec3((float)x, (float)y, 0);
 
 					make_selection = true;
 				}
@@ -585,7 +585,7 @@ int main(int, char**)
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
-			selected_end = ImVec2((float)x, (float)y);
+			selected_end = glm::vec3((float)x, (float)y, 0);
 		}
 
 
@@ -734,7 +734,9 @@ int main(int, char**)
 						centre_index = ImVec2((float)i, (float)j);
 						centre_location = glm::vec3((quads[0].vertices[0] + quads[0].vertices[1] + quads[0].vertices[2] + quads[0].vertices[3]) * 0.25f);
 
-						if (selected_indices.size() == 0 || selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
+						set<pair<size_t, size_t>>::const_iterator iter = selected_indices.find(make_pair(i, j));
+
+						if (selected_indices.size() == 0 || iter != selected_indices.end())
 						{
 							background_tiles[index].uv_min = left_uv_mins[brush_in_use];
 							background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
@@ -858,7 +860,7 @@ int main(int, char**)
 
 					curr_painted_indices.push_back(index);
 
-					if (selected_indices.size() == 0 || selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
+					if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(i, j)))
 					{
 						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
 						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
@@ -878,7 +880,10 @@ int main(int, char**)
 			make_selection = false;
 
 			if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
+			{
+				prev_tools.clear();
 				selected_indices.clear();
+			}
 
 			glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
 			glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
@@ -906,10 +911,10 @@ int main(int, char**)
 					ss.y = selected_start.y;
 
 					//if (point_in_quad(ss, q))
-					if (point_in_polygon(ss, points))
+					if (point_in_polygon(selected_start, points))
 					{
 						cout << "found start_chunk" << endl;
-
+						cout << k << " " << l << endl;
 						start_chunk = glm::vec3(k, l, 0);
 						k = l = num_chunks_per_map_dimension;
 						break;
@@ -925,14 +930,13 @@ int main(int, char**)
 
 					vector<glm::vec3> points;
 					points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_min.y, 0));
-					points.push_back(glm::vec3(background_chunks[index].region_min.x,  background_chunks[index].region_max.y, 0));
-					points.push_back(glm::vec3(background_chunks[index].region_max.x,  background_chunks[index].region_max.y, 0));
-					points.push_back(glm::vec3(background_chunks[index].region_max.x,  background_chunks[index].region_min.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_min.x, background_chunks[index].region_max.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_max.y, 0));
+					points.push_back(glm::vec3(background_chunks[index].region_max.x, background_chunks[index].region_min.y, 0));
 
 					glm::vec3 se;
 					se.x = selected_end.x;
 					se.y = selected_end.y;
-
 
 					quad q;
 					q.vertices[0] = points[0];
@@ -941,9 +945,10 @@ int main(int, char**)
 					q.vertices[3] = points[3];
 
 					//if (point_in_quad(se, q))
-					if (point_in_polygon(se, points))
+					if (point_in_polygon(selected_end, points))
 					{
 						cout << "found end_chunk" << endl;
+						cout << k << " " << l << endl;
 						end_chunk = glm::vec3(k, l, 0);
 						k = l = num_chunks_per_map_dimension;
 						break;
@@ -951,30 +956,31 @@ int main(int, char**)
 				}
 			}
 
-			if (end_chunk.x < start_chunk.x)
+			if (end_chunk.x > start_chunk.x)
 			{
 				float temp = end_chunk.x;
 				end_chunk.x = start_chunk.x;
 				start_chunk.x = temp;
 			}
 
-			if (end_chunk.y < start_chunk.y)
+			if (end_chunk.y > start_chunk.y)
 			{
 				float temp = end_chunk.y;
 				end_chunk.y = start_chunk.y;
 				start_chunk.y = temp;
 			}
 
-			cout << start_chunk.x << " " << end_chunk.x << endl;
-			cout << start_chunk.y << " " << end_chunk.y << endl;
+			cout << "start chunk " << start_chunk.x << " " << start_chunk.y << endl;
+			cout << "end chunk " << end_chunk.x << " " << end_chunk.y << endl;
 
-			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
+			end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
+			end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+
+			for (float k = start_chunk.x; k <= end_chunk.x; k++)
 			{
-				for (size_t l = start_chunk.y; l <= end_chunk.y; l++)
+				for (float l = start_chunk.y; l <= end_chunk.y; l++)
 				{
 					size_t chunk_index = k * num_chunks_per_map_dimension + l;
-
-					cout << background_chunks[chunk_index].indices.size() << endl;
 
 					for (size_t m = 0; m < background_chunks[chunk_index].indices.size(); m++)
 					{
@@ -1025,9 +1031,9 @@ int main(int, char**)
 							point_in_polygon(q.vertices[3], points))
 						{
 							if (tool == TOOL_SELECT_SUBTRACT)
-								selected_indices.erase(index);
+								selected_indices.erase(make_pair(i, j));
 							else
-								selected_indices.insert(index);
+								selected_indices.insert(make_pair(i, j));
 						}
 					}
 				}
@@ -1142,7 +1148,6 @@ int main(int, char**)
 			{
 				size_t index = i * tiles_per_dimension + j;
 
-
 				const float x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
 				const float y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
 
@@ -1186,46 +1191,41 @@ int main(int, char**)
 
 
 
-
-
-		for (size_t i = 0; i < tiles_per_dimension; i++)
+		for (set<pair<size_t, size_t>>::const_iterator ci = selected_indices.begin(); ci != selected_indices.end(); ci++)
 		{
-			for (size_t j = 0; j < tiles_per_dimension; j++)
-			{
-				size_t index = i * tiles_per_dimension + j;
+			int i = ci->first;
+			int j = ci->second;
 
-				if (selected_indices.end() != std::find(selected_indices.begin(), selected_indices.end(), index))
-				{
-					const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
-					const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+			size_t index = i * tiles_per_dimension + j;
 
-					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
-					complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
-					complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+			float x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
+			float y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
 
-					v0w.real(v0w.real() * zoom_factor);
-					v0w.imag(v0w.imag() * zoom_factor);
-					v1w.real(v1w.real() * zoom_factor);
-					v1w.imag(v1w.imag() * zoom_factor);
-					v2w.real(v2w.real() * zoom_factor);
-					v2w.imag(v2w.imag() * zoom_factor);
-					v3w.real(v3w.real() * zoom_factor);
-					v3w.imag(v3w.imag() * zoom_factor);
+			complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+			complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+			complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+			complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
 
-					quad q;
-					q.vertices[0].x = v0w.real();
-					q.vertices[0].y = v0w.imag();
-					q.vertices[1].x = v1w.real();
-					q.vertices[1].y = v1w.imag();
-					q.vertices[2].x = v2w.real();
-					q.vertices[2].y = v2w.imag();
-					q.vertices[3].x = v3w.real();
-					q.vertices[3].y = v3w.imag();
+			v0w.real(v0w.real()* zoom_factor);
+			v0w.imag(v0w.imag()* zoom_factor);
+			v1w.real(v1w.real()* zoom_factor);
+			v1w.imag(v1w.imag()* zoom_factor);
+			v2w.real(v2w.real()* zoom_factor);
+			v2w.imag(v2w.imag()* zoom_factor);
+			v3w.real(v3w.real()* zoom_factor);
+			v3w.imag(v3w.imag()* zoom_factor);
 
-					//draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 2.0, q);
-				}
-			}
+			quad q;
+			q.vertices[0].x = v0w.real();
+			q.vertices[0].y = v0w.imag();
+			q.vertices[1].x = v1w.real();
+			q.vertices[1].y = v1w.imag();
+			q.vertices[2].x = v2w.real();
+			q.vertices[2].y = v2w.imag();
+			q.vertices[3].x = v3w.real();
+			q.vertices[3].y = v3w.imag();
+
+			draw_quad_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 2.0, q);
 		}
 
 
