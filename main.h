@@ -274,8 +274,8 @@ public:
 	ImVec2 uv_max;
 };
 
-int tiles_per_dimension = 2000;
-int tiles_per_chunk_dimension = 100;
+int tiles_per_dimension = 200;
+int tiles_per_chunk_dimension = 10;
 
 
 vector<background_chunk> background_chunks;

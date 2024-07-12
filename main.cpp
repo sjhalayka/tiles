@@ -854,18 +854,14 @@ int main(int, char**)
 				selected_indices.clear();
 			}
 
-			glm::vec3 start_chunk = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
-			glm::vec3 end_chunk = glm::vec3(0.0f, 0.0f, 0.0f);
+			glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
+			glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			start_chunk.x =  selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-			start_chunk.y = ((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			start_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size ) + selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			start_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size) + ((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
-			end_chunk.x = selected_end.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-			end_chunk.y = ((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-
-
-			//end_chunk.x = (selected_end.x / (block_size*zoom_factor) / (tiles_per_chunk_dimension));
-		//	end_chunk.y = (((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension));
+			end_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size ) + selected_end.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			end_chunk.y = -image_anchor.y / tiles_per_chunk_dimension/ (block_size ) + ((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
 			if (end_chunk.x < start_chunk.x)
 			{
