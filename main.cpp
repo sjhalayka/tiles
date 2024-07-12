@@ -580,11 +580,14 @@ int main(int, char**)
 
 			float max_brush_size = brush_size;
 
-			//if (custom_brush1_width > max_brush_size)
-			//	max_brush_size = custom_brush1_width;
+			if (tool == TOOL_PAINT_CUSTOM)
+			{
+				if (custom_brush1_width > max_brush_size)
+					max_brush_size = custom_brush1_width;
 
-			//if (custom_brush1_height > max_brush_size)
-			//	max_brush_size = custom_brush1_height;
+				if (custom_brush1_height > max_brush_size)
+					max_brush_size = custom_brush1_height;
+			}
 
 			int x, y;
 			SDL_GetMouseState(&x, &y);
@@ -640,6 +643,11 @@ int main(int, char**)
 						{
 							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)
 								to_draw.push_back(make_pair(i, j));
+						}
+						else if (tool == TOOL_PAINT_CUSTOM)
+						{
+
+
 						}
 					}
 				}
@@ -823,7 +831,7 @@ int main(int, char**)
 				int x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
 				int y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
 
-				bool saved_data = get_quad_ndc_data(vertex_data, index_data, x, y, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, background_tiles[index].uv_min, background_tiles[index].uv_max);
+				get_quad_ndc_data(vertex_data, index_data, x, y, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, background_tiles[index].uv_min, background_tiles[index].uv_max);
 			}
 		}
 
