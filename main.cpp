@@ -609,7 +609,7 @@ int main(int, char**)
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
-			centre_index = ImVec2(x / (block_size * zoom_factor), (io.DisplaySize.y - y) / (block_size * zoom_factor));
+			centre_index = ImVec2(-image_anchor.x / (block_size) + x / (block_size * zoom_factor), -image_anchor.y / (block_size) + (io.DisplaySize.y - y) / (block_size * zoom_factor));
 			inside = true;
 
 			if (inside == true)
