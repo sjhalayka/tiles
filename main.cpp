@@ -582,29 +582,36 @@ int main(int, char**)
 
 			size_t brush_in_use = 0;
 
-			vector<size_t> curr_painted_indices;
+		//	vector<size_t> curr_painted_indices;
 
 			set<size_t> to_draw;
 
-			float width_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (io.DisplaySize.x* brush_size)* zoom_factor;// (float)brush_size / io.DisplaySize.x;
-			float height_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (float)brush_size / io.DisplaySize.y;
+			//float width_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (io.DisplaySize.x* brush_size)* zoom_factor;// (float)brush_size / io.DisplaySize.x;
+			//float height_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (float)brush_size / io.DisplaySize.y;
 
-			float max_brush_size = brush_size;
+			//float max_brush_size = brush_size;
 
-			if (custom_brush1_width > max_brush_size)
-				max_brush_size = custom_brush1_width;
+			//if (custom_brush1_width > max_brush_size)
+			//	max_brush_size = custom_brush1_width;
 
-			if (custom_brush1_height > max_brush_size)
-				max_brush_size = custom_brush1_height;
+			//if (custom_brush1_height > max_brush_size)
+			//	max_brush_size = custom_brush1_height;
 
-			if (max_brush_size >= io.DisplaySize.x)
-				width_factor = (float)max_brush_size / io.DisplaySize.x;
+			//if (max_brush_size >= io.DisplaySize.x)
+			//	width_factor = (float)max_brush_size / io.DisplaySize.x;
 
-			if (max_brush_size >= io.DisplaySize.y)
-				height_factor = (float)max_brush_size / io.DisplaySize.y;
+			//if (max_brush_size >= io.DisplaySize.y)
+			//	height_factor = (float)max_brush_size / io.DisplaySize.y;
 
-			width_factor *= 2.0f / zoom_factor;
-			height_factor *= 2.0f / zoom_factor;
+			//width_factor *= 2.0f / zoom_factor;
+			//height_factor *= 2.0f / zoom_factor;
+
+
+
+
+
+
+
 
 			int x, y;
 			SDL_GetMouseState(&x, &y);
@@ -622,26 +629,6 @@ int main(int, char**)
 				{
 					size_t index = i * tiles_per_dimension + j;
 
-					bool found_prev_index = false;
-
-					for (size_t k = 0; k < prev_painted_indices.size(); k++)
-					{
-						if (prev_painted_indices[k] == index)
-						{
-							found_prev_index = true;
-							break;
-						}
-					}
-
-					if (found_prev_index)
-						continue;
-
-
-
-
-
-
-
 					if (tool == TOOL_PAINT)
 					{
 						glm::vec3 a((float)i, (float)j, 0);
@@ -650,19 +637,23 @@ int main(int, char**)
 						size_t index = i * tiles_per_dimension + j;
 
 						if (distance(a, b) <= (brush_size * 0.5))
+						{
 							to_draw.insert(index);
+						}
 					}
 					else if (tool == TOOL_PAINT_SQUARE)
 					{
 						size_t index = i * tiles_per_dimension + j;
 
 						if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
+						{
 							to_draw.insert(index);
+						}
 					}
 				}
 			}
 
-			prev_painted_indices = curr_painted_indices;
+
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
@@ -690,8 +681,6 @@ int main(int, char**)
 						}
 					}
 
-					curr_painted_indices.push_back(index);
-
 					if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(i, j)))
 					{
 						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
@@ -699,6 +688,7 @@ int main(int, char**)
 					}
 				}
 			}
+
 
 			to_draw.clear();
 		}
