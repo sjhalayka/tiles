@@ -873,6 +873,9 @@ void draw_quad_line_ndc_data(vector<float>& vertex_data, int win_width, int win_
 	GLuint components_per_vertex = 3;
 	GLuint components_per_position = 3;
 
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
 	static GLuint axis_buffer = 0;
 
 	if (!glIsBuffer(axis_buffer))

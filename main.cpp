@@ -648,6 +648,8 @@ int main(int, char**)
 						{
 
 
+							// todo: add painting here
+
 						}
 					}
 				}
