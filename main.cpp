@@ -576,80 +576,108 @@ int main(int, char**)
 					weights[i] /= total;
 			}
 
-			ImVec2 centre_index;
-
-			bool inside = false;
 
 			size_t brush_in_use = 0;
-
-		//	vector<size_t> curr_painted_indices;
-
 			set<size_t> to_draw;
+			float max_brush_size = brush_size;
 
-			//float width_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (io.DisplaySize.x* brush_size)* zoom_factor;// (float)brush_size / io.DisplaySize.x;
-			//float height_factor = 1;// zoom_factor* tiles_per_dimension* block_size * 0.5f;// (float)brush_size / io.DisplaySize.y;
+			if (custom_brush1_width > max_brush_size)
+				max_brush_size = custom_brush1_width;
 
-			//float max_brush_size = brush_size;
-
-			//if (custom_brush1_width > max_brush_size)
-			//	max_brush_size = custom_brush1_width;
-
-			//if (custom_brush1_height > max_brush_size)
-			//	max_brush_size = custom_brush1_height;
-
-			//if (max_brush_size >= io.DisplaySize.x)
-			//	width_factor = (float)max_brush_size / io.DisplaySize.x;
-
-			//if (max_brush_size >= io.DisplaySize.y)
-			//	height_factor = (float)max_brush_size / io.DisplaySize.y;
-
-			//width_factor *= 2.0f / zoom_factor;
-			//height_factor *= 2.0f / zoom_factor;
-
-
-
-
-
-			
-
+			if (custom_brush1_height > max_brush_size)
+				max_brush_size = custom_brush1_height;
 
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
-			centre_index = ImVec2(-image_anchor.x / (block_size) + x / (block_size * zoom_factor), -image_anchor.y / (block_size) + (io.DisplaySize.y - y) / (block_size * zoom_factor));
+			ImVec2 centre_index = ImVec2(-image_anchor.x / (block_size) + x / (block_size * zoom_factor), -image_anchor.y / (block_size) + (io.DisplaySize.y - y) / (block_size * zoom_factor));
 
-			for (size_t i = 0; i < tiles_per_dimension; i++)
+			ImVec2 centre_chunk;
+			centre_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+
+			int relative_brush_size = 10/zoom_factor;// (tiles_per_chunk_dimension / max_brush_size);
+
+			ImVec2 start_chunk;
+			start_chunk.x = centre_chunk.x - relative_brush_size;
+			start_chunk.y = centre_chunk.y - relative_brush_size;
+
+			ImVec2 end_chunk;
+			end_chunk.x = centre_chunk.x + relative_brush_size;
+			end_chunk.y = centre_chunk.y + relative_brush_size;
+
+			start_chunk.x = glm::clamp(start_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
+			start_chunk.y = glm::clamp(start_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+
+			end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
+			end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+
+			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
 			{
-				for (size_t j = 0; j < tiles_per_dimension; j++)
+				for (size_t l = start_chunk.y; l <= end_chunk.y; l++)
 				{
-					size_t index = i * tiles_per_dimension + j;
+					size_t chunk_index = k * num_chunks_per_map_dimension + l;
 
-					if (tool == TOOL_PAINT)
+					for (size_t m = 0; m < background_chunks[chunk_index].indices.size(); m++)
 					{
-						glm::vec3 a((float)i, (float)j, 0);
-						glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
+						size_t i = background_chunks[chunk_index].indices[m].x;
+						size_t j = background_chunks[chunk_index].indices[m].y;
 
-						size_t index = i * tiles_per_dimension + j;
-
-						if (distance(a, b) <= (brush_size * 0.5))
+						if (tool == TOOL_PAINT)
 						{
-							to_draw.insert(index);
-							
+							glm::vec3 a((float)i, (float)j, 0);
+							glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
 
+							size_t index = i * tiles_per_dimension + j;
+
+							if (distance(a, b) <= (brush_size * 0.5))
+							{
+								to_draw.insert(index);
+							}
 						}
-					}
-					else if (tool == TOOL_PAINT_SQUARE)
-					{
-						size_t index = i * tiles_per_dimension + j;
-
-						if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
+						else if (tool == TOOL_PAINT_SQUARE)
 						{
-							to_draw.insert(index);
-							
+							size_t index = i * tiles_per_dimension + j;
+
+							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
+							{
+								to_draw.insert(index);
+							}
 						}
 					}
 				}
 			}
+
+
+			//for (size_t i = 0; i < tiles_per_dimension; i++)
+			//{
+			//	for (size_t j = 0; j < tiles_per_dimension; j++)
+			//	{
+			//		size_t index = i * tiles_per_dimension + j;
+
+			//		if (tool == TOOL_PAINT)
+			//		{
+			//			glm::vec3 a((float)i, (float)j, 0);
+			//			glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
+
+			//			size_t index = i * tiles_per_dimension + j;
+
+			//			if (distance(a, b) <= (brush_size * 0.5))
+			//			{
+			//				to_draw.insert(index);
+			//			}
+			//		}
+			//		else if (tool == TOOL_PAINT_SQUARE)
+			//		{
+			//			size_t index = i * tiles_per_dimension + j;
+
+			//			if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
+			//			{
+			//				to_draw.insert(index);
+			//			}
+			//		}
+			//	}
+			//}
 
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
