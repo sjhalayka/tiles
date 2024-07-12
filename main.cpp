@@ -588,14 +588,14 @@ int main(int, char**)
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
-			ImVec2 centre_index = ImVec2(-image_anchor.x / (block_size) + x / (block_size * zoom_factor), -image_anchor.y / (block_size) + (io.DisplaySize.y - y) / (block_size * zoom_factor));
+			ImVec2 centre_index = ImVec2(-image_anchor.x / (block_size)+x / (block_size * zoom_factor), -image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 
 			ImVec2 centre_chunk;
 			centre_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
 			// Todo: fix this line of code...
-			int relative_brush_size = max_brush_size /zoom_factor * tiles_per_chunk_dimension;
+			int relative_brush_size = 1000;//// max_brush_size / zoom_factor * tiles_per_chunk_dimension;
 
 			ImVec2 start_chunk;
 			start_chunk.x = centre_chunk.x - relative_brush_size;
@@ -621,7 +621,7 @@ int main(int, char**)
 					{
 						size_t i = background_chunks[chunk_index].indices[m].x;
 						size_t j = background_chunks[chunk_index].indices[m].y;
-						
+
 						size_t index = i * tiles_per_dimension + j;
 
 						if (tool == TOOL_PAINT)
@@ -1021,7 +1021,7 @@ int main(int, char**)
 
 
 
-	
+
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 		SDL_GL_SwapWindow(window);
