@@ -591,11 +591,11 @@ int main(int, char**)
 			ImVec2 centre_index = ImVec2(-image_anchor.x / (block_size)+x / (block_size * zoom_factor), -image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 
 			ImVec2 centre_chunk;
-			centre_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+centre_index.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - centre_index.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			centre_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
 			// Todo: fix this line of code...
-			float relative_brush_size = 1000;////(max_brush_size ) / (tiles_per_chunk_dimension);//// * tiles_per_chunk_dimension;// / block_size;// (float)max_brush_size / (float)block_size *  * zoom_factor;//* tiles_per_chunk_dimension;// *tiles_per_chunk_dimension;
+			float relative_brush_size = 1;////(max_brush_size ) / (tiles_per_chunk_dimension);//// * tiles_per_chunk_dimension;// / block_size;// (float)max_brush_size / (float)block_size *  * zoom_factor;//* tiles_per_chunk_dimension;// *tiles_per_chunk_dimension;
 
 			cout << relative_brush_size << endl;
 
