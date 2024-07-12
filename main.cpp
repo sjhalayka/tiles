@@ -595,7 +595,7 @@ int main(int, char**)
 			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
 			// Todo: fix this line of code...
-			float relative_brush_size = 100;// (float)max_brush_size / (float)block_size * zoom_factor;//* tiles_per_chunk_dimension;// *tiles_per_chunk_dimension;
+			float relative_brush_size =  max_brush_size / zoom_factor;// 100;////(max_brush_size ) / (tiles_per_chunk_dimension);//// * tiles_per_chunk_dimension;// / block_size;// (float)max_brush_size / (float)block_size *  * zoom_factor;//* tiles_per_chunk_dimension;// *tiles_per_chunk_dimension;
 
 			cout << relative_brush_size << endl;
 
