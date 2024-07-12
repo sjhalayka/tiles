@@ -612,56 +612,57 @@ int main(int, char**)
 			centre_index = ImVec2(-image_anchor.x / (block_size) + x / (block_size * zoom_factor), -image_anchor.y / (block_size) + (io.DisplaySize.y - y) / (block_size * zoom_factor));
 			inside = true;
 
-			if (inside == true)
+
+
+
+
+			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
-				for (size_t i = 0; i < tiles_per_dimension; i++)
+				for (size_t j = 0; j < tiles_per_dimension; j++)
 				{
-					for (size_t j = 0; j < tiles_per_dimension; j++)
+					size_t index = i * tiles_per_dimension + j;
+
+					bool found_prev_index = false;
+
+					for (size_t k = 0; k < prev_painted_indices.size(); k++)
+					{
+						if (prev_painted_indices[k] == index)
+						{
+							found_prev_index = true;
+							break;
+						}
+					}
+
+					if (found_prev_index)
+						continue;
+
+
+
+
+
+
+
+					if (tool == TOOL_PAINT)
+					{
+						glm::vec3 a((float)i, (float)j, 0);
+						glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
+
+						size_t index = i * tiles_per_dimension + j;
+
+						if (distance(a, b) <= (brush_size * 0.5))
+							to_draw.insert(index);
+					}
+					else if (tool == TOOL_PAINT_SQUARE)
 					{
 						size_t index = i * tiles_per_dimension + j;
 
-						bool found_prev_index = false;
-
-						for (size_t k = 0; k < prev_painted_indices.size(); k++)
-						{
-							if (prev_painted_indices[k] == index)
-							{
-								found_prev_index = true;
-								break;
-							}
-						}
-
-						if (found_prev_index)
-							continue;
-
-
-
-
-
-
-
-						if (tool == TOOL_PAINT)
-						{
-							glm::vec3 a((float)i, (float)j, 0);
-							glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
-							
-							size_t index = i * tiles_per_dimension + j;
-
-							if (distance(a, b) <= (brush_size * 0.5))
-								to_draw.insert(index);
-						}
-						else if (tool == TOOL_PAINT_SQUARE)
-						{
-							size_t index = i * tiles_per_dimension + j;
-
-							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
-								to_draw.insert(index);
-						}
+						if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
+							to_draw.insert(index);
 					}
 				}
-
-				prev_painted_indices = curr_painted_indices;
 			}
+
+			prev_painted_indices = curr_painted_indices;
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
