@@ -263,7 +263,6 @@ class background_chunk
 {
 public:
 	vector<ImVec2> indices;
-
 };
 
 class background_tile

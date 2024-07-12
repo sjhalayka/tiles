@@ -579,11 +579,11 @@ int main(int, char**)
 
 			float max_brush_size = brush_size;
 
-			if (custom_brush1_width > max_brush_size)
-				max_brush_size = custom_brush1_width;
+			//if (custom_brush1_width > max_brush_size)
+			//	max_brush_size = custom_brush1_width;
 
-			if (custom_brush1_height > max_brush_size)
-				max_brush_size = custom_brush1_height;
+			//if (custom_brush1_height > max_brush_size)
+			//	max_brush_size = custom_brush1_height;
 
 			int x, y;
 			SDL_GetMouseState(&x, &y);
@@ -594,10 +594,8 @@ int main(int, char**)
 			centre_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
-			// Todo: fix this line of code...
-			float relative_brush_size = round(max_brush_size / float(tiles_per_chunk_dimension));//// * tiles_per_chunk_dimension;// / block_size;// (float)max_brush_size / (float)block_size *  * zoom_factor;//* tiles_per_chunk_dimension;// *tiles_per_chunk_dimension;
-
-			cout << relative_brush_size << endl;
+			float relative_brush_size = round(max_brush_size / float(tiles_per_chunk_dimension));
+	//		cout << relative_brush_size << endl;
 
 			ImVec2 start_chunk;
 			start_chunk.x = centre_chunk.x - relative_brush_size;
