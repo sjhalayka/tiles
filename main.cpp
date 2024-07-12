@@ -594,7 +594,8 @@ int main(int, char**)
 			centre_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
-			int relative_brush_size = max_brush_size /zoom_factor;// (tiles_per_chunk_dimension / max_brush_size);
+			// Todo: fix this line of code...
+			int relative_brush_size = max_brush_size /zoom_factor * tiles_per_chunk_dimension;
 
 			ImVec2 start_chunk;
 			start_chunk.x = centre_chunk.x - relative_brush_size;
@@ -623,29 +624,18 @@ int main(int, char**)
 						
 						size_t index = i * tiles_per_dimension + j;
 
-	
-
-
-
 						if (tool == TOOL_PAINT)
 						{
 							glm::vec3 a((float)i, (float)j, 0);
 							glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
 
-
 							if (distance(a, b) <= (brush_size * 0.5))
-							{
 								to_draw.push_back(make_pair(i, j));
-								
-							}
 						}
 						else if (tool == TOOL_PAINT_SQUARE)
 						{
 							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
-							{
 								to_draw.push_back(make_pair(i, j));
-								
-							}
 						}
 					}
 				}
