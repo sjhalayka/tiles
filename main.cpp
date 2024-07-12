@@ -595,7 +595,9 @@ int main(int, char**)
 			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
 			// Todo: fix this line of code...
-			int relative_brush_size = 1000;//// max_brush_size / zoom_factor * tiles_per_chunk_dimension;
+			float relative_brush_size = 100;// (float)max_brush_size / (float)block_size * zoom_factor;//* tiles_per_chunk_dimension;// *tiles_per_chunk_dimension;
+
+			cout << relative_brush_size << endl;
 
 			ImVec2 start_chunk;
 			start_chunk.x = centre_chunk.x - relative_brush_size;
@@ -610,6 +612,9 @@ int main(int, char**)
 
 			end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
 			end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+
+			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
+			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
 
 			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
 			{
@@ -726,8 +731,8 @@ int main(int, char**)
 			end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
 			end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
 
-			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
-			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
+			//cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
+			//cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
 
 			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
 			{
