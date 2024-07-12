@@ -857,11 +857,15 @@ int main(int, char**)
 			glm::vec3 start_chunk = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
 			glm::vec3 end_chunk = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			start_chunk.x = (selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension));
-			start_chunk.y = (((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension));
+			start_chunk.x =  selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			start_chunk.y = ((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
-			end_chunk.x = (selected_end.x / (block_size*zoom_factor) / (tiles_per_chunk_dimension));
-			end_chunk.y = (((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension));
+			end_chunk.x = selected_end.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			end_chunk.y = ((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+
+
+			//end_chunk.x = (selected_end.x / (block_size*zoom_factor) / (tiles_per_chunk_dimension));
+		//	end_chunk.y = (((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension));
 
 			if (end_chunk.x < start_chunk.x)
 			{
@@ -889,9 +893,9 @@ int main(int, char**)
 			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
 			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
 
-			for (int k = start_chunk.x; k <= end_chunk.x; k++)
+			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
 			{
-				for (int l = start_chunk.y; l <= end_chunk.y; l++)
+				for (size_t l = start_chunk.y; l <= end_chunk.y; l++)
 				{
 					size_t chunk_index = k * num_chunks_per_map_dimension + l;
 
@@ -960,7 +964,7 @@ int main(int, char**)
 		//}
 
 		projection = glm::mat4x4();// glm::ortho(0.0f, io.DisplaySize.x, -io.DisplaySize.y, 0.0f, -1.0f, 1.0f);
-		view = glm::lookAt(glm::vec3( 0, 0, 1), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
+		view = glm::mat4x4();// glm::lookAt(glm::vec3(0, 0, 1), glm::vec3(0, 0, -1), glm::vec3(0, 1, 0));
 		model = glm::mat4x4();
 
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
