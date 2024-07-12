@@ -612,9 +612,6 @@ int main(int, char**)
 			centre_index = ImVec2(x / (block_size * zoom_factor), (io.DisplaySize.y - y) / (block_size * zoom_factor));
 			inside = true;
 
-			// if found a brush centre
-			// then go through the other tiles to see if it's
-			// within reach of the brush size
 			if (inside == true)
 			{
 				for (size_t i = 0; i < tiles_per_dimension; i++)
@@ -623,46 +620,19 @@ int main(int, char**)
 					{
 						size_t index = i * tiles_per_dimension + j;
 
-						//int x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
-						//int y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
+						bool found_prev_index = false;
 
-						//quad q;
-						//q.vertices[0].x = x;
-						//q.vertices[0].y = y;
-						//q.vertices[1].x = x;
-						//q.vertices[1].y = y + background_tiles[index].tile_size;
-						//q.vertices[2].x = x + background_tiles[index].tile_size;
-						//q.vertices[2].y = y + background_tiles[index].tile_size;
-						//q.vertices[3].x = x + background_tiles[index].tile_size;
-						//q.vertices[3].y = y;
+						for (size_t k = 0; k < prev_painted_indices.size(); k++)
+						{
+							if (prev_painted_indices[k] == index)
+							{
+								found_prev_index = true;
+								break;
+							}
+						}
 
-						//glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
-
-						//complex<float> v0w(static_cast<float>(quad_centre.x), static_cast<float>(quad_centre.y));
-						//complex<float> v0ndc = get_ndc_coords_from_window_coords((int)io.DisplaySize.x, (int)io.DisplaySize.y, v0w);
-
-						////cout << width_factor << " " << height_factor << endl;
-
-						//if (v0ndc.real() < -width_factor || v0ndc.real() > width_factor || v0ndc.imag() < -height_factor || v0ndc.imag() > height_factor)
-						//{
-						//	continue;
-						//}
-
-
-
-						//bool found_prev_index = false;
-
-						//for (size_t k = 0; k < prev_painted_indices.size(); k++)
-						//{
-						//	if (prev_painted_indices[k] == index)
-						//	{
-						//		found_prev_index = true;
-						//		break;
-						//	}
-						//}
-
-						//if (found_prev_index)
-						//	continue;
+						if (found_prev_index)
+							continue;
 
 
 
