@@ -192,8 +192,9 @@ int main(int, char**)
 	int window_w = 0, window_h = 0;
 	SDL_GetWindowSize(window, &window_w, &window_h);
 
-	image_anchor.x = 0;// float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
+	image_anchor.x = 0;//float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
 	image_anchor.y = 0;// float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
+
 
 	mt19937 generator((unsigned int)time(0));
 	uniform_real_distribution<float> distribution(0.0, 1.0);
@@ -611,8 +612,8 @@ int main(int, char**)
 			end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
 			end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
 
-			cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
-			cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
+			//cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
+			//cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
 
 			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
 			{
@@ -637,7 +638,7 @@ int main(int, char**)
 						}
 						else if (tool == TOOL_PAINT_SQUARE)
 						{
-							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
+							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)
 								to_draw.push_back(make_pair(i, j));
 						}
 					}
