@@ -134,9 +134,6 @@ int main(int, char**)
 	Mat custom_brush1_img;
 
 
-
-
-
 	bool ret = LoadTextureFromFile(main_tiles_img, "goblins.png", &main_tiles_texture, &main_tiles_width, &main_tiles_height);
 
 	if (ret == false)
@@ -201,7 +198,7 @@ int main(int, char**)
 	mt19937 generator((unsigned int)time(0));
 	uniform_real_distribution<float> distribution(0.0, 1.0);
 
-
+	vector<pair<size_t, size_t>> prev_draw;
 	set<pair<size_t, size_t>> selected_indices;
 	glm::vec3 selected_start;
 	glm::vec3 selected_end;
@@ -579,6 +576,7 @@ int main(int, char**)
 
 			size_t brush_in_use = 0;
 			vector<pair<size_t, size_t>> to_draw;
+
 			float max_brush_size = brush_size;
 
 			if (custom_brush1_width > max_brush_size)
@@ -622,26 +620,31 @@ int main(int, char**)
 					{
 						size_t i = background_chunks[chunk_index].indices[m].x;
 						size_t j = background_chunks[chunk_index].indices[m].y;
+						
+						size_t index = i * tiles_per_dimension + j;
+
+	
+
+
 
 						if (tool == TOOL_PAINT)
 						{
 							glm::vec3 a((float)i, (float)j, 0);
 							glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
 
-							size_t index = i * tiles_per_dimension + j;
 
 							if (distance(a, b) <= (brush_size * 0.5))
 							{
 								to_draw.push_back(make_pair(i, j));
+								
 							}
 						}
 						else if (tool == TOOL_PAINT_SQUARE)
 						{
-							size_t index = i * tiles_per_dimension + j;
-
 							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
 							{
 								to_draw.push_back(make_pair(i, j));
+								
 							}
 						}
 					}
@@ -649,10 +652,12 @@ int main(int, char**)
 			}
 
 
-
 			for (size_t i = 0; i < to_draw.size(); i++)
 			{
 				pair<size_t, size_t> pair_index = make_pair(to_draw[i].first, to_draw[i].second);
+
+				if (prev_draw.end() != find(prev_draw.begin(), prev_draw.end(), make_pair(pair_index.first, pair_index.second)))
+					continue;
 
 				size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
 
@@ -680,8 +685,7 @@ int main(int, char**)
 				}
 			}
 
-
-
+			prev_draw = to_draw;
 			to_draw.clear();
 		}
 
