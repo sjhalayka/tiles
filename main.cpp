@@ -201,7 +201,6 @@ int main(int, char**)
 	mt19937 generator((unsigned int)time(0));
 	uniform_real_distribution<float> distribution(0.0, 1.0);
 
-	vector<size_t> prev_painted_indices;
 
 	set<pair<size_t, size_t>> selected_indices;
 	glm::vec3 selected_start;
@@ -223,6 +222,7 @@ int main(int, char**)
 
 
 	vector<int> prev_tools;
+
 
 	while (!done)
 	{
@@ -610,18 +610,13 @@ int main(int, char**)
 
 
 
-
+			
 
 
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
 			centre_index = ImVec2(-image_anchor.x / (block_size) + x / (block_size * zoom_factor), -image_anchor.y / (block_size) + (io.DisplaySize.y - y) / (block_size * zoom_factor));
-			inside = true;
-
-
-
-
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
@@ -639,6 +634,8 @@ int main(int, char**)
 						if (distance(a, b) <= (brush_size * 0.5))
 						{
 							to_draw.insert(index);
+							
+
 						}
 					}
 					else if (tool == TOOL_PAINT_SQUARE)
@@ -648,11 +645,11 @@ int main(int, char**)
 						if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
 						{
 							to_draw.insert(index);
+							
 						}
 					}
 				}
 			}
-
 
 
 			for (size_t i = 0; i < tiles_per_dimension; i++)
@@ -688,7 +685,6 @@ int main(int, char**)
 					}
 				}
 			}
-
 
 			to_draw.clear();
 		}
