@@ -578,7 +578,7 @@ int main(int, char**)
 
 
 			size_t brush_in_use = 0;
-			set<size_t> to_draw;
+			vector<pair<size_t, size_t>> to_draw;
 			float max_brush_size = brush_size;
 
 			if (custom_brush1_width > max_brush_size)
@@ -596,7 +596,7 @@ int main(int, char**)
 			centre_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
-			int relative_brush_size = 10/zoom_factor;// (tiles_per_chunk_dimension / max_brush_size);
+			int relative_brush_size = max_brush_size /zoom_factor;// (tiles_per_chunk_dimension / max_brush_size);
 
 			ImVec2 start_chunk;
 			start_chunk.x = centre_chunk.x - relative_brush_size;
@@ -632,7 +632,7 @@ int main(int, char**)
 
 							if (distance(a, b) <= (brush_size * 0.5))
 							{
-								to_draw.insert(index);
+								to_draw.push_back(make_pair(i, j));
 							}
 						}
 						else if (tool == TOOL_PAINT_SQUARE)
@@ -641,7 +641,7 @@ int main(int, char**)
 
 							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
 							{
-								to_draw.insert(index);
+								to_draw.push_back(make_pair(i, j));
 							}
 						}
 					}
@@ -649,70 +649,38 @@ int main(int, char**)
 			}
 
 
-			//for (size_t i = 0; i < tiles_per_dimension; i++)
-			//{
-			//	for (size_t j = 0; j < tiles_per_dimension; j++)
-			//	{
-			//		size_t index = i * tiles_per_dimension + j;
 
-			//		if (tool == TOOL_PAINT)
-			//		{
-			//			glm::vec3 a((float)i, (float)j, 0);
-			//			glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
-
-			//			size_t index = i * tiles_per_dimension + j;
-
-			//			if (distance(a, b) <= (brush_size * 0.5))
-			//			{
-			//				to_draw.insert(index);
-			//			}
-			//		}
-			//		else if (tool == TOOL_PAINT_SQUARE)
-			//		{
-			//			size_t index = i * tiles_per_dimension + j;
-
-			//			if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)// && !found_prev_index)
-			//			{
-			//				to_draw.insert(index);
-			//			}
-			//		}
-			//	}
-			//}
-
-
-			for (size_t i = 0; i < tiles_per_dimension; i++)
+			for (size_t i = 0; i < to_draw.size(); i++)
 			{
-				for (size_t j = 0; j < tiles_per_dimension; j++)
+				pair<size_t, size_t> pair_index = make_pair(to_draw[i].first, to_draw[i].second);
+
+				size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
+
+				size_t brush_in_use = 0;
+
+				const float r = distribution(generator);
+
+				float sub_total = 0;
+
+				for (int k = 0; k < left_strings.size(); k++)
 				{
-					size_t index = i * tiles_per_dimension + j;
+					sub_total += weights[k];
 
-					if (to_draw.end() == find(to_draw.begin(), to_draw.end(), index))
-						continue;
-
-					size_t brush_in_use = 0;
-
-					const float r = distribution(generator);
-
-					float sub_total = 0;
-
-					for (int k = 0; k < left_strings.size(); k++)
+					if (r <= sub_total)
 					{
-						sub_total += weights[k];
-
-						if (r <= sub_total)
-						{
-							brush_in_use = k;
-							break;
-						}
-					}
-
-					if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(i, j)))
-					{
-						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
-						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+						brush_in_use = k;
+						break;
 					}
 				}
+
+				if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(pair_index.first, pair_index.second)))
+				{
+					background_tiles[index].uv_min = left_uv_mins[brush_in_use];
+					background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+				}
 			}
+
+
 
 			to_draw.clear();
 		}
