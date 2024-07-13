@@ -317,10 +317,10 @@ int main(int, char**)
 					//	selected_start_backups.erase(selected_start_backups.begin());
 					//	selected_end_backups.erase(selected_end_backups.begin());
 					//	background_tiles_backups.erase(background_tiles_backups.begin());
-					//}
 
-					//if (selected_indices_backups.size() > 0 && undo_index > selected_indices_backups.size() - 1)
-					//	undo_index = selected_indices_backups.size() - 1;
+					//	if (undo_index)
+					//		undo_index--;
+					//}
 
 					//if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					//{
@@ -361,9 +361,6 @@ int main(int, char**)
 							undo_index--;
 					}
 
-					//if (selected_indices_backups.size() > 0 && undo_index > selected_indices_backups.size() - 1)
-					//	undo_index = selected_indices_backups.size() - 1;
-
 					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					{
 						selected_indices_backups.resize(undo_index + 1);
@@ -398,13 +395,9 @@ int main(int, char**)
 						selected_end_backups.erase(selected_end_backups.begin());
 						background_tiles_backups.erase(background_tiles_backups.begin());
 
-
 						if (undo_index)
 							undo_index--;
 					}
-
-	/*				if (selected_indices_backups.size() > 0 && undo_index > selected_indices_backups.size() - 1)
-						undo_index = selected_indices_backups.size() - 1;*/
 
 					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					{
