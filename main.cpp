@@ -208,6 +208,7 @@ int main(int, char**)
 	vector<set<pair<size_t, size_t>>> selected_indices_backups;
 	vector<glm::vec3> selected_start_backups;
 	vector<glm::vec3> selected_end_backups;
+	vector<vector<background_tile>> background_tiles_backups;
 
 
 #define TOOL_PAINT 0
@@ -270,17 +271,21 @@ int main(int, char**)
 			}
 
 
-			if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftCtrl)) && event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)
+			if ((ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftCtrl)) || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightCtrl))) && event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)
 			{
-				if (selected_indices_backups.size() > 0)
+				if (selected_indices_backups.size() > 0 && background_tiles_backups.size()  )
 				{
+					cout << "Ctrl + Z" << endl;
+
 					selected_indices = selected_indices_backups[selected_indices_backups.size() - 1];
 					selected_start = selected_start_backups[selected_start_backups.size() - 1];
 					selected_end = selected_end_backups[selected_end_backups.size() - 1];
-				
+					background_tiles = background_tiles_backups[background_tiles_backups.size() - 1];
+
 					selected_indices_backups.resize(selected_indices_backups.size() - 1);
 					selected_start_backups.resize(selected_start_backups.size() - 1);
 					selected_end_backups.resize(selected_end_backups.size() - 1);
+					background_tiles_backups.resize(background_tiles_backups.size() - 1);
 				}
 			}
 
@@ -292,6 +297,7 @@ int main(int, char**)
 					selected_indices_backups.push_back(selected_indices);
 					selected_start_backups.push_back(selected_start);
 					selected_end_backups.push_back(selected_end);
+					background_tiles_backups.push_back(background_tiles);
 
 					int x, y;
 					SDL_GetMouseState(&x, &y);
