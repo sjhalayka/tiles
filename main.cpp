@@ -275,7 +275,7 @@ int main(int, char**)
 
 
 
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)// && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftCtrl)))
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)
 			{
 				if (selected_indices_backups.size() > 0)
 				{
@@ -290,7 +290,7 @@ int main(int, char**)
 				}
 			}
 
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_y)// && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftCtrl)))
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_y)
 			{
 				if (selected_indices_backups.size() > 0)
 				{
@@ -318,12 +318,13 @@ int main(int, char**)
 						background_tiles_backups.erase(background_tiles_backups.begin());
 					}
 
+
 					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					{
-						selected_indices_backups.resize(undo_index + 1);
-						selected_start_backups.resize(undo_index + 1);
-						selected_end_backups.resize(undo_index + 1);
-						background_tiles_backups.resize(undo_index + 1);
+						selected_indices_backups.resize(undo_index );
+						selected_start_backups.resize(undo_index );
+						selected_end_backups.resize(undo_index  );
+						background_tiles_backups.resize(undo_index);
 					}
 
 					selected_indices_backups.push_back(selected_indices);
@@ -355,11 +356,13 @@ int main(int, char**)
 
 					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					{
-						selected_indices_backups.resize(undo_index + 1);
-						selected_start_backups.resize(undo_index + 1);
-						selected_end_backups.resize(undo_index + 1);
-						background_tiles_backups.resize(undo_index + 1);
+						selected_indices_backups.resize(undo_index);
+						selected_start_backups.resize(undo_index);
+						selected_end_backups.resize(undo_index);
+						background_tiles_backups.resize(undo_index);
 					}
+
+
 
 					selected_indices_backups.push_back(selected_indices);
 					selected_start_backups.push_back(selected_start);
