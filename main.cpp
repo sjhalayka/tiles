@@ -318,16 +318,13 @@ int main(int, char**)
 						background_tiles_backups.erase(background_tiles_backups.begin());
 					}
 
-
-					if (selected_indices_backups.size() > 0)
+					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					{
 						selected_indices_backups.resize(undo_index + 1);
 						selected_start_backups.resize(undo_index + 1);
 						selected_end_backups.resize(undo_index + 1);
 						background_tiles_backups.resize(undo_index + 1);
-						//undo_index = selected_indices_backups.size() - 1;
 					}
-
 
 					selected_indices_backups.push_back(selected_indices);
 					selected_start_backups.push_back(selected_start);
@@ -356,13 +353,12 @@ int main(int, char**)
 						background_tiles_backups.erase(background_tiles_backups.begin());
 					}
 
-					if (selected_indices_backups.size() > 0)
+					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					{
 						selected_indices_backups.resize(undo_index + 1);
 						selected_start_backups.resize(undo_index + 1);
 						selected_end_backups.resize(undo_index + 1);
 						background_tiles_backups.resize(undo_index + 1);
-						//undo_index = selected_indices_backups.size() - 1;
 					}
 
 					selected_indices_backups.push_back(selected_indices);
