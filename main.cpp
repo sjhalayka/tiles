@@ -317,17 +317,14 @@ int main(int, char**)
 					//	selected_start_backups.erase(selected_start_backups.begin());
 					//	selected_end_backups.erase(selected_end_backups.begin());
 					//	background_tiles_backups.erase(background_tiles_backups.begin());
-
-					//	if (undo_index)
-					//		undo_index--;
 					//}
 
 					//if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					//{
-					//	selected_indices_backups.resize(undo_index + 1);
-					//	selected_start_backups.resize(undo_index + 1);
-					//	selected_end_backups.resize(undo_index + 1);
-					//	background_tiles_backups.resize(undo_index + 1);
+					//	selected_indices_backups.resize(undo_index);
+					//	selected_start_backups.resize(undo_index);
+					//	selected_end_backups.resize(undo_index);
+					//	background_tiles_backups.resize(undo_index);
 					//}
 
 					//selected_indices_backups.push_back(selected_indices);
@@ -350,30 +347,27 @@ int main(int, char**)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					if (selected_indices_backups.size() > 10)
-					{
-						selected_indices_backups.erase(selected_indices_backups.begin());
-						selected_start_backups.erase(selected_start_backups.begin());
-						selected_end_backups.erase(selected_end_backups.begin());
-						background_tiles_backups.erase(background_tiles_backups.begin());
+					//if (selected_indices_backups.size() > 10)
+					//{
+					//	selected_indices_backups.erase(selected_indices_backups.begin());
+					//	selected_start_backups.erase(selected_start_backups.begin());
+					//	selected_end_backups.erase(selected_end_backups.begin());
+					//	background_tiles_backups.erase(background_tiles_backups.begin());
+					//}
 
-						if (undo_index)
-							undo_index--;
-					}
+					//if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
+					//{
+					//	selected_indices_backups.resize(undo_index);
+					//	selected_start_backups.resize(undo_index);
+					//	selected_end_backups.resize(undo_index);
+					//	background_tiles_backups.resize(undo_index);
+					//}
 
-					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
-					{
-						selected_indices_backups.resize(undo_index + 1);
-						selected_start_backups.resize(undo_index + 1);
-						selected_end_backups.resize(undo_index + 1);
-						background_tiles_backups.resize(undo_index + 1);
-					}
-
-					selected_indices_backups.push_back(selected_indices);
-					selected_start_backups.push_back(selected_start);
-					selected_end_backups.push_back(selected_end);
-					background_tiles_backups.push_back(background_tiles);
-					undo_index = selected_indices_backups.size() - 1;
+					//selected_indices_backups.push_back(selected_indices);
+					//selected_start_backups.push_back(selected_start);
+					//selected_end_backups.push_back(selected_end);
+					//background_tiles_backups.push_back(background_tiles);
+					//undo_index = selected_indices_backups.size() - 1;
 
 					int x, y;
 					SDL_GetMouseState(&x, &y);
@@ -388,16 +382,13 @@ int main(int, char**)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					if (selected_indices_backups.size() > 10)
-					{
-						selected_indices_backups.erase(selected_indices_backups.begin());
-						selected_start_backups.erase(selected_start_backups.begin());
-						selected_end_backups.erase(selected_end_backups.begin());
-						background_tiles_backups.erase(background_tiles_backups.begin());
-
-						if (undo_index)
-							undo_index--;
-					}
+					//if (selected_indices_backups.size() > 10)
+					//{
+					//	selected_indices_backups.erase(selected_indices_backups.begin());
+					//	selected_start_backups.erase(selected_start_backups.begin());
+					//	selected_end_backups.erase(selected_end_backups.begin());
+					//	background_tiles_backups.erase(background_tiles_backups.begin());
+					//}
 
 					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					{
