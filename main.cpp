@@ -310,13 +310,24 @@ int main(int, char**)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					if (selected_indices.size() > 10)
+					if (selected_indices_backups.size() > 10)
 					{
 						selected_indices_backups.erase(selected_indices_backups.begin());
 						selected_start_backups.erase(selected_start_backups.begin());
 						selected_end_backups.erase(selected_end_backups.begin());
 						background_tiles_backups.erase(background_tiles_backups.begin());
 					}
+
+
+					if (selected_indices_backups.size() > 0)
+					{
+						selected_indices_backups.resize(undo_index + 1);
+						selected_start_backups.resize(undo_index + 1);
+						selected_end_backups.resize(undo_index + 1);
+						background_tiles_backups.resize(undo_index + 1);
+						//undo_index = selected_indices_backups.size() - 1;
+					}
+
 
 					selected_indices_backups.push_back(selected_indices);
 					selected_start_backups.push_back(selected_start);
@@ -337,12 +348,21 @@ int main(int, char**)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					if (selected_indices.size() > 10)
+					if (selected_indices_backups.size() > 10)
 					{
 						selected_indices_backups.erase(selected_indices_backups.begin());
 						selected_start_backups.erase(selected_start_backups.begin());
 						selected_end_backups.erase(selected_end_backups.begin());
 						background_tiles_backups.erase(background_tiles_backups.begin());
+					}
+
+					if (selected_indices_backups.size() > 0)
+					{
+						selected_indices_backups.resize(undo_index + 1);
+						selected_start_backups.resize(undo_index + 1);
+						selected_end_backups.resize(undo_index + 1);
+						background_tiles_backups.resize(undo_index + 1);
+						//undo_index = selected_indices_backups.size() - 1;
 					}
 
 					selected_indices_backups.push_back(selected_indices);
