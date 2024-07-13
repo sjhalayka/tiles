@@ -318,7 +318,6 @@ int main(int, char**)
 						background_tiles_backups.erase(background_tiles_backups.begin());
 					}
 
-
 					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
 					{
 						selected_indices_backups.resize(undo_index );
@@ -361,8 +360,6 @@ int main(int, char**)
 						selected_end_backups.resize(undo_index);
 						background_tiles_backups.resize(undo_index);
 					}
-
-
 
 					selected_indices_backups.push_back(selected_indices);
 					selected_start_backups.push_back(selected_start);
