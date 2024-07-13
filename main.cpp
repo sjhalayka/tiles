@@ -273,12 +273,12 @@ int main(int, char**)
 				prev_tools.clear();
 			}
 
-			if (event.key.keysym.sym == SDLK_z)
+
+
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)// && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftCtrl)))
 			{
 				if (selected_indices_backups.size() > 0)
 				{
-					cout << "Z" << endl;
-
 					if (0 < undo_index)
 						undo_index--;
 
@@ -290,12 +290,10 @@ int main(int, char**)
 				}
 			}
 
-			if (event.key.keysym.sym == SDLK_y)
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_y)// && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftCtrl)))
 			{
 				if (selected_indices_backups.size() > 0)
 				{
-					cout << "Y" << endl;
-
 					if ((selected_indices_backups.size() - 1) > undo_index)
 						undo_index++;
 
@@ -312,6 +310,14 @@ int main(int, char**)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
+					if (selected_indices.size() > 10)
+					{
+						selected_indices_backups.erase(selected_indices_backups.begin());
+						selected_start_backups.erase(selected_start_backups.begin());
+						selected_end_backups.erase(selected_end_backups.begin());
+						background_tiles_backups.erase(background_tiles_backups.begin());
+					}
+
 					selected_indices_backups.push_back(selected_indices);
 					selected_start_backups.push_back(selected_start);
 					selected_end_backups.push_back(selected_end);
@@ -326,28 +332,19 @@ int main(int, char**)
 				}
 			}
 
-			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && event.type == SDL_MOUSEBUTTONDOWN)
-			{
-				if (event.button.button == SDL_BUTTON_LEFT)
-				{
-					selected_indices_backups.push_back(selected_indices);
-					selected_start_backups.push_back(selected_start);
-					selected_end_backups.push_back(selected_end);
-					background_tiles_backups.push_back(background_tiles);
-					undo_index = selected_indices_backups.size() - 1;
-
-					int x, y;
-					SDL_GetMouseState(&x, &y);
-
-					selected_start = glm::vec3((float)x, (float)y, 0);
-					selected_end = glm::vec3((float)x, (float)y, 0);
-				}
-			}
 
 			if ((tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE || tool == TOOL_PAINT_CUSTOM) && event.type == SDL_MOUSEBUTTONUP)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
+					if (selected_indices.size() > 10)
+					{
+						selected_indices_backups.erase(selected_indices_backups.begin());
+						selected_start_backups.erase(selected_start_backups.begin());
+						selected_end_backups.erase(selected_end_backups.begin());
+						background_tiles_backups.erase(background_tiles_backups.begin());
+					}
+
 					selected_indices_backups.push_back(selected_indices);
 					selected_start_backups.push_back(selected_start);
 					selected_end_backups.push_back(selected_end);
