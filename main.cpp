@@ -205,6 +205,8 @@ int main(int, char**)
 	glm::vec3 selected_start;
 	glm::vec3 selected_end;
 
+	size_t undo_index = 0;
+
 	vector<set<pair<size_t, size_t>>> selected_indices_backups;
 	vector<glm::vec3> selected_start_backups;
 	vector<glm::vec3> selected_end_backups;
@@ -240,6 +242,7 @@ int main(int, char**)
 
 
 
+
 		SDL_Event event;
 		while (SDL_PollEvent(&event))
 		{
@@ -270,22 +273,37 @@ int main(int, char**)
 				prev_tools.clear();
 			}
 
-
-			if ((ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftCtrl)) || ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_RightCtrl))) && event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)
 			{
-				if (selected_indices_backups.size() > 0 && background_tiles_backups.size()  )
+				if (selected_indices_backups.size() > 0)
 				{
-					cout << "Ctrl + Z" << endl;
+					cout << "Z" << endl;
 
-					selected_indices = selected_indices_backups[selected_indices_backups.size() - 1];
-					selected_start = selected_start_backups[selected_start_backups.size() - 1];
-					selected_end = selected_end_backups[selected_end_backups.size() - 1];
-					background_tiles = background_tiles_backups[background_tiles_backups.size() - 1];
+					if (0 != undo_index)
+						undo_index--;
 
-					selected_indices_backups.resize(selected_indices_backups.size() - 1);
-					selected_start_backups.resize(selected_start_backups.size() - 1);
-					selected_end_backups.resize(selected_end_backups.size() - 1);
-					background_tiles_backups.resize(background_tiles_backups.size() - 1);
+					selected_indices = selected_indices_backups[undo_index];
+					selected_start = selected_start_backups[undo_index];
+					selected_end = selected_end_backups[undo_index];
+					background_tiles = background_tiles_backups[undo_index];
+
+				}
+			}
+
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_y)
+			{
+				if (selected_indices_backups.size() > 0)
+				{
+					cout << "Y" << endl;
+
+					if ((selected_indices_backups.size() - 1) > undo_index)
+						undo_index++;
+
+					selected_indices = selected_indices_backups[undo_index];
+					selected_start = selected_start_backups[undo_index];
+					selected_end = selected_end_backups[undo_index];
+					background_tiles = background_tiles_backups[undo_index];
+
 				}
 			}
 
@@ -298,6 +316,7 @@ int main(int, char**)
 					selected_start_backups.push_back(selected_start);
 					selected_end_backups.push_back(selected_end);
 					background_tiles_backups.push_back(background_tiles);
+					undo_index = selected_indices_backups.size() - 1;
 
 					int x, y;
 					SDL_GetMouseState(&x, &y);
@@ -306,6 +325,38 @@ int main(int, char**)
 					selected_end = glm::vec3((float)x, (float)y, 0);
 				}
 			}
+
+			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && event.type == SDL_MOUSEBUTTONDOWN)
+			{
+				if (event.button.button == SDL_BUTTON_LEFT)
+				{
+					selected_indices_backups.push_back(selected_indices);
+					selected_start_backups.push_back(selected_start);
+					selected_end_backups.push_back(selected_end);
+					background_tiles_backups.push_back(background_tiles);
+					undo_index = selected_indices_backups.size() - 1;
+
+					int x, y;
+					SDL_GetMouseState(&x, &y);
+
+					selected_start = glm::vec3((float)x, (float)y, 0);
+					selected_end = glm::vec3((float)x, (float)y, 0);
+				}
+			}
+
+			if ((tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE || tool == TOOL_PAINT_CUSTOM) && event.type == SDL_MOUSEBUTTONUP)
+			{
+				if (event.button.button == SDL_BUTTON_LEFT)
+				{
+					selected_indices_backups.push_back(selected_indices);
+					selected_start_backups.push_back(selected_start);
+					selected_end_backups.push_back(selected_end);
+					background_tiles_backups.push_back(background_tiles);
+				}
+			}
+
+
+
 
 			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && event.type == SDL_MOUSEBUTTONUP)
 			{
@@ -649,7 +700,7 @@ int main(int, char**)
 
 			set<pair<size_t, size_t>> custom_to_draw;
 
-			if (tool == TOOL_PAINT_CUSTOM)
+			if (tool == TOOL_PAINT_CUSTOM && !hovered)
 			{
 				int x, y;
 				SDL_GetMouseState(&x, &y);
