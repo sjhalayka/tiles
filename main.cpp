@@ -273,13 +273,13 @@ int main(int, char**)
 				prev_tools.clear();
 			}
 
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)
+			if (event.key.keysym.sym == SDLK_z)
 			{
 				if (selected_indices_backups.size() > 0)
 				{
 					cout << "Z" << endl;
 
-					if (0 != undo_index)
+					if (0 < undo_index)
 						undo_index--;
 
 					selected_indices = selected_indices_backups[undo_index];
@@ -290,7 +290,7 @@ int main(int, char**)
 				}
 			}
 
-			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_y)
+			if (event.key.keysym.sym == SDLK_y)
 			{
 				if (selected_indices_backups.size() > 0)
 				{
@@ -352,6 +352,7 @@ int main(int, char**)
 					selected_start_backups.push_back(selected_start);
 					selected_end_backups.push_back(selected_end);
 					background_tiles_backups.push_back(background_tiles);
+					undo_index = selected_indices_backups.size() - 1;
 				}
 			}
 
