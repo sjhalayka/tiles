@@ -647,10 +647,10 @@ int main(int, char**)
 						else if (tool == TOOL_PAINT_CUSTOM)
 						{
 
+							// todo: add painting here
 
 							to_draw.push_back(make_pair(i, j));
 
-							// todo: add painting here
 
 						}
 					}
@@ -662,8 +662,9 @@ int main(int, char**)
 			{
 				pair<size_t, size_t> pair_index = make_pair(to_draw[i].first, to_draw[i].second);
 
-				if (prev_draw.end() != find(prev_draw.begin(), prev_draw.end(), make_pair(pair_index.first, pair_index.second)))
-					continue;
+				// This makes things terribly slow for very large brush sizes (e.g., 500 tiles)
+				//if (prev_draw.end() != find(prev_draw.begin(), prev_draw.end(), make_pair(pair_index.first, pair_index.second)))
+				//	continue;
 
 				size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
 
@@ -842,46 +843,46 @@ int main(int, char**)
 		draw_quad_ndc_data(vertex_data, index_data, main_tiles_texture, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 
 
-
-		for (size_t i = 0; i < tiles_per_dimension; i++)
+		// Draw outlines around each tile
+		if (zoom_factor > 0.5)
 		{
-			for (size_t j = 0; j < tiles_per_dimension; j++)
+			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
-				size_t index = i * tiles_per_dimension + j;
+				for (size_t j = 0; j < tiles_per_dimension; j++)
+				{
+					size_t index = i * tiles_per_dimension + j;
 
-				const float x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
-				const float y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
+					const float x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
+					const float y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
 
-				complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-				complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
-				complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
-				complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+					complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
 
-				v0w.real(v0w.real() * zoom_factor);
-				v0w.imag(v0w.imag() * zoom_factor);
-				v1w.real(v1w.real() * zoom_factor);
-				v1w.imag(v1w.imag() * zoom_factor);
-				v2w.real(v2w.real() * zoom_factor);
-				v2w.imag(v2w.imag() * zoom_factor);
-				v3w.real(v3w.real() * zoom_factor);
-				v3w.imag(v3w.imag() * zoom_factor);
+					v0w.real(v0w.real() * zoom_factor);
+					v0w.imag(v0w.imag() * zoom_factor);
+					v1w.real(v1w.real() * zoom_factor);
+					v1w.imag(v1w.imag() * zoom_factor);
+					v2w.real(v2w.real() * zoom_factor);
+					v2w.imag(v2w.imag() * zoom_factor);
+					v3w.real(v3w.real() * zoom_factor);
+					v3w.imag(v3w.imag() * zoom_factor);
 
-				quad q;
-				q.vertices[0].x = v0w.real();
-				q.vertices[0].y = v0w.imag();
-				q.vertices[1].x = v1w.real();
-				q.vertices[1].y = v1w.imag();
-				q.vertices[2].x = v2w.real();
-				q.vertices[2].y = v2w.imag();
-				q.vertices[3].x = v3w.real();
-				q.vertices[3].y = v3w.imag();
+					quad q;
+					q.vertices[0].x = v0w.real();
+					q.vertices[0].y = v0w.imag();
+					q.vertices[1].x = v1w.real();
+					q.vertices[1].y = v1w.imag();
+					q.vertices[2].x = v2w.real();
+					q.vertices[2].y = v2w.imag();
+					q.vertices[3].x = v3w.real();
+					q.vertices[3].y = v3w.imag();
 
-				//if (x >= 0 && x <= (int)io.DisplaySize.x && y >= 0 && y <= (int)io.DisplaySize.y)
-				if (zoom_factor > 0.5)
 					draw_quad_line_loop(glm::vec3(0.1, 0.1, 0.1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 1.0, q);
+				}
 			}
 		}
-
 
 
 		vertex_data.clear();
