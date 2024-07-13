@@ -199,11 +199,15 @@ int main(int, char**)
 	mt19937 generator((unsigned int)time(0));
 	uniform_real_distribution<float> distribution(0.0, 1.0);
 
-	set<pair<size_t, size_t>> prev_draw;
+	//set<pair<size_t, size_t>> prev_draw;
+
 	set<pair<size_t, size_t>> selected_indices;
 	glm::vec3 selected_start;
 	glm::vec3 selected_end;
 
+	vector<set<pair<size_t, size_t>>> selected_indices_backups;
+	vector<glm::vec3> selected_start_backups;
+	vector<glm::vec3> selected_end_backups;
 
 
 #define TOOL_PAINT 0
@@ -266,13 +270,29 @@ int main(int, char**)
 			}
 
 
-
+			if (ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_LeftCtrl)) && event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)
+			{
+				if (selected_indices_backups.size() > 0)
+				{
+					selected_indices = selected_indices_backups[selected_indices_backups.size() - 1];
+					selected_start = selected_start_backups[selected_start_backups.size() - 1];
+					selected_end = selected_end_backups[selected_end_backups.size() - 1];
+				
+					selected_indices_backups.resize(selected_indices_backups.size() - 1);
+					selected_start_backups.resize(selected_start_backups.size() - 1);
+					selected_end_backups.resize(selected_end_backups.size() - 1);
+				}
+			}
 
 
 			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && event.type == SDL_MOUSEBUTTONDOWN)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
+					selected_indices_backups.push_back(selected_indices);
+					selected_start_backups.push_back(selected_start);
+					selected_end_backups.push_back(selected_end);
+
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
@@ -291,6 +311,8 @@ int main(int, char**)
 					selected_end = glm::vec3((float)x, (float)y, 0);
 
 					make_selection = true;
+
+
 				}
 			}
 		}
@@ -762,7 +784,7 @@ int main(int, char**)
 				}
 			}
 
-			prev_draw = to_draw;
+			//prev_draw = to_draw;
 			to_draw.clear();
 		}
 
