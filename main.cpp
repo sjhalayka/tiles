@@ -199,7 +199,7 @@ int main(int, char**)
 	mt19937 generator((unsigned int)time(0));
 	uniform_real_distribution<float> distribution(0.0, 1.0);
 
-	vector<pair<size_t, size_t>> prev_draw;
+	set<pair<size_t, size_t>> prev_draw;
 	set<pair<size_t, size_t>> selected_indices;
 	glm::vec3 selected_start;
 	glm::vec3 selected_end;
@@ -576,7 +576,7 @@ int main(int, char**)
 
 
 			size_t brush_in_use = 0;
-			vector<pair<size_t, size_t>> to_draw;
+			set<pair<size_t, size_t>> to_draw;
 
 			float max_brush_size = brush_size;
 
@@ -618,6 +618,81 @@ int main(int, char**)
 			//cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
 			//cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
 
+
+			set<pair<size_t, size_t>> custom_to_draw;
+
+			if (tool == TOOL_PAINT_CUSTOM)
+			{
+				int x, y;
+				SDL_GetMouseState(&x, &y);
+
+				for (int i = 0; i < custom_brush1_img.cols; i++)
+				{
+					for (int j = 0; j < custom_brush1_img.rows; j++)
+					{
+						unsigned char colour = 0;
+
+						if (custom_brush1_img.channels() == 4)
+						{
+							Vec<unsigned char, 4> p = custom_brush1_img.at<Vec<unsigned char, 4>>(j, i);
+							colour = p[0];
+						}
+						else if (custom_brush1_img.channels() == 3)
+						{
+							Vec<unsigned char, 3> p = custom_brush1_img.at<Vec<unsigned char, 3>>(j, i);
+							colour = p[0];
+						}
+
+
+
+
+						if (colour != 255)
+							continue;
+
+
+
+						quad q;
+
+						float half_width = -custom_brush1_img.cols * block_size / 2.0f;
+						float half_height = custom_brush1_img.rows * block_size / 2.0f;
+
+						q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+						q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+						q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+						q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+						q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+						q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+						q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+						q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+
+						q.vertices[0].x += half_width * zoom_factor;
+						q.vertices[1].x += half_width * zoom_factor;
+						q.vertices[2].x += half_width * zoom_factor;
+						q.vertices[3].x += half_width * zoom_factor;
+
+						q.vertices[0].y += half_height * zoom_factor;
+						q.vertices[1].y += half_height * zoom_factor;
+						q.vertices[2].y += half_height * zoom_factor;
+						q.vertices[3].y += half_height * zoom_factor;
+
+
+						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f; 
+						
+						pair<size_t, size_t> centre_index = make_pair(-image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -image_anchor.y / (block_size)+(io.DisplaySize.y - quad_centre.y) / (block_size * zoom_factor));
+						
+						custom_to_draw.insert(centre_index);
+					}
+				}
+			}
+
+
+
+
+
+
+
+
+
 			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
 			{
 				for (size_t l = start_chunk.y; l <= end_chunk.y; l++)
@@ -637,34 +712,30 @@ int main(int, char**)
 							glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
 
 							if (distance(a, b) <= (brush_size * 0.5))
-								to_draw.push_back(make_pair(i, j));
+								to_draw.insert(make_pair(i, j));
 						}
 						else if (tool == TOOL_PAINT_SQUARE)
 						{
 							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)
-								to_draw.push_back(make_pair(i, j));
+								to_draw.insert(make_pair(i, j));
 						}
 						else if (tool == TOOL_PAINT_CUSTOM)
 						{
-
-							// todo: add painting here
-
-							to_draw.push_back(make_pair(i, j));
-
-
+							if(custom_to_draw.end() != custom_to_draw.find(make_pair(i, j)))
+								to_draw.insert(make_pair(i, j));
 						}
 					}
 				}
 			}
 
-
-			for (size_t i = 0; i < to_draw.size(); i++)
+			for (set<pair<size_t, size_t>>::const_iterator ci = to_draw.begin(); ci != to_draw.end(); ci++)
 			{
-				pair<size_t, size_t> pair_index = make_pair(to_draw[i].first, to_draw[i].second);
+				pair<size_t, size_t> pair_index = make_pair(ci->first, ci->second);
 
-				// This makes things terribly slow for very large brush sizes (e.g., 500 tiles)
+				// This makes things terribly slow for very large brush sizes(e.g., 500 tiles)
 				//if (prev_draw.end() != find(prev_draw.begin(), prev_draw.end(), make_pair(pair_index.first, pair_index.second)))
 				//	continue;
+
 
 				size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
 
