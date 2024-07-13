@@ -520,7 +520,7 @@ void draw_quad_line_loop(glm::vec3 colour, int win_width, int win_height, float 
 
 	glUseProgram(line_shader.get_program());
 
-	glUniform3f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z);
+	glUniform4f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z, 1.0);
 	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
 	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
 	glUniform1f(uniforms.line_shader_uniforms.line_thickness, line_thickness);
@@ -613,7 +613,7 @@ void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, floa
 
 	glUseProgram(line_shader.get_program());
 
-	glUniform3f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z);
+	glUniform4f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z, 1.0);
 	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
 	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
 	glUniform1f(uniforms.line_shader_uniforms.line_thickness, line_thickness);
@@ -655,58 +655,6 @@ void draw_circle_line_loop(glm::vec3 colour, int win_width, int win_height, floa
 
 	glDeleteBuffers(1, &axis_buffer);
 }
-
-
-//
-//void draw_line_segment(glm::vec3 colour, int win_width, int win_height, float line_thickness, const sortable_line_segment& ls)
-//{
-//	glUseProgram(line_shader.get_program());
-//
-//	glUniform3f(uniforms.line_shader_uniforms.colour, colour.x, colour.y, colour.z);
-//	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
-//	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
-//	glUniform1f(uniforms.line_shader_uniforms.line_thickness, line_thickness);
-//
-//	GLuint components_per_vertex = 3;
-//	GLuint components_per_position = 3;
-//
-//	GLuint axis_buffer;
-//
-//	glGenBuffers(1, &axis_buffer);
-//
-//	complex<float> v0w(static_cast<float>(ls.vertices[0].x), static_cast<float>(ls.vertices[0].y));
-//	complex<float> v1w(static_cast<float>(ls.vertices[1].x), static_cast<float>(ls.vertices[1].y));
-//
-//	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
-//	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
-//
-//
-//	vector<GLfloat> flat_data;
-//	flat_data.push_back(v0ndc.real());
-//	flat_data.push_back(v0ndc.imag());
-//	flat_data.push_back(0.0f);
-//
-//	flat_data.push_back(v1ndc.real());
-//	flat_data.push_back(v1ndc.imag());
-//	flat_data.push_back(0.0f);
-//
-//	GLuint num_vertices = static_cast<GLuint>(flat_data.size()) / components_per_vertex;
-//
-//	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
-//	glBufferData(GL_ARRAY_BUFFER, flat_data.size() * sizeof(GLfloat), &flat_data[0], GL_STATIC_DRAW);
-//
-//	glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
-//	glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
-//		components_per_position,
-//		GL_FLOAT,
-//		GL_FALSE,
-//		components_per_vertex * sizeof(GLfloat),
-//		NULL);
-//
-//	glDrawArrays(GL_LINES, 0, num_vertices);
-//
-//	glDeleteBuffers(1, &axis_buffer);
-//}
 
 
 
@@ -865,7 +813,7 @@ void draw_quad_line_ndc_data(vector<float>& vertex_data, int win_width, int win_
 {
 	glUseProgram(line_shader.get_program());
 
-	glUniform3f(uniforms.line_shader_uniforms.colour, 0, 0, 1);
+	glUniform4f(uniforms.line_shader_uniforms.colour, 0, 0, 1.0, 0.25);
 	glUniform1i(uniforms.line_shader_uniforms.img_width, win_width);
 	glUniform1i(uniforms.line_shader_uniforms.img_height, win_height);
 	glUniform1f(uniforms.line_shader_uniforms.line_thickness, 4.0);

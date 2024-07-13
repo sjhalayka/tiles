@@ -556,7 +556,7 @@ int main(int, char**)
 
 
 		// Paint using left mouse button
-		if ((tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE) && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
+		if ((tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE || tool == TOOL_PAINT_CUSTOM) && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
 		{
 			vector<float> weights;
 			float total = 0;
@@ -647,6 +647,8 @@ int main(int, char**)
 						else if (tool == TOOL_PAINT_CUSTOM)
 						{
 
+
+							to_draw.push_back(make_pair(i, j));
 
 							// todo: add painting here
 
