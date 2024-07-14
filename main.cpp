@@ -228,8 +228,8 @@ int main(int, char**)
 	int window_w = 0, window_h = 0;
 	SDL_GetWindowSize(window, &window_w, &window_h);
 
-	image_anchor.x = 0;// (float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
-	image_anchor.y = 0;// (float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+	image_anchor.x = (float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+	image_anchor.y = (float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
 
 
 
@@ -612,46 +612,9 @@ int main(int, char**)
 
 			if (last_mousewheel != 0)
 			{
-				//int x, y;
-				//SDL_GetMouseState(&x, &y);
-
-				//if (last_mousewheel < 0)
-				//{
-				//	image_anchor.x = float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0;
-				//	image_anchor.y = float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0;
-
-
-				//}
-
-				//if (last_mousewheel > 0)
-				//{
-				//	image_anchor.x = float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0;
-				//	image_anchor.y = float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0;
-				//}
+				image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor / 2.0;
+				image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor / 2.0;
 			}
-
-			//if (last_mousewheel < 0)
-			//{
-			//	int x, y;
-			//	SDL_GetMouseState(&x, &y);
-
-			//	//image_anchor.x = float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
-			//	//image_anchor.y = float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
-
-			//	image_anchor.x -= x / 2.0;
-			//	image_anchor.y -= y / 2.0;
-			//}
-			//else if (last_mousewheel > 0)
-			//{
-			//	int x, y;
-			//	SDL_GetMouseState(&x, &y);
-
-			//	//image_anchor.x = float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
-			//	//image_anchor.y = float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
-
-			//	//image_anchor.x -= x / 2.0;
-			//	//image_anchor.y -= y / 2.0;
-			//}
 		}
 
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
