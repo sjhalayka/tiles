@@ -228,9 +228,8 @@ int main(int, char**)
 	int window_w = 0, window_h = 0;
 	SDL_GetWindowSize(window, &window_w, &window_h);
 
-
-	image_anchor.x =  (1.0 / zoom_factor) * (float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
-	image_anchor.y = (1.0 / zoom_factor) * (float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+	image_anchor.x =  (float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+	image_anchor.y = (float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
 
 
 
@@ -613,28 +612,27 @@ int main(int, char**)
 
 			if (last_mousewheel != 0)
 			{
-
-
-			image_anchor.x = -36.0f * float(tiles_per_dimension) / 2.0*(1.0 / zoom_factor) + (1.0 / zoom_factor) * (float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
-			image_anchor.y = -36.0f * float(tiles_per_dimension) / 2.0*(1.0 / zoom_factor) + (1.0 / zoom_factor) * (float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
-
-
-	//		image_anchor.x = (1.0/zoom_factor) * (float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
-		//	image_anchor.y = (1.0/zoom_factor) * (float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
-			//
-				//image_anchor.x =  36.0f * float(tiles_per_dimension) / 2.0f  - float(window_w) / 2.0;
-				//image_anchor.y =  36.0f * float(tiles_per_dimension) / 2.0f - float(window_h) / 2.0;
+				image_anchor.x =  float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
+				image_anchor.y =  float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
 			}
 		}
 
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
 		{
 			ImVec2 motion = ImGui::GetMouseDragDelta();
-			image_anchor.x += motion.x / zoom_factor;
-			image_anchor.y += -motion.y / zoom_factor;
+			image_anchor.x += motion.x;
+			image_anchor.y += -motion.y;
 
 			ImGui::ResetMouseDragDelta();
 		}
+
+
+
+		ImVec2 zoomed_image_anchor = image_anchor;
+
+		zoomed_image_anchor.x /= zoom_factor;
+		zoomed_image_anchor.y /= zoom_factor;
+
 
 
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
@@ -683,14 +681,17 @@ int main(int, char**)
 			int x, y;
 			SDL_GetMouseState(&x, &y);
 
-			ImVec2 centre_index = ImVec2(-image_anchor.x / (block_size)+x / (block_size * zoom_factor), -image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
+
+
+
+			ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 
 			ImVec2 centre_chunk;
-			centre_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-			centre_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			centre_chunk.x = -zoomed_image_anchor.x / tiles_per_chunk_dimension / (block_size)+x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			centre_chunk.y = -zoomed_image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
 			float relative_brush_size = round(max_brush_size / float(tiles_per_chunk_dimension));
-	//		cout << relative_brush_size << endl;
+			//		cout << relative_brush_size << endl;
 
 			ImVec2 start_chunk;
 			start_chunk.x = centre_chunk.x - relative_brush_size;
@@ -766,10 +767,10 @@ int main(int, char**)
 						q.vertices[2].y += half_height * zoom_factor;
 						q.vertices[3].y += half_height * zoom_factor;
 
-						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f; 
-						
-						pair<size_t, size_t> centre_index = make_pair(-image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
-						
+						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+						pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
+
 						custom_to_draw.insert(centre_index);
 					}
 				}
@@ -811,7 +812,7 @@ int main(int, char**)
 						}
 						else if (tool == TOOL_PAINT_CUSTOM)
 						{
-							if(custom_to_draw.end() != custom_to_draw.find(make_pair(i, j)))
+							if (custom_to_draw.end() != custom_to_draw.find(make_pair(i, j)))
 								to_draw.insert(make_pair(i, j));
 						}
 					}
@@ -875,11 +876,11 @@ int main(int, char**)
 			glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
 			glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
 
-			start_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-			start_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			start_chunk.x = -zoomed_image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			start_chunk.y = -zoomed_image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
-			end_chunk.x = -image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_end.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-			end_chunk.y = -image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			end_chunk.x = -zoomed_image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_end.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+			end_chunk.y = -zoomed_image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
 
 			if (end_chunk.x < start_chunk.x)
 			{
@@ -920,8 +921,8 @@ int main(int, char**)
 
 						size_t index = i * tiles_per_dimension + j;
 
-						const float x = ((image_anchor.x) + int(i) * background_tiles[index].tile_size);
-						const float y = ((image_anchor.y) + int(j) * background_tiles[index].tile_size);
+						const float x = ((zoomed_image_anchor.x) + int(i) * background_tiles[index].tile_size);
+						const float y = ((zoomed_image_anchor.y) + int(j) * background_tiles[index].tile_size);
 
 						complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
 						complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
@@ -994,8 +995,8 @@ int main(int, char**)
 			{
 				size_t index = i * tiles_per_dimension + j;
 
-				int x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
-				int y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
+				int x = int(zoomed_image_anchor.x) + int(i) * background_tiles[index].tile_size;
+				int y = int(zoomed_image_anchor.y) + int(j) * background_tiles[index].tile_size;
 
 				get_quad_ndc_data(vertex_data, index_data, x, y, background_tiles[index].tile_size, (int)io.DisplaySize.x, (int)io.DisplaySize.y, background_tiles[index].uv_min, background_tiles[index].uv_max);
 			}
@@ -1013,8 +1014,8 @@ int main(int, char**)
 				{
 					size_t index = i * tiles_per_dimension + j;
 
-					const float x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
-					const float y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
+					const float x = int(zoomed_image_anchor.x) + int(i) * background_tiles[index].tile_size;
+					const float y = int(zoomed_image_anchor.y) + int(j) * background_tiles[index].tile_size;
 
 					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
 					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
@@ -1055,8 +1056,8 @@ int main(int, char**)
 
 			size_t index = i * tiles_per_dimension + j;
 
-			float x = int(image_anchor.x) + int(i) * background_tiles[index].tile_size;
-			float y = int(image_anchor.y) + int(j) * background_tiles[index].tile_size;
+			float x = int(zoomed_image_anchor.x) + int(i) * background_tiles[index].tile_size;
+			float y = int(zoomed_image_anchor.y) + int(j) * background_tiles[index].tile_size;
 
 			complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
 			complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
