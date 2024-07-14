@@ -606,14 +606,26 @@ int main(int, char**)
 		if (!hovered)
 		{
 			if (last_mousewheel < 0)
-				zoom_factor *= 0.5;// last_mousewheel * 0.1f;
+				zoom_factor *= 0.5;
 			else if (last_mousewheel > 0)
 				zoom_factor *= 2.0;
 
 			if (last_mousewheel != 0)
 			{
-				image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor / 2.0;
-				image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor / 2.0;
+				//image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor / 2.0;
+				//image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor / 2.0;
+
+				glm::vec3 view_focus(0.5, 0.5, 0);
+
+				image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * view_focus.x;
+				image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * view_focus.y;
+
+
+				
+
+				//image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * image_anchor.x / 2.0;
+				//image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * image_anchor.y / 2.0;
+
 			}
 		}
 
