@@ -1,6 +1,42 @@
 #include "main.h"
 
+set<pair<size_t, size_t>> selected_indices;
+glm::vec3 selected_start;
+glm::vec3 selected_end;
 
+size_t undo_index = 0;
+
+vector<set<pair<size_t, size_t>>> selected_indices_backups;
+vector<glm::vec3> selected_start_backups;
+vector<glm::vec3> selected_end_backups;
+vector<vector<background_tile>> background_tiles_backups;
+
+
+void handle_undo_redo_backups(void)
+{
+	if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
+	{
+		selected_indices_backups.resize(undo_index + 1);
+		selected_start_backups.resize(undo_index + 1);
+		selected_end_backups.resize(undo_index + 1);
+		background_tiles_backups.resize(undo_index + 1);
+	}
+
+	selected_indices_backups.push_back(selected_indices);
+	selected_start_backups.push_back(selected_start);
+	selected_end_backups.push_back(selected_end);
+	background_tiles_backups.push_back(background_tiles);
+
+	if (selected_indices_backups.size() > 10)
+	{
+		selected_indices_backups.erase(selected_indices_backups.begin());
+		selected_start_backups.erase(selected_start_backups.begin());
+		selected_end_backups.erase(selected_end_backups.begin());
+		background_tiles_backups.erase(background_tiles_backups.begin());
+	}
+
+	undo_index = selected_indices_backups.size() - 1;
+}
 
 
 
@@ -192,8 +228,10 @@ int main(int, char**)
 	int window_w = 0, window_h = 0;
 	SDL_GetWindowSize(window, &window_w, &window_h);
 
-	image_anchor.x = 0;//float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
-	image_anchor.y = 0;// float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f;
+
+	image_anchor.x =  (1.0 / zoom_factor) * (float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+	image_anchor.y = (1.0 / zoom_factor) * (float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+
 
 
 	mt19937 generator((unsigned int)time(0));
@@ -201,16 +239,7 @@ int main(int, char**)
 
 	//set<pair<size_t, size_t>> prev_draw;
 
-	set<pair<size_t, size_t>> selected_indices;
-	glm::vec3 selected_start;
-	glm::vec3 selected_end;
 
-	size_t undo_index = 0;
-
-	vector<set<pair<size_t, size_t>>> selected_indices_backups;
-	vector<glm::vec3> selected_start_backups;
-	vector<glm::vec3> selected_end_backups;
-	vector<vector<background_tile>> background_tiles_backups;
 
 
 #define TOOL_PAINT 0
@@ -312,29 +341,7 @@ int main(int, char**)
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
 
-
-					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
-					{
-						selected_indices_backups.resize(undo_index + 1);
-						selected_start_backups.resize(undo_index + 1);
-						selected_end_backups.resize(undo_index + 1);
-						background_tiles_backups.resize(undo_index + 1);
-					}
-
-					selected_indices_backups.push_back(selected_indices);
-					selected_start_backups.push_back(selected_start);
-					selected_end_backups.push_back(selected_end);
-					background_tiles_backups.push_back(background_tiles);
-
-					if (selected_indices_backups.size() > 10)
-					{
-						selected_indices_backups.erase(selected_indices_backups.begin());
-						selected_start_backups.erase(selected_start_backups.begin());
-						selected_end_backups.erase(selected_end_backups.begin());
-						background_tiles_backups.erase(background_tiles_backups.begin());
-					}
-
-					undo_index = selected_indices_backups.size() - 1;
+					handle_undo_redo_backups();
 
 					int x, y;
 					SDL_GetMouseState(&x, &y);
@@ -350,28 +357,7 @@ int main(int, char**)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
-					{
-						selected_indices_backups.resize(undo_index + 1);
-						selected_start_backups.resize(undo_index + 1);
-						selected_end_backups.resize(undo_index + 1);
-						background_tiles_backups.resize(undo_index + 1);
-					}
-
-					selected_indices_backups.push_back(selected_indices);
-					selected_start_backups.push_back(selected_start);
-					selected_end_backups.push_back(selected_end);
-					background_tiles_backups.push_back(background_tiles);
-
-					if (selected_indices_backups.size() > 10)
-					{
-						selected_indices_backups.erase(selected_indices_backups.begin());
-						selected_start_backups.erase(selected_start_backups.begin());
-						selected_end_backups.erase(selected_end_backups.begin());
-						background_tiles_backups.erase(background_tiles_backups.begin());
-					}
-
-					undo_index = selected_indices_backups.size() - 1;
+					handle_undo_redo_backups();
 
 					int x, y;
 					SDL_GetMouseState(&x, &y);
@@ -386,28 +372,7 @@ int main(int, char**)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-					if (selected_indices_backups.size() > 0 && undo_index < selected_indices_backups.size() - 1)
-					{
-						selected_indices_backups.resize(undo_index + 1);
-						selected_start_backups.resize(undo_index + 1);
-						selected_end_backups.resize(undo_index + 1);
-						background_tiles_backups.resize(undo_index + 1);
-					}
-
-					selected_indices_backups.push_back(selected_indices);
-					selected_start_backups.push_back(selected_start);
-					selected_end_backups.push_back(selected_end);
-					background_tiles_backups.push_back(background_tiles);
-
-					if (selected_indices_backups.size() > 10)
-					{
-						selected_indices_backups.erase(selected_indices_backups.begin());
-						selected_start_backups.erase(selected_start_backups.begin());
-						selected_end_backups.erase(selected_end_backups.begin());
-						background_tiles_backups.erase(background_tiles_backups.begin());
-					}
-
-					undo_index = selected_indices_backups.size() - 1;
+					handle_undo_redo_backups();
 				}
 			}
 		}
@@ -646,11 +611,20 @@ int main(int, char**)
 			else if (last_mousewheel > 0)
 				zoom_factor *= 2.0;
 
-			//if (last_mousewheel != 0)
-			//{
-			//	//image_anchor.x =  36.0f * float(tiles_per_dimension) / 2.0f  - float(window_w) / 2.0;
-			//	//image_anchor.y =  36.0f * float(tiles_per_dimension) / 2.0f - float(window_h) / 2.0;
-			//}
+			if (last_mousewheel != 0)
+			{
+
+
+			image_anchor.x = -36.0f * float(tiles_per_dimension) / 2.0*(1.0 / zoom_factor) + (1.0 / zoom_factor) * (float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+			image_anchor.y = -36.0f * float(tiles_per_dimension) / 2.0*(1.0 / zoom_factor) + (1.0 / zoom_factor) * (float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+
+
+	//		image_anchor.x = (1.0/zoom_factor) * (float(window_w) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+		//	image_anchor.y = (1.0/zoom_factor) * (float(window_h) / 2.0 - 36.0f * float(tiles_per_dimension) / 2.0f);
+			//
+				//image_anchor.x =  36.0f * float(tiles_per_dimension) / 2.0f  - float(window_w) / 2.0;
+				//image_anchor.y =  36.0f * float(tiles_per_dimension) / 2.0f - float(window_h) / 2.0;
+			}
 		}
 
 		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
