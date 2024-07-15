@@ -1308,97 +1308,141 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					size_t index = i * tiles_per_dimension + j;
+					ImVec2 zoomed_image_anchor = image_anchor;
 
-					quad q;
+					zoomed_image_anchor.x /= zoom_factor;
+					zoomed_image_anchor.y /= zoom_factor;
 
-					float half_width = -cols * block_size / 2.0f;
-					float half_height = rows * block_size / 2.0f;
+					ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 
-					q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[0].y =  y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[1].y =  y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[2].y =  y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[3].y =  y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
-
-					q.vertices[0].y = io.DisplaySize.y - q.vertices[0].y;
-					q.vertices[1].y = io.DisplaySize.y - q.vertices[1].y;
-					q.vertices[2].y = io.DisplaySize.y - q.vertices[2].y;
-					q.vertices[3].y = io.DisplaySize.y - q.vertices[3].y;
-
-
-					q.vertices[0].x += half_width * zoom_factor;
-					q.vertices[1].x += half_width * zoom_factor;
-					q.vertices[2].x += half_width * zoom_factor;
-					q.vertices[3].x += half_width * zoom_factor;
-
-					q.vertices[0].y -= half_height * zoom_factor;
-					q.vertices[1].y -= half_height * zoom_factor;
-					q.vertices[2].y -= half_height * zoom_factor;
-					q.vertices[3].y -= half_height * zoom_factor;
-
-	
-					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+					size_t index = j * tiles_per_dimension + i;
 
 					//quad q;
 
-					//float half_width = -rows * block_size / 2.0f;
-					//float half_height = cols * block_size / 2.0f;
+					//float half_width = -cols * block_size / 2.0f;// cols* block_size / 2.0f;
+					//float half_height = rows * block_size / 2.0f;
 
 					//q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					//q.vertices[0].y = y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					//q.vertices[0].y =  y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					//q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					//q.vertices[1].y = y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					//q.vertices[1].y =  y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					//q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					//q.vertices[2].y = y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					//q.vertices[2].y =  y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					//q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					//q.vertices[3].y = y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
-
-
+					//q.vertices[3].y =  y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
 					//q.vertices[0].y = io.DisplaySize.y - q.vertices[0].y;
 					//q.vertices[1].y = io.DisplaySize.y - q.vertices[1].y;
 					//q.vertices[2].y = io.DisplaySize.y - q.vertices[2].y;
 					//q.vertices[3].y = io.DisplaySize.y - q.vertices[3].y;
 
-					////q.vertices[0].x += half_width;
-					////q.vertices[1].x += half_width;
-					////q.vertices[2].x += half_width;
-					////q.vertices[3].x += half_width;
-					//
-					//q.vertices[0].y -= half_height;// *zoom_factor;
-					//q.vertices[1].y -= half_height;// *zoom_factor;
-					//q.vertices[2].y -= half_height;// *zoom_factor;
-					//q.vertices[3].y -= half_height;// *zoom_factor;
+					//q.vertices[0] *= zoom_factor;
+					//q.vertices[1] *= zoom_factor;
+					//q.vertices[2] *= zoom_factor;
+					//q.vertices[3] *= zoom_factor;
+
+
+					////q.vertices[0].x +=  half_width * zoom_factor;
+					////q.vertices[1].x +=  half_width * zoom_factor;
+					////q.vertices[2].x +=  half_width * zoom_factor;
+					////q.vertices[3].x +=  half_width * zoom_factor;
+
+					////q.vertices[0].y -= half_height * zoom_factor;
+					////q.vertices[1].y -= half_height * zoom_factor;
+					////q.vertices[2].y -= half_height * zoom_factor;
+					////q.vertices[3].y -= half_height * zoom_factor;
+
+					////q.vertices[0].x -= half_width;
+					////q.vertices[1].x -= half_width;
+					////q.vertices[2].x -= half_width;
+					////q.vertices[3].x -= half_width;
+	
+
+
+					quad q;
+
+					float half_width = -cols * block_size / 2.0f;
+					float half_height =  rows * block_size / 2.0f;
+
+					q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[0].y =   y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[1].y =   y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[2].y =   y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[3].y = y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+
+//
+					q.vertices[0].y = io.DisplaySize.y - q.vertices[0].y;
+					q.vertices[1].y = io.DisplaySize.y - q.vertices[1].y;
+					q.vertices[2].y = io.DisplaySize.y - q.vertices[2].y;
+					q.vertices[3].y = io.DisplaySize.y - q.vertices[3].y;
+
+
+					q.vertices[0].x += block_size * zoom_factor;
+					q.vertices[1].x += block_size *zoom_factor;
+					q.vertices[2].x += block_size * zoom_factor;
+					q.vertices[3].x += block_size * zoom_factor;
+
+					q.vertices[0].x -= block_size / 2.0f * zoom_factor;
+					q.vertices[1].x -= block_size / 2.0f * zoom_factor;
+					q.vertices[2].x -= block_size / 2.0f * zoom_factor;
+					q.vertices[3].x -= block_size / 2.0f * zoom_factor;
 
 
 
 
-					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 
-					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+
+
+
+					//q.vertices[0].x -= half_width*zoom_factor;
+					//q.vertices[1].x -= half_width *zoom_factor;
+					//q.vertices[2].x -= half_width *zoom_factor;
+					//q.vertices[3].x -= half_width *zoom_factor;
+
+					//q.vertices[0].x -= block_size / 2.0f * zoom_factor;
+					//q.vertices[1].x -= block_size / 2.0f *zoom_factor;
+					//q.vertices[2].x -= block_size / 2.0f * zoom_factor;
+					//q.vertices[3].x -= block_size / 2.0f * zoom_factor;
+
+
+					//q.vertices[0].y -= half_width * zoom_factor;
+					//q.vertices[1].y -= half_width * zoom_factor;
+					//q.vertices[2].y -= half_width * zoom_factor;
+					//q.vertices[3].y -= half_width * zoom_factor;
+
+					//q.vertices[0].y -= half_height * zoom_factor;
+					//q.vertices[1].y -= half_height * zoom_factor;
+					//q.vertices[2].y -= half_height * zoom_factor;
+					//q.vertices[3].y -= half_height * zoom_factor;
+
+	/*				q.vertices[0].x -= block_size / 2.0f * zoom_factor;
+					q.vertices[1].x -= block_size / 2.0f * zoom_factor;
+					q.vertices[2].x -= block_size / 2.0f * zoom_factor;
+					q.vertices[3].x -= block_size / 2.0f * zoom_factor;*/
+					//q.vertices[0] *= zoom_factor;
+					//q.vertices[1] /= zoom_factor;
+					//q.vertices[2] /= zoom_factor;
+					//q.vertices[3] /= zoom_factor;
+
+					//q.vertices[0].y += half_height * zoom_factor;
+					//q.vertices[1].y += half_height * zoom_factor;
+					//q.vertices[2].y += half_height * zoom_factor;
+					//q.vertices[3].y += half_height * zoom_factor;
+
+			/*		q.vertices[0].y += half_height * zoom_factor;
+					q.vertices[1].y += half_height * zoom_factor;
+					q.vertices[2].y += half_height * zoom_factor;
+					q.vertices[3].y += half_height * zoom_factor;*/
+
+
+					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
 				}
 			}
 
-			/*		set<pair<size_t, size_t>> copy_selected_indices;
-					vector<background_tile> copy_background_tiles;*/
 
 
 

@@ -779,20 +779,19 @@ void draw_quad_line_ndc_data(vector<float>& vertex_data, int win_width, int win_
 
 	GLuint num_vertices = static_cast<GLuint>(vertex_data.size()) / components_per_vertex;
 	
-		glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
-		glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(GLfloat), &vertex_data[0], GL_STATIC_DRAW);
-	
-		glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
-		glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
-			components_per_position,
-			GL_FLOAT,
-			GL_FALSE,
-			components_per_vertex * sizeof(GLfloat),
-			NULL);
-	
-		glDrawArrays(GL_LINES, 0, num_vertices);
-	
-		//glDeleteBuffers(1, &axis_buffer);
+	glBindBuffer(GL_ARRAY_BUFFER, axis_buffer);
+	glBufferData(GL_ARRAY_BUFFER, vertex_data.size() * sizeof(GLfloat), &vertex_data[0], GL_STATIC_DRAW);
+
+	glEnableVertexAttribArray(glGetAttribLocation(line_shader.get_program(), "position"));
+	glVertexAttribPointer(glGetAttribLocation(line_shader.get_program(), "position"),
+		components_per_position,
+		GL_FLOAT,
+		GL_FALSE,
+		components_per_vertex * sizeof(GLfloat),
+		NULL);
+
+	glDrawArrays(GL_LINES, 0, num_vertices);
+
 }
 
 
