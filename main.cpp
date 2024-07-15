@@ -1319,12 +1319,10 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-
-
-					q.vertices[0].y = io.DisplaySize.y - q.vertices[0].y; // half_height* zoom_factor;
-					q.vertices[1].y = io.DisplaySize.y - q.vertices[1].y; // half_height* zoom_factor;
-					q.vertices[2].y = io.DisplaySize.y - q.vertices[2].y; // half_height* zoom_factor;
-					q.vertices[3].y = io.DisplaySize.y - q.vertices[3].y; // half_height* zoom_factor;
+					q.vertices[0].y = io.DisplaySize.y - q.vertices[0].y;
+					q.vertices[1].y = io.DisplaySize.y - q.vertices[1].y;
+					q.vertices[2].y = io.DisplaySize.y - q.vertices[2].y;
+					q.vertices[3].y = io.DisplaySize.y - q.vertices[3].y;
 
 					q.vertices[0].x += half_width * zoom_factor;
 					q.vertices[1].x += half_width * zoom_factor;
