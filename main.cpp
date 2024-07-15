@@ -1313,7 +1313,7 @@ int main(int, char**)
 					zoomed_image_anchor.x /= zoom_factor;
 					zoomed_image_anchor.y /= zoom_factor;
 
-					ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
+					//ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 
 					size_t index = j * tiles_per_dimension + i;
 
@@ -1356,42 +1356,45 @@ int main(int, char**)
 					////q.vertices[1].x -= half_width;
 					////q.vertices[2].x -= half_width;
 					////q.vertices[3].x -= half_width;
-	
+
 
 
 					quad q;
 
 					float half_width = -cols * block_size / 2.0f;
-					float half_height =  rows * block_size / 2.0f;
+					float half_height = rows * block_size / 2.0f;
 
 					q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[0].y =   y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[0].y = y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[1].y =   y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[1].y = y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[2].y =   y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[2].y = y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-//
+					//
 					q.vertices[0].y = io.DisplaySize.y - q.vertices[0].y;
 					q.vertices[1].y = io.DisplaySize.y - q.vertices[1].y;
 					q.vertices[2].y = io.DisplaySize.y - q.vertices[2].y;
 					q.vertices[3].y = io.DisplaySize.y - q.vertices[3].y;
 
 
-					q.vertices[0].x += block_size * zoom_factor;
-					q.vertices[1].x += block_size *zoom_factor;
-					q.vertices[2].x += block_size * zoom_factor;
-					q.vertices[3].x += block_size * zoom_factor;
+					q.vertices[0].x -= (block_size - block_size / 2.0f) * zoom_factor;
+					q.vertices[1].x -= (block_size - block_size / 2.0f) * zoom_factor;
+					q.vertices[2].x -= (block_size - block_size / 2.0f) * zoom_factor;
+					q.vertices[3].x -= (block_size - block_size / 2.0f) * zoom_factor;
 
-					q.vertices[0].x -= block_size / 2.0f * zoom_factor;
+	/*				q.vertices[0].x -= block_size / 2.0f * zoom_factor;
 					q.vertices[1].x -= block_size / 2.0f * zoom_factor;
 					q.vertices[2].x -= block_size / 2.0f * zoom_factor;
-					q.vertices[3].x -= block_size / 2.0f * zoom_factor;
+					q.vertices[3].x -= block_size / 2.0f * zoom_factor;*/
 
 
-
+					q.vertices[0].y += block_size  * zoom_factor;
+					q.vertices[1].y += block_size  * zoom_factor;
+					q.vertices[2].y += block_size   * zoom_factor;
+					q.vertices[3].y += block_size  * zoom_factor;
 
 
 
