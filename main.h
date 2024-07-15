@@ -66,6 +66,7 @@ struct
 		GLint projection;
 		GLint view;
 		GLint model;
+		GLint opacity;
 	}
 	ortho_shader_uniforms;
 
@@ -350,75 +351,17 @@ bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
 
 
 
-
-
-
-
-
-bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vector<quad>& quads, GLuint shader_program, long signed int x, long signed int y, long signed int tile_size, long signed int win_width, long signed int win_height, GLuint tex_handle, ImVec2 uv_min, ImVec2 uv_max)
+bool draw_tex_quad(GLint tex_handle, quad q, long signed int win_width, long signed int win_height, ImVec2 uv_min, ImVec2 uv_max)
 {
-	complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-	complex<float> v1w(static_cast<float>(x), static_cast<float>(y + tile_size));
-	complex<float> v2w(static_cast<float>(x + tile_size), static_cast<float>(y + tile_size));
-	complex<float> v3w(static_cast<float>(x + tile_size), static_cast<float>(y));
-
-	v0w.real(v0w.real() * zoom_factor);
-	v0w.imag(v0w.imag() * zoom_factor);
-	v1w.real(v1w.real() * zoom_factor);
-	v1w.imag(v1w.imag() * zoom_factor);
-	v2w.real(v2w.real() * zoom_factor);
-	v2w.imag(v2w.imag() * zoom_factor);
-	v3w.real(v3w.real() * zoom_factor);
-	v3w.imag(v3w.imag() * zoom_factor);
-
-
+	complex<float> v0w(q.vertices[0].x, q.vertices[0].y);
+	complex<float> v1w(q.vertices[1].x, q.vertices[1].y);
+	complex<float> v2w(q.vertices[2].x, q.vertices[2].y);
+	complex<float> v3w(q.vertices[3].x, q.vertices[3].y);
 
 	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
 	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
 	complex<float> v2ndc = get_ndc_coords_from_window_coords(win_width, win_height, v2w);
 	complex<float> v3ndc = get_ndc_coords_from_window_coords(win_width, win_height, v3w);
-
-	size_t count = 0;
-
-	if (!(v0ndc.real() < -1 || v0ndc.real() > 1 || v0ndc.imag() < -1 || v0ndc.imag() > 1))
-		count++;
-
-	if (!(v1ndc.real() < -1 || v1ndc.real() > 1 || v1ndc.imag() < -1 || v1ndc.imag() > 1))
-		count++;
-
-	if (!(v2ndc.real() < -1 || v2ndc.real() > 1 || v2ndc.imag() < -1 || v2ndc.imag() > 1))
-		count++;
-
-	if (!(v3ndc.real() < -1 || v3ndc.real() > 1 || v3ndc.imag() < -1 || v3ndc.imag() > 1))
-		count++;
-
-	if (count == 0)
-		return false;
-
-
-	quad q;
-	q.vertices[0].x = v0w.real();
-	q.vertices[0].y = win_height - v0w.imag();
-	q.vertices[1].x = v1w.real();
-	q.vertices[1].y = win_height - v1w.imag();
-	q.vertices[2].x = v2w.real();
-	q.vertices[2].y = win_height - v2w.imag();
-	q.vertices[3].x = v3w.real();
-	q.vertices[3].y = win_height - v3w.imag();
-	quads.push_back(q);
-
-	vector<glm::vec3> points;
-	points.push_back(q.vertices[0]);
-	points.push_back(q.vertices[1]);
-	points.push_back(q.vertices[2]);
-	points.push_back(q.vertices[3]);
-
-	glm::vec3 mouse_pos(mouse_x, mouse_y, 0);
-
-	bool inside = point_in_polygon(mouse_pos, points);
-
-	if (quit_upon_collision)
-		return inside;
 
 	static GLuint vao = 0, vbo = 0, ibo = 0;
 
@@ -429,8 +372,10 @@ bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vect
 		glGenBuffers(1, &ibo);
 	}
 
-	glDisable(GL_BLEND);
+	glEnable(GL_BLEND);
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+
 
 	const GLfloat vertexData[] = {
 		//	  X             Y             Z		  U         V     
@@ -473,10 +418,13 @@ bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vect
 	glUniform1i(uniforms.ortho_shader_uniforms.tex, 0);
 	glUniform1i(uniforms.ortho_shader_uniforms.viewport_width, win_width);
 	glUniform1i(uniforms.ortho_shader_uniforms.viewport_height, win_height);
+
+
 	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.projection, 1, GL_FALSE, &projection[0][0]);
 	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.view, 1, GL_FALSE, &view[0][0]);
 	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.model, 1, GL_FALSE, &model[0][0]);
 
+	glUniform1f(uniforms.ortho_shader_uniforms.opacity, 0.5);
 
 	glBindVertexArray(vao);
 
@@ -485,7 +433,7 @@ bool draw_textured_quad(bool quit_upon_collision, int mouse_x, int mouse_y, vect
 
 
 
-	return inside;
+	return true;
 }
 
 
@@ -889,6 +837,7 @@ void draw_quad_ndc_data(vector<float>& vertex_data, vector<GLuint>& index_data, 
 	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.projection, 1, GL_FALSE, &projection[0][0]);
 	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.view, 1, GL_FALSE, &view[0][0]);
 	glUniformMatrix4fv(uniforms.ortho_shader_uniforms.model, 1, GL_FALSE, &model[0][0]);
+	glUniform1f(uniforms.ortho_shader_uniforms.opacity, 1.0);
 
 	glBindVertexArray(vao);
 
