@@ -4,6 +4,12 @@ set<pair<size_t, size_t>> selected_indices;
 glm::vec3 selected_start;
 glm::vec3 selected_end;
 
+
+set<pair<size_t, size_t>> copy_selected_indices;
+vector<background_tile> copy_background_tiles;
+glm::vec3 copy_selected_start;
+glm::vec3 copy_selected_end;
+
 size_t undo_index = 0;
 
 vector<set<pair<size_t, size_t>>> selected_indices_backups;
@@ -244,10 +250,11 @@ int main(int, char**)
 #define TOOL_PAINT 0
 #define TOOL_PAINT_SQUARE 1
 #define TOOL_PAINT_CUSTOM 2
-#define TOOL_SELECT 3
-#define TOOL_SELECT_ADD 4
-#define TOOL_SELECT_SUBTRACT 5
-#define TOOL_PAN 6
+#define TOOL_PAINT_PASTE 3
+#define TOOL_SELECT 4
+#define TOOL_SELECT_ADD 5
+#define TOOL_SELECT_SUBTRACT 6
+#define TOOL_PAN 7
 
 	int tool = 0;
 
@@ -302,6 +309,44 @@ int main(int, char**)
 			}
 
 
+
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_c)
+			{
+				if (selected_indices.size() != 0)
+				{
+					copy_selected_indices = selected_indices;
+					copy_background_tiles = background_tiles;
+
+					copy_selected_start.x = FLT_MAX;
+					copy_selected_start.y = FLT_MAX;
+
+					copy_selected_end.x = -FLT_MAX;
+					copy_selected_end.y = -FLT_MAX;
+
+
+					for (set<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
+					{
+						if (ci->first < copy_selected_start.x)
+							copy_selected_start.x = ci->first;
+
+						if (ci->second < copy_selected_start.y)
+							copy_selected_start.y = ci->second;
+
+						if (ci->first > copy_selected_end.x)
+							copy_selected_end.x = ci->first;
+
+						if (ci->second > copy_selected_end.y)
+							copy_selected_end.y = ci->second;
+
+					}
+ 
+
+
+
+					tool = TOOL_PAINT_PASTE;
+
+				}
+			}
 
 			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_z)
 			{
@@ -445,6 +490,7 @@ int main(int, char**)
 		ImGui::RadioButton("Circle Paint", &tool, TOOL_PAINT);
 		ImGui::RadioButton("Square Paint", &tool, TOOL_PAINT_SQUARE);
 		ImGui::RadioButton("Custom Paint", &tool, TOOL_PAINT_CUSTOM);
+		ImGui::RadioButton("Copy/Paste Paint", &tool, TOOL_PAINT_PASTE);
 
 		ImGui::RadioButton("Select", &tool, TOOL_SELECT);
 		ImGui::RadioButton("Select Add", &tool, TOOL_SELECT_ADD);
@@ -610,22 +656,58 @@ int main(int, char**)
 			else if (last_mousewheel > 0)
 				zoom_factor *= 2.0;
 
-			if (last_mousewheel != 0)
+			if (last_mousewheel != 0)	
 			{
-				//image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor / 2.0;
-				//image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor / 2.0;
 
-				glm::vec3 view_focus(0.5, 0.5, 0);
+				
+				
+				//int x, y;
+				//SDL_GetMouseState(&x, &y);
+
+				//float win_x = x+ window_w / 2.0 - image_anchor.x;// / 2.0;
+				//float win_y = y + window_h / 2.0 - image_anchor.y;// / 2.0;
+
+				//win_x /= 36.0f * float(tiles_per_dimension);
+				//win_y /= 36.0f * float(tiles_per_dimension);
+
+
+
+				//win_x *= zoom_factor;
+				//win_y *= zoom_factor;
+
+				//win_x = glm::clamp(win_x, 0.0f, 1.0f);
+				//win_x = glm::clamp(win_x, 0.0f, 1.0f);
+
+
+
+
+
+				//view_focus.x = win_x;
+				//view_focus.y = win_y;
+
+
+				glm::vec3 view_focus(0.5, 0.5, 0.0);
+
+
+
+				//glm::vec3 centre;
+				//centre.x = window_w / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
+				//centre.y = window_h / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
+
+				//centre.x += image_anchor.x * zoom_factor;
+				//centre.y += image_anchor.y * zoom_factor;
+
+				//centre /= 36.0f * float(tiles_per_dimension);
+
+				////cout << centre.x << " " << centre.y << endl;
+
+				//view_focus.x = centre.x;// / (36.0f * float(tiles_per_dimension));// / 36.0f * float(tiles_per_dimension) / 2.0;
+				//view_focus.y = centre.y;// / (36.0f * float(tiles_per_dimension));// / 36.0f * float(tiles_per_dimension) / 2.0; */
+
+				//
 
 				image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * view_focus.x;
 				image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * view_focus.y;
-
-
-				
-
-				//image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * image_anchor.x / 2.0;
-				//image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * image_anchor.y / 2.0;
-
 			}
 		}
 
@@ -1207,6 +1289,55 @@ int main(int, char**)
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 				}
 			}
+		}
+		else if (tool == TOOL_PAINT_PASTE)
+		{
+			int x, y;
+			SDL_GetMouseState(&x, &y);
+
+			int rows = 1 + copy_selected_end.x - copy_selected_start.x;
+			int cols = 1 + copy_selected_end.y - copy_selected_start.y;
+
+			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
+			{
+				for (int j = copy_selected_start.y; j <= copy_selected_end.y; j++)
+				{
+					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j)))
+						continue;
+
+					quad q;
+
+					float half_width = -cols * block_size / 2.0f;
+					float half_height = rows * block_size / 2.0f;
+
+					q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+
+					q.vertices[0].x += half_width * zoom_factor;
+					q.vertices[1].x += half_width * zoom_factor;
+					q.vertices[2].x += half_width * zoom_factor;
+					q.vertices[3].x += half_width * zoom_factor;
+
+					q.vertices[0].y += half_height * zoom_factor;
+					q.vertices[1].y += half_height * zoom_factor;
+					q.vertices[2].y += half_height * zoom_factor;
+					q.vertices[3].y += half_height * zoom_factor;
+
+					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+				}
+			}
+
+	/*		set<pair<size_t, size_t>> copy_selected_indices;
+			vector<background_tile> copy_background_tiles;*/
+
+
+
 		}
 
 
