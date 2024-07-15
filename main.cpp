@@ -341,9 +341,6 @@ int main(int, char**)
 
 					}
 
-
-
-
 					tool = TOOL_PAINT_PASTE;
 
 				}
@@ -1293,10 +1290,11 @@ int main(int, char**)
 		}
 		else if (tool == TOOL_PAINT_PASTE)
 		{
-
-
 			int rows = 1 + copy_selected_end.x - copy_selected_start.x;
 			int cols = 1 + copy_selected_end.y - copy_selected_start.y;
+
+			rows *= block_size;
+			cols *= block_size;
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
@@ -1385,16 +1383,16 @@ int main(int, char**)
 					q.vertices[2].x -= (block_size - block_size / 2.0f) * zoom_factor;
 					q.vertices[3].x -= (block_size - block_size / 2.0f) * zoom_factor;
 
-	/*				q.vertices[0].x -= block_size / 2.0f * zoom_factor;
-					q.vertices[1].x -= block_size / 2.0f * zoom_factor;
-					q.vertices[2].x -= block_size / 2.0f * zoom_factor;
-					q.vertices[3].x -= block_size / 2.0f * zoom_factor;*/
+					/*				q.vertices[0].x -= block_size / 2.0f * zoom_factor;
+									q.vertices[1].x -= block_size / 2.0f * zoom_factor;
+									q.vertices[2].x -= block_size / 2.0f * zoom_factor;
+									q.vertices[3].x -= block_size / 2.0f * zoom_factor;*/
 
 
-					q.vertices[0].y += block_size  * zoom_factor;
-					q.vertices[1].y += block_size  * zoom_factor;
-					q.vertices[2].y += block_size   * zoom_factor;
-					q.vertices[3].y += block_size  * zoom_factor;
+					q.vertices[0].y += block_size * zoom_factor;
+					q.vertices[1].y += block_size * zoom_factor;
+					q.vertices[2].y += block_size * zoom_factor;
+					q.vertices[3].y += block_size * zoom_factor;
 
 
 
