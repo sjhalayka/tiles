@@ -10,6 +10,8 @@ vector<background_tile> copy_background_tiles;
 glm::vec3 copy_selected_start;
 glm::vec3 copy_selected_end;
 
+Mat copy_img(1, 1, CV_8UC1);
+
 size_t undo_index = 0;
 
 vector<set<pair<size_t, size_t>>> selected_indices_backups;
@@ -1293,8 +1295,11 @@ int main(int, char**)
 			int rows = 1 + copy_selected_end.x - copy_selected_start.x;
 			int cols = 1 + copy_selected_end.y - copy_selected_start.y;
 
-			rows *= block_size;
-			cols *= block_size;
+	/*		rows *= 36;
+			cols *= 36;*/
+
+			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_AREA);
+
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
@@ -1311,9 +1316,9 @@ int main(int, char**)
 					zoomed_image_anchor.x /= zoom_factor;
 					zoomed_image_anchor.y /= zoom_factor;
 
-					//ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
+						//ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 
-					size_t index = j * tiles_per_dimension + i;
+					size_t index = i * tiles_per_dimension + j;
 
 					//quad q;
 
