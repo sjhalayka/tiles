@@ -353,10 +353,10 @@ bool point_in_polygon(glm::vec3 point, vector<glm::vec3> polygon)
 
 bool draw_tex_quad(GLint tex_handle, quad q, long signed int win_width, long signed int win_height, ImVec2 uv_min, ImVec2 uv_max)
 {
-	complex<float> v0w(q.vertices[0].x, q.vertices[0].y);
-	complex<float> v1w(q.vertices[1].x, q.vertices[1].y);
-	complex<float> v2w(q.vertices[2].x, q.vertices[2].y);
-	complex<float> v3w(q.vertices[3].x, q.vertices[3].y);
+	complex<float> v0w(q.vertices[0].x, win_height - q.vertices[0].y);
+	complex<float> v1w(q.vertices[1].x, win_height - q.vertices[1].y);
+	complex<float> v2w(q.vertices[2].x, win_height - q.vertices[2].y);
+	complex<float> v3w(q.vertices[3].x, win_height - q.vertices[3].y);
 
 	complex<float> v0ndc = get_ndc_coords_from_window_coords(win_width, win_height, v0w);
 	complex<float> v1ndc = get_ndc_coords_from_window_coords(win_width, win_height, v1w);
