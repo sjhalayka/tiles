@@ -1370,7 +1370,17 @@ int main(int, char**)
 			int rows = 1 + copy_selected_end.x - copy_selected_start.x;
 			int cols = 1 + copy_selected_end.y - copy_selected_start.y;
 
-			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_AREA);
+			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_NEAREST);
+
+			for (int i = 0; i < cols; i++)
+			{
+				for (int j = 0; j < rows; j++)
+				{
+					copy_img.at<unsigned char>(i, j) = 0;
+				}
+			}
+
+
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
@@ -1379,12 +1389,12 @@ int main(int, char**)
 					int x = i - copy_selected_start.x;
 					int y = j - copy_selected_start.y;
 
-					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j)))
-						copy_img.at<unsigned char>(x, y) = 0;
-					else
+					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j)))
 						copy_img.at<unsigned char>(x, y) = 255;
 				}
 			}
+
+		/*	flip(copy_img, copy_img, 0);*/
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
