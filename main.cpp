@@ -412,7 +412,7 @@ int main(int, char**)
 			}
 
 
-			if ((tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE || tool == TOOL_PAINT_CUSTOM) && event.type == SDL_MOUSEBUTTONUP)
+			if ((tool == TOOL_PAINT_PASTE || tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE || tool == TOOL_PAINT_CUSTOM) && event.type == SDL_MOUSEBUTTONUP)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
@@ -739,7 +739,7 @@ int main(int, char**)
 
 
 		// Paint using left mouse button
-		if ((tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE || tool == TOOL_PAINT_CUSTOM) && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
+		if ((tool == TOOL_PAINT_PASTE || tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE || tool == TOOL_PAINT_CUSTOM) && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
 		{
 			vector<float> weights;
 			float total = 0;
@@ -770,6 +770,15 @@ int main(int, char**)
 
 				if (custom_brush1_height > max_brush_size)
 					max_brush_size = custom_brush1_height;
+			}
+
+			if (tool == TOOL_PAINT_PASTE)
+			{
+				if (copy_img.cols > max_brush_size)
+					max_brush_size = copy_img.cols;
+
+				if (copy_img.rows > max_brush_size)
+					max_brush_size = copy_img.rows;
 			}
 
 			int x, y;
@@ -806,6 +815,8 @@ int main(int, char**)
 
 
 			set<pair<size_t, size_t>> custom_to_draw;
+			set<pair<size_t, size_t>> paste_to_draw;
+
 
 			if (tool == TOOL_PAINT_CUSTOM && !hovered)
 			{
@@ -876,6 +887,65 @@ int main(int, char**)
 
 
 
+			if (tool == TOOL_PAINT_PASTE && !hovered)
+			{
+				int x, y;
+				SDL_GetMouseState(&x, &y);
+
+				for (int i = 0; i < copy_img.cols; i++)
+				{
+					for (int j = 0; j < copy_img.rows; j++)
+					{
+						
+						unsigned char colour = copy_img.at<unsigned char>(i, j);
+
+
+
+//						if (colour != 255)
+	//						continue;
+
+
+
+						quad q;
+
+						float half_width = -copy_img.cols * block_size / 2.0f;
+						float half_height = copy_img.rows * block_size / 2.0f;
+
+						q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+						q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+						q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+						q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+						q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+						q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+						q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+						q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+
+						q.vertices[0].x += half_width * zoom_factor;
+						q.vertices[1].x += half_width * zoom_factor;
+						q.vertices[2].x += half_width * zoom_factor;
+						q.vertices[3].x += half_width * zoom_factor;
+
+						q.vertices[0].y += half_height * zoom_factor;
+						q.vertices[1].y += half_height * zoom_factor;
+						q.vertices[2].y += half_height * zoom_factor;
+						q.vertices[3].y += half_height * zoom_factor;
+
+						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+						pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
+
+						paste_to_draw.insert(centre_index);
+					}
+				}
+			}
+
+
+
+
+
+
+
+
 
 
 			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
@@ -907,6 +977,11 @@ int main(int, char**)
 						else if (tool == TOOL_PAINT_CUSTOM)
 						{
 							if (custom_to_draw.end() != custom_to_draw.find(make_pair(i, j)))
+								to_draw.insert(make_pair(i, j));
+						}
+						else if (tool == TOOL_PAINT_PASTE)
+						{
+							if (paste_to_draw.end() != paste_to_draw.find(make_pair(i, j)))
 								to_draw.insert(make_pair(i, j));
 						}
 					}
@@ -1297,6 +1372,16 @@ int main(int, char**)
 
 			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_AREA);
 
+			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
+			{
+				for (int j = copy_selected_start.y; j <= copy_selected_end.y; j++)
+				{
+					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j)))
+						copy_img.at<unsigned char>(i, j) = 0;
+					else
+						copy_img.at<unsigned char>(i, j) = 255;
+				}
+			}
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
@@ -1304,6 +1389,7 @@ int main(int, char**)
 				{
 					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j)))
 						continue;
+
 
 					int x, y;
 					SDL_GetMouseState(&x, &y);
@@ -1313,7 +1399,7 @@ int main(int, char**)
 					zoomed_image_anchor.x /= zoom_factor;
 					zoomed_image_anchor.y /= zoom_factor;
 
-						//ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
+					//ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 
 					size_t index = i * tiles_per_dimension + j;
 
@@ -1361,8 +1447,8 @@ int main(int, char**)
 
 					quad q;
 
-					float half_width = -cols * block_size / 2.0f;
-					float half_height = rows * block_size / 2.0f;
+					float half_width = -cols  / 2.0f;
+					float half_height = rows  / 2.0f;
 
 					q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[0].y = y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
