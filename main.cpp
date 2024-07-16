@@ -1295,9 +1295,6 @@ int main(int, char**)
 			int rows = 1 + copy_selected_end.x - copy_selected_start.x;
 			int cols = 1 + copy_selected_end.y - copy_selected_start.y;
 
-	/*		rows *= 36;
-			cols *= 36;*/
-
 			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_AREA);
 
 
