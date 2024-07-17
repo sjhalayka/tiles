@@ -1578,9 +1578,7 @@ int main(int, char**)
 					int x = i - copy_selected_start.x;
 					int y = j - copy_selected_start.y;
 
-					int j_ = j;
-
-					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j_)))
+					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j)))
 						copy_img.at<unsigned char>(y, x) = 255;
 					else
 						copy_img.at<unsigned char>(y, x) = 0;
@@ -1591,36 +1589,34 @@ int main(int, char**)
 
 
 
-			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
+			for (int i = copy_selected_start.x; i <= floorf(copy_selected_end.x); i++)
 			{
-				for (int j = copy_selected_start.y; j <= copy_selected_end.y; j++)
+				for (int j = copy_selected_start.y; j <= floorf(copy_selected_end.y); j++)
 				{
-					int x_ = i - copy_selected_start.x;
-					int y_ = j - copy_selected_start.y;
-
 					// Flip the tiles upside down
-					int j_ =  copy_selected_end.y - j;
+					int i_ = i;// copy_selected_end.x - i;
+					int j_ = copy_selected_end.y - j;
 
-					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j_)))
+					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i_, j_)))
 						continue;
 
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					int index = i * tiles_per_dimension + j_;
+					int index = i_ * tiles_per_dimension + j_;
 
 					quad q;
 
 					float half_width = -copy_img.cols * block_size / 2.0f;
 					float half_height = copy_img.rows * block_size / 2.0f;
 
-					q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[1].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[2].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
 					q.vertices[0].x += half_width * zoom_factor;
