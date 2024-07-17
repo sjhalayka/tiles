@@ -343,6 +343,22 @@ int main(int, char**)
 
 					}
 
+					if (copy_selected_start.x > copy_selected_end.x)
+					{
+						float temp = copy_selected_end.x;
+						copy_selected_end.x = copy_selected_start.x;
+						copy_selected_start.x = temp;
+					}
+
+					if (copy_selected_start.y > copy_selected_end.y)
+					{
+						float temp = copy_selected_end.y;
+						copy_selected_end.y = copy_selected_start.y;
+						copy_selected_start.y = temp;
+					}
+
+
+
 					tool = TOOL_PAINT_PASTE;
 
 				}
@@ -384,7 +400,6 @@ int main(int, char**)
 			{
 				if (event.button.button == SDL_BUTTON_LEFT)
 				{
-
 					handle_undo_redo_backups();
 
 					int x, y;
@@ -1367,20 +1382,47 @@ int main(int, char**)
 		}
 		else if (tool == TOOL_PAINT_PASTE)
 		{
-			int rows = 1 + copy_selected_end.x - copy_selected_start.x;
-			int cols = 1 + copy_selected_end.y - copy_selected_start.y;
 
-			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_NEAREST);
+			vector< pair<size_t, size_t>> vector_copy_selected_indices;
 
-			for (int i = 0; i < cols; i++)
+			for (set<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
 			{
-				for (int j = 0; j < rows; j++)
-				{
-					copy_img.at<unsigned char>(i, j) = 0;
-				}
+				pair<size_t, size_t> p = *ci;
+
+				int max_block = tiles_per_dimension;// *block_size;// / block_size;
+
+				p.second = max_block - p.second;
+
+	//			int argh = copy_selected_end.y - p.second;// *block_size;
+
+	////			float half_height = copy_img.rows * block_size;
+
+	//			p.second = argh;
+
+				//const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
+				//const ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
+				//const ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
+
+				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+				//cout << img_block.x << " " << img_block.y << endl;
+
+
+
+				vector_copy_selected_indices.push_back(p);
 			}
 
+			copy_selected_indices.clear();
 
+			for (vector<pair<size_t, size_t>>::const_iterator ci = vector_copy_selected_indices.begin(); ci != vector_copy_selected_indices.end(); ci++)
+				copy_selected_indices.insert(*ci);
+
+
+
+
+			int cols = 1 + copy_selected_end.x - copy_selected_start.x;
+			int rows = 1 + copy_selected_end.y - copy_selected_start.y;
+
+			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_NEAREST);
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
@@ -1390,11 +1432,16 @@ int main(int, char**)
 					int y = j - copy_selected_start.y;
 
 					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j)))
-						copy_img.at<unsigned char>(x, y) = 255;
+						copy_img.at<unsigned char>(y, x) = 255;
+					else
+						copy_img.at<unsigned char>(y, x) = 0;
 				}
 			}
 
-		/*	flip(copy_img, copy_img, 0);*/
+			flip(copy_img, copy_img, 0);
+
+			imwrite("test.png", copy_img);
+
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
@@ -1403,10 +1450,12 @@ int main(int, char**)
 					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j)))
 						continue;
 					
+
+
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					//y = io.DisplaySize.y - y;
+					
 
 					int index = i * tiles_per_dimension + j;
 
@@ -1435,7 +1484,7 @@ int main(int, char**)
 					q.vertices[3].y += half_height * zoom_factor;
 
 
-
+					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
 				}
 			}
