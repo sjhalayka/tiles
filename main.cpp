@@ -704,12 +704,12 @@ int main(int, char**)
 
 
 				glm::vec3 view_focus(0.5, 0.5, 0.0);
-				
+
 				ImVec2 zoomed_image_anchor = image_anchor;
 
 				zoomed_image_anchor.x /= zoom_factor;
 				zoomed_image_anchor.y /= zoom_factor;
-				
+
 
 
 				int mouse_x, mouse_y;
@@ -719,23 +719,23 @@ int main(int, char**)
 
 
 
-				float x = c.x * block_size;// zoomed_image_anchor.x + int(c.x) * block_size;
-				float y = c.y * block_size;// zoomed_image_anchor.y + int(c.y) * block_size;
+				float x = image_anchor.x * 0.5 + c.x * block_size;// zoomed_image_anchor.x + int(c.x) * block_size;
+				float y = image_anchor.y * 0.5 + c.y * block_size;// zoomed_image_anchor.y + int(c.y) * block_size;
 
 
-				complex<float> v0w(static_cast<float>(x),              static_cast<float>(y));
-				complex<float> v1w(static_cast<float>(x),              static_cast<float>(y + block_size));
+				complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+				complex<float> v1w(static_cast<float>(x), static_cast<float>(y + block_size));
 				complex<float> v2w(static_cast<float>(x + block_size), static_cast<float>(y + block_size));
 				complex<float> v3w(static_cast<float>(x + block_size), static_cast<float>(y));
 
-				v0w.real(v0w.real() * zoom_factor);
-				v0w.imag(v0w.imag() * zoom_factor);
-				v1w.real(v1w.real() * zoom_factor);
-				v1w.imag(v1w.imag() * zoom_factor);
-				v2w.real(v2w.real() * zoom_factor);
-				v2w.imag(v2w.imag() * zoom_factor);
-				v3w.real(v3w.real() * zoom_factor);
-				v3w.imag(v3w.imag() * zoom_factor);
+				//v0w.real(v0w.real() * zoom_factor);
+				//v0w.imag(v0w.imag() * zoom_factor);
+				//v1w.real(v1w.real() * zoom_factor);
+				//v1w.imag(v1w.imag() * zoom_factor);
+				//v2w.real(v2w.real() * zoom_factor);
+				//v2w.imag(v2w.imag() * zoom_factor);
+				//v3w.real(v3w.real() * zoom_factor);
+				//v3w.imag(v3w.imag() * zoom_factor);
 
 				quad q;
 				q.vertices[0].x = v0w.real();
@@ -856,14 +856,14 @@ int main(int, char**)
 
 //				win_x /=   float(tiles_per_dimension);
 //				win_y /=  float(tiles_per_dimension);
-				
+
 				//view_focus.x = window_w / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
 				//centre.y = window_h / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
 
 				//centre.x += image_anchor.x * zoom_factor;
 				//centre.y += image_anchor.y * zoom_factor;
-				
-				
+
+
 				//view_focus.x = x1;// image_anchor.x / main_tiles_width;// / (tiles_per_dimension * block_size); ;// background_tiles[index].tile_size);
 				//view_focus.y = y1; // image_anchor.y / main_tiles_height;// / (tiles_per_dimension * block_size);// background_tiles[index].tile_size);
 
@@ -1530,38 +1530,38 @@ int main(int, char**)
 		else if (tool == TOOL_PAINT_PASTE)
 		{
 
-	//		vector< pair<size_t, size_t>> vector_copy_selected_indices;
+			//		vector< pair<size_t, size_t>> vector_copy_selected_indices;
 
-	//		for (set<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
-	//		{
-	//			//pair<size_t, size_t> p = *ci;
+			//		for (set<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
+			//		{
+			//			//pair<size_t, size_t> p = *ci;
 
-	//			//int max_block = tiles_per_dimension / block_size;// / block_size;
+			//			//int max_block = tiles_per_dimension / block_size;// / block_size;
 
-	//			//p.second = max_block - p.second;
+			//			//p.second = max_block - p.second;
 
-	////			int argh = copy_selected_end.y - p.second;// *block_size;
+			////			int argh = copy_selected_end.y - p.second;// *block_size;
 
-	//////			float half_height = copy_img.rows * block_size;
+			//////			float half_height = copy_img.rows * block_size;
 
-	////			p.second = argh;
+			////			p.second = argh;
 
-	//			//const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
-	//			//const ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
-	//			//const ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
+			//			//const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
+			//			//const ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
+			//			//const ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
 
-	//			//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
-	//			//cout << img_block.x << " " << img_block.y << endl;
+			//			//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+			//			//cout << img_block.x << " " << img_block.y << endl;
 
 
 
-	//			vector_copy_selected_indices.push_back(p);
-	//		}
+			//			vector_copy_selected_indices.push_back(p);
+			//		}
 
-	//		copy_selected_indices.clear();
+			//		copy_selected_indices.clear();
 
-	//		for (vector<pair<size_t, size_t>>::const_iterator ci = vector_copy_selected_indices.begin(); ci != vector_copy_selected_indices.end(); ci++)
-	//			copy_selected_indices.insert(*ci);
+			//		for (vector<pair<size_t, size_t>>::const_iterator ci = vector_copy_selected_indices.begin(); ci != vector_copy_selected_indices.end(); ci++)
+			//			copy_selected_indices.insert(*ci);
 
 
 
@@ -1569,7 +1569,7 @@ int main(int, char**)
 			int rows = 1 + copy_selected_end.x - copy_selected_start.x;
 			int cols = 1 + copy_selected_end.y - copy_selected_start.y;
 
-			resize(copy_img, copy_img, cv::Size(rows,cols), 0, 0, cv::INTER_NEAREST);
+			resize(copy_img, copy_img, cv::Size(rows, cols), 0, 0, cv::INTER_NEAREST);
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
@@ -1578,7 +1578,7 @@ int main(int, char**)
 					int x = i - copy_selected_start.x;
 					int y = j - copy_selected_start.y;
 
-					int j_ = j;// tiles_per_dimension - 1 - j;
+					int j_ = j;
 
 					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j_)))
 						copy_img.at<unsigned char>(y, x) = 255;
@@ -1587,9 +1587,8 @@ int main(int, char**)
 				}
 			}
 
-			//flip(copy_img, copy_img, 0);
 
-			imwrite("test.png", copy_img);
+
 
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
@@ -1599,19 +1598,16 @@ int main(int, char**)
 					int x_ = i - copy_selected_start.x;
 					int y_ = j - copy_selected_start.y;
 
-					int j_ = j;// tiles_per_dimension - 1 - j;
+					// Flip the tiles upside down
+					int j_ =  copy_selected_end.y - j;
 
 					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j_)))
 						continue;
-					
-
 
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					
-
-					int index = i * tiles_per_dimension + j;
+					int index = i * tiles_per_dimension + j_;
 
 					quad q;
 
@@ -1636,7 +1632,6 @@ int main(int, char**)
 					q.vertices[1].y += half_height * zoom_factor;
 					q.vertices[2].y += half_height * zoom_factor;
 					q.vertices[3].y += half_height * zoom_factor;
-
 
 					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
