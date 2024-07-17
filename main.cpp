@@ -1431,7 +1431,7 @@ int main(int, char**)
 					int x = i - copy_selected_start.x;
 					int y = j - copy_selected_start.y;
 
-					int j_ = tiles_per_dimension  - y;
+					int j_ = tiles_per_dimension  - j;
 
 					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j_)))
 						copy_img.at<unsigned char>(y, x) = 255;
@@ -1452,7 +1452,7 @@ int main(int, char**)
 					int x_ = i - copy_selected_start.x;
 					int y_ = j - copy_selected_start.y;
 
-					int j_ = tiles_per_dimension - y_;
+					int j_ = tiles_per_dimension - j;
 
 					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j_)))
 						continue;
@@ -1491,8 +1491,9 @@ int main(int, char**)
 					q.vertices[3].y += half_height * zoom_factor;
 
 
+					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-					//draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
+
 				}
 			}
 
