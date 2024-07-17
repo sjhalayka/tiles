@@ -1419,8 +1419,8 @@ int main(int, char**)
 
 
 
-			int cols = 1 + copy_selected_end.x - copy_selected_start.x;
-			int rows = 1 + copy_selected_end.y - copy_selected_start.y;
+			int rows = 1 + copy_selected_end.x - copy_selected_start.x;
+			int cols = 1 + copy_selected_end.y - copy_selected_start.y;
 
 			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_NEAREST);
 
@@ -1431,7 +1431,7 @@ int main(int, char**)
 					int x = i - copy_selected_start.x;
 					int y = j - copy_selected_start.y;
 
-					int j_ = tiles_per_dimension  - j;
+					int j_ = tiles_per_dimension - 1  - j;
 
 					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j_)))
 						copy_img.at<unsigned char>(y, x) = 255;
@@ -1452,7 +1452,7 @@ int main(int, char**)
 					int x_ = i - copy_selected_start.x;
 					int y_ = j - copy_selected_start.y;
 
-					int j_ = tiles_per_dimension - j;
+					int j_ = tiles_per_dimension - 1 - j;
 
 					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j_)))
 						continue;
