@@ -1383,38 +1383,38 @@ int main(int, char**)
 		else if (tool == TOOL_PAINT_PASTE)
 		{
 
-			vector< pair<size_t, size_t>> vector_copy_selected_indices;
+	//		vector< pair<size_t, size_t>> vector_copy_selected_indices;
 
-			for (set<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
-			{
-				pair<size_t, size_t> p = *ci;
+	//		for (set<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
+	//		{
+	//			//pair<size_t, size_t> p = *ci;
 
-				int max_block = tiles_per_dimension;// *block_size;// / block_size;
+	//			//int max_block = tiles_per_dimension / block_size;// / block_size;
 
-				p.second = max_block - p.second;
+	//			//p.second = max_block - p.second;
 
-	//			int argh = copy_selected_end.y - p.second;// *block_size;
+	////			int argh = copy_selected_end.y - p.second;// *block_size;
 
-	////			float half_height = copy_img.rows * block_size;
+	//////			float half_height = copy_img.rows * block_size;
 
-	//			p.second = argh;
+	////			p.second = argh;
 
-				//const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
-				//const ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
-				//const ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
+	//			//const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
+	//			//const ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
+	//			//const ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
 
-				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
-				//cout << img_block.x << " " << img_block.y << endl;
+	//			//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+	//			//cout << img_block.x << " " << img_block.y << endl;
 
 
 
-				vector_copy_selected_indices.push_back(p);
-			}
+	//			vector_copy_selected_indices.push_back(p);
+	//		}
 
-			copy_selected_indices.clear();
+	//		copy_selected_indices.clear();
 
-			for (vector<pair<size_t, size_t>>::const_iterator ci = vector_copy_selected_indices.begin(); ci != vector_copy_selected_indices.end(); ci++)
-				copy_selected_indices.insert(*ci);
+	//		for (vector<pair<size_t, size_t>>::const_iterator ci = vector_copy_selected_indices.begin(); ci != vector_copy_selected_indices.end(); ci++)
+	//			copy_selected_indices.insert(*ci);
 
 
 
@@ -1431,14 +1431,16 @@ int main(int, char**)
 					int x = i - copy_selected_start.x;
 					int y = j - copy_selected_start.y;
 
-					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j)))
+					int j_ = tiles_per_dimension  - y;
+
+					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j_)))
 						copy_img.at<unsigned char>(y, x) = 255;
 					else
 						copy_img.at<unsigned char>(y, x) = 0;
 				}
 			}
 
-			flip(copy_img, copy_img, 0);
+			//flip(copy_img, copy_img, 0);
 
 			imwrite("test.png", copy_img);
 
@@ -1447,7 +1449,12 @@ int main(int, char**)
 			{
 				for (int j = copy_selected_start.y; j <= copy_selected_end.y; j++)
 				{
-					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j)))
+					int x_ = i - copy_selected_start.x;
+					int y_ = j - copy_selected_start.y;
+
+					int j_ = tiles_per_dimension - y_;
+
+					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i, j_)))
 						continue;
 					
 
@@ -1484,8 +1491,8 @@ int main(int, char**)
 					q.vertices[3].y += half_height * zoom_factor;
 
 
-					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
+					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+					//draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
 				}
 			}
 
