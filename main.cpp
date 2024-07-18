@@ -1192,23 +1192,42 @@ int main(int, char**)
 						//background_tiles[index].uv_min = ImVec2(0, 0);// copy_background_tiles[0].uv_min;
 						//background_tiles[index].uv_max = ImVec2(0.1, 0.1);// copy_background_tiles[0].uv_max;
 
-						set<pair<size_t, size_t>>::const_iterator i = find(selected_indices.begin(), selected_indices.end(), pair_index);
 
-						if (i != selected_indices.end())
+						int x, y;
+						SDL_GetMouseState(&x, &y);
+
+						ImVec2 mouse_centre_index_im = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
+
+						pair<size_t, size_t> mouse_centre_offset(pair_index.first - mouse_centre_index_im.x, pair_index.second - mouse_centre_index_im.y);
+
+						pair<size_t, size_t> mouse_plus(abs(mouse_centre_offset.first - pair_index.first), abs(mouse_centre_offset.second - pair_index.second));
+
+
+						//pair<size_t, size_t> mouse_plus_index(pair_index.first + mouse_centre_index.first, pair_index.second + mouse_centre_index.second);
+
+						//cout << mouse_centre_index.first << " " << mouse_centre_index.second << endl;
+
+						size_t copy_index = mouse_centre_offset.first* tiles_per_dimension + mouse_centre_offset.second;
+
+
+						set<pair<size_t, size_t>>::const_iterator i = find(to_draw.begin(), to_draw.end(), mouse_centre_offset);
+
+						if (i != to_draw.end())
 						{
-							size_t copy_index = i->first * tiles_per_dimension + i->second;
 
 
-
-							background_tiles[index].uv_min = copy_background_tiles[copy_index].uv_min;
-							background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
 						}
-
 						else
 						{
-							background_tiles[index].uv_min = ImVec2(0, 0);// copy_background_tiles[0].uv_min;
-							background_tiles[index].uv_max = ImVec2(0.1, 0.1);// copy_background_tiles[0].uv_max;
+							background_tiles[index].uv_min = ImVec2(0, 0);// copy_background_tiles[copy_index].uv_min;
+							background_tiles[index].uv_max = ImVec2(0.1, 0.1);// copy_background_tiles[copy_index].uv_max;
 						}
+
+					//	else
+					//	{
+					//		background_tiles[index].uv_min = ImVec2(0, 0);// copy_background_tiles[0].uv_min;
+					//		background_tiles[index].uv_max = ImVec2(0.1, 0.1);// copy_background_tiles[0].uv_max;
+					//	}
 					}
 				}
 			}
