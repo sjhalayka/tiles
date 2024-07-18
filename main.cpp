@@ -759,14 +759,14 @@ int main(int, char**)
 				complex<float> v2w(static_cast<float>(x + block_size), static_cast<float>(y + block_size));
 				complex<float> v3w(static_cast<float>(x + block_size), static_cast<float>(y));
 
-				//v0w.real(v0w.real() * zoom_factor);
-				//v0w.imag(v0w.imag() * zoom_factor);
-				//v1w.real(v1w.real() * zoom_factor);
-				//v1w.imag(v1w.imag() * zoom_factor);
-				//v2w.real(v2w.real() * zoom_factor);
-				//v2w.imag(v2w.imag() * zoom_factor);
-				//v3w.real(v3w.real() * zoom_factor);
-				//v3w.imag(v3w.imag() * zoom_factor);
+				v0w.real(v0w.real() * zoom_factor);
+				v0w.imag(v0w.imag() * zoom_factor);
+				v1w.real(v1w.real() * zoom_factor);
+				v1w.imag(v1w.imag() * zoom_factor);
+				v2w.real(v2w.real() * zoom_factor);
+				v2w.imag(v2w.imag() * zoom_factor);
+				v3w.real(v3w.real() * zoom_factor);
+				v3w.imag(v3w.imag() * zoom_factor);
 
 				quad q;
 				q.vertices[0].x = v0w.real();
@@ -785,7 +785,7 @@ int main(int, char**)
 				quad_centre /= block_size * tiles_per_dimension;
 
 
-				cout << quad_centre.x << " " << quad_centre.y << " " << endl;
+				//cout << quad_centre.x << " " << quad_centre.y << " " << endl;
 
 				//draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
 
@@ -1127,9 +1127,11 @@ int main(int, char**)
 
 						pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
 
-						centre_index.first =  (centre_index.first);
-						centre_index.second =  (centre_index.second);
+		//				cout << centre_index.first << " " << centre_index.second << endl;
+	//					centre_index.first +=;// static_cast<size_t>(max(0.0f, float(centre_index.first + 3)));
+//						centre_index.second = (centre_index.second);
 
+						//if(paste_to_draw.end() == find(paste_to_draw.begin(), paste_to_draw.end(), centre_index))
 						paste_to_draw.insert(centre_index);
 					}
 				}
@@ -1568,7 +1570,7 @@ int main(int, char**)
 			size_t rows = 1 + (copy_selected_end.x - copy_selected_start.x);
 			size_t cols = 1 + (copy_selected_end.y - copy_selected_start.y);
 
-			cout << rows << " " << cols << endl;
+			//cout << rows << " " << cols << endl;
 
 			resize(copy_img, copy_img, cv::Size(rows, cols), 0, 0, cv::INTER_NEAREST);
 
