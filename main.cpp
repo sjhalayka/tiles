@@ -327,6 +327,9 @@ int main(int, char**)
 					for (set<pair<size_t, size_t>>::iterator ci = selected_indices.begin(); ci != selected_indices.end(); ci++)
 					{
 						pair<size_t, size_t> p = *ci;
+
+						//p.second = copy_selected_end.y - p.second;
+
 						copy_selected_indices.push_back(p);
 					}
 
@@ -373,17 +376,18 @@ int main(int, char**)
 					}
 
 
+
+
+
+
+
 					for (size_t i = 0; i < copy_selected_indices.size(); i++)
 						///				for (vector<pair<size_t, size_t>>::iterator i = copy_selected_indices.begin(); i != copy_selected_indices.end(); i++)
 					{
 						pair<size_t, size_t> p = copy_selected_indices[i];
 
-
-						//p.first = copy_selected_end.x - p.first;
+						// flip
 						p.second = copy_selected_end.y - p.second;
-
-						//p.second = glm::clamp(float(p.second), 0.0f, float(tiles_per_dimension - 1));
-
 
 
 						copy_selected_indices[i] = p;
@@ -1094,8 +1098,8 @@ int main(int, char**)
 
 
 
-												if (colour != 255)
-													continue;
+						if (colour != 255)
+							continue;
 
 
 
@@ -1573,13 +1577,11 @@ int main(int, char**)
 			{
 				for (int j = copy_selected_start.y; j <= copy_selected_end.y; j++)
 				{
-
 					int i_ = i;
 					int j_ = j;
 
 					int x = i_ - copy_selected_start.x;
 					int y = j_ - copy_selected_start.y;
-
 
 					if (copy_selected_indices.end() != find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						copy_img.at<unsigned char>(y, x) = 255;
@@ -1595,7 +1597,7 @@ int main(int, char**)
 				{
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
-					int j_ = copy_selected_end.y - j;
+					int j_ = j;// copy_selected_end.y - j;
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
