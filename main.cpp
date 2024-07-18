@@ -319,9 +319,6 @@ int main(int, char**)
 			{
 				if (selected_indices.size() != 0)
 				{
-					//copy_selected_indices = selected_indices;
-
-
 					copy_selected_indices.clear();
 
 					for (set<pair<size_t, size_t>>::iterator ci = selected_indices.begin(); ci != selected_indices.end(); ci++)
@@ -378,13 +375,7 @@ int main(int, char**)
 					{
 						pair<size_t, size_t> p = copy_selected_indices[i];
 
-
-						//p.first = copy_selected_end.x - p.first;
 						p.second = copy_selected_end.y - p.second;
-
-						//p.second = glm::clamp(float(p.second), 0.0f, float(tiles_per_dimension - 1));
-
-
 
 						copy_selected_indices[i] = p;
 
@@ -1127,8 +1118,7 @@ int main(int, char**)
 
 						pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
 
-						centre_index.first = floorf(centre_index.first);
-						centre_index.second = floorf(centre_index.second);
+	
 
 						paste_to_draw.insert(centre_index);
 					}
@@ -1568,7 +1558,7 @@ int main(int, char**)
 			size_t rows = 1 + (copy_selected_end.x - copy_selected_start.x);
 			size_t cols = 1 + (copy_selected_end.y - copy_selected_start.y);
 
-			cout << rows << " " << cols << endl;
+			//cout << rows << " " << cols << endl;
 
 			resize(copy_img, copy_img, cv::Size(rows, cols), 0, 0, cv::INTER_NEAREST);
 
@@ -1592,13 +1582,14 @@ int main(int, char**)
 			}
 
 
+
 			for (int i = copy_selected_start.x; i <= (copy_selected_end.x); i++)
 			{
 				for (int j = copy_selected_start.y; j <= (copy_selected_end.y); j++)
 				{
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
-					int j_ = copy_selected_end.y - j;
+					int j_ = j;// copy_selected_end.y - j;
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
