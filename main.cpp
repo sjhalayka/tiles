@@ -322,11 +322,15 @@ int main(int, char**)
 					//copy_selected_indices = selected_indices;
 
 
+					copy_selected_indices.clear();
+
 					for (set<pair<size_t, size_t>>::iterator ci = selected_indices.begin(); ci != selected_indices.end(); ci++)
 					{
 						pair<size_t, size_t> p = *ci;
 						copy_selected_indices.push_back(p);
 					}
+
+
 
 
 					copy_background_tiles = background_tiles;
@@ -368,14 +372,14 @@ int main(int, char**)
 						copy_selected_start.y = temp;
 					}
 
-					//copy_selected_indices.clear();
-
 
 					for (size_t i = 0; i < copy_selected_indices.size(); i++)
 	///				for (vector<pair<size_t, size_t>>::iterator i = copy_selected_indices.begin(); i != copy_selected_indices.end(); i++)
 					{
 						pair<size_t, size_t> p = copy_selected_indices[i];
 
+
+						//p.first = copy_selected_end.x - p.first;
 						p.second = copy_selected_end.y - p.second;
 
 						//p.second = glm::clamp(float(p.second), 0.0f, float(tiles_per_dimension - 1));
@@ -1123,6 +1127,9 @@ int main(int, char**)
 
 						pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
 
+						centre_index.first = floorf(centre_index.first);
+						centre_index.second = floorf(centre_index.second);
+
 						paste_to_draw.insert(centre_index);
 					}
 				}
@@ -1563,29 +1570,26 @@ int main(int, char**)
 
 			cout << rows << " " << cols << endl;
 
-			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_NEAREST);
+			resize(copy_img, copy_img, cv::Size(rows, cols), 0, 0, cv::INTER_NEAREST);
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
 				for (int j = copy_selected_start.y; j <= copy_selected_end.y; j++)
 				{
 
-					int j_ = copy_selected_end.y - j;
+					int i_ = i;
+					int j_ = j;
 
-
-					int x = i - copy_selected_start.x;
+					int x = i_ - copy_selected_start.x;
 					int y = j_ - copy_selected_start.y;
 
 
-					if (copy_selected_indices.end() != find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i, j_)))
+					if (copy_selected_indices.end() != find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						copy_img.at<unsigned char>(y, x) = 255;
 					else
 						copy_img.at<unsigned char>(y, x) = 0;
 				}
 			}
-
-			//flip(copy_img, copy_img, 0);
-
 
 
 			for (int i = copy_selected_start.x; i <= (copy_selected_end.x); i++)
