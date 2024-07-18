@@ -321,7 +321,6 @@ int main(int, char**)
 				{
 					//copy_selected_indices = selected_indices;
 
-
 					copy_selected_indices.clear();
 
 					for (set<pair<size_t, size_t>>::iterator ci = selected_indices.begin(); ci != selected_indices.end(); ci++)
@@ -338,42 +337,42 @@ int main(int, char**)
 
 					copy_background_tiles = background_tiles;
 
-					copy_selected_start.x = FLT_MAX;
-					copy_selected_start.y = FLT_MAX;
+					copy_selected_start.x = 0;//FLT_MAX;
+					copy_selected_start.y = 0;//FLT_MAX;
 
-					copy_selected_end.x = -FLT_MAX;
-					copy_selected_end.y = -FLT_MAX;
+					copy_selected_end.x = tiles_per_dimension - 1;// -FLT_MAX;
+					copy_selected_end.y = tiles_per_dimension - 1;// -FLT_MAX;
 
 
-					for (vector<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
-					{
-						if (ci->first < copy_selected_start.x)
-							copy_selected_start.x = ci->first;
+					//for (vector<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
+					//{
+					//	if (ci->first < copy_selected_start.x)
+					//		copy_selected_start.x = ci->first;
 
-						if (ci->second < copy_selected_start.y)
-							copy_selected_start.y = ci->second;
+					//	if (ci->second < copy_selected_start.y)
+					//		copy_selected_start.y = ci->second;
 
-						if (ci->first > copy_selected_end.x)
-							copy_selected_end.x = ci->first;
+					//	if (ci->first > copy_selected_end.x)
+					//		copy_selected_end.x = ci->first;
 
-						if (ci->second > copy_selected_end.y)
-							copy_selected_end.y = ci->second;
+					//	if (ci->second > copy_selected_end.y)
+					//		copy_selected_end.y = ci->second;
 
-					}
+					//}
 
-					if (copy_selected_start.x > copy_selected_end.x)
-					{
-						float temp = copy_selected_end.x;
-						copy_selected_end.x = copy_selected_start.x;
-						copy_selected_start.x = temp;
-					}
+					//if (copy_selected_start.x > copy_selected_end.x)
+					//{
+					//	float temp = copy_selected_end.x;
+					//	copy_selected_end.x = copy_selected_start.x;
+					//	copy_selected_start.x = temp;
+					//}
 
-					if (copy_selected_start.y > copy_selected_end.y)
-					{
-						float temp = copy_selected_end.y;
-						copy_selected_end.y = copy_selected_start.y;
-						copy_selected_start.y = temp;
-					}
+					//if (copy_selected_start.y > copy_selected_end.y)
+					//{
+					//	float temp = copy_selected_end.y;
+					//	copy_selected_end.y = copy_selected_start.y;
+					//	copy_selected_start.y = temp;
+					//}
 
 
 
@@ -1372,7 +1371,7 @@ int main(int, char**)
 
 
 		// Draw outlines around each tile
-		if (zoom_factor > 0.5)
+		if (false)//zoom_factor > 0.5)
 		{
 			for (size_t i = 0; i < tiles_per_dimension; i++)
 			{
@@ -1609,8 +1608,8 @@ int main(int, char**)
 
 					quad q;
 
-					float half_width = -copy_img.cols * block_size / 2.0f;
-					float half_height = copy_img.rows * block_size / 2.0f;
+					float half_width = -tiles_per_dimension * block_size / 2.0f;
+					float half_height = tiles_per_dimension * block_size / 2.0f;
 
 					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
