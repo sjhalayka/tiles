@@ -387,6 +387,7 @@ int main(int, char**)
 						pair<size_t, size_t> p = copy_selected_indices[i];
 
 						// flip
+						//p.first = copy_selected_end.x - p.first;
 						p.second = copy_selected_end.y - p.second;
 
 
