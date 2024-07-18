@@ -1076,14 +1076,7 @@ int main(int, char**)
 					}
 				}
 			}
-
-
-
-
-
-
-
-			if (tool == TOOL_PAINT_PASTE && !hovered)
+			else if (tool == TOOL_PAINT_PASTE && !hovered)
 			{
 				int x, y;
 				SDL_GetMouseState(&x, &y);
@@ -1133,6 +1126,8 @@ int main(int, char**)
 						paste_to_draw.insert(centre_index);
 					}
 				}
+
+
 			}
 
 
@@ -1184,38 +1179,56 @@ int main(int, char**)
 				}
 			}
 
-			for (set<pair<size_t, size_t>>::const_iterator ci = to_draw.begin(); ci != to_draw.end(); ci++)
+			if (tool == TOOL_PAINT_PASTE)
 			{
-				pair<size_t, size_t> pair_index = make_pair(ci->first, ci->second);
-
-				// This makes things terribly slow for very large brush sizes(e.g., 500 tiles)
-				//if (prev_draw.end() != find(prev_draw.begin(), prev_draw.end(), make_pair(pair_index.first, pair_index.second)))
-				//	continue;
-
-
-				size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
-
-				size_t brush_in_use = 0;
-
-				const float r = distribution(generator);
-
-				float sub_total = 0;
-
-				for (int k = 0; k < left_strings.size(); k++)
+				for (set<pair<size_t, size_t>>::const_iterator ci = to_draw.begin(); ci != to_draw.end(); ci++)
 				{
-					sub_total += weights[k];
+					pair<size_t, size_t> pair_index = make_pair(ci->first, ci->second);
 
-					if (r <= sub_total)
+					size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
+
+					if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(pair_index.first, pair_index.second)))
 					{
-						brush_in_use = k;
-						break;
+						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
+						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
 					}
 				}
-
-				if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(pair_index.first, pair_index.second)))
+			}
+			else
+			{
+				for (set<pair<size_t, size_t>>::const_iterator ci = to_draw.begin(); ci != to_draw.end(); ci++)
 				{
-					background_tiles[index].uv_min = left_uv_mins[brush_in_use];
-					background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+					pair<size_t, size_t> pair_index = make_pair(ci->first, ci->second);
+
+					// This makes things terribly slow for very large brush sizes(e.g., 500 tiles)
+					//if (prev_draw.end() != find(prev_draw.begin(), prev_draw.end(), make_pair(pair_index.first, pair_index.second)))
+					//	continue;
+
+
+					size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
+
+					size_t brush_in_use = 0;
+
+					const float r = distribution(generator);
+
+					float sub_total = 0;
+
+					for (int k = 0; k < left_strings.size(); k++)
+					{
+						sub_total += weights[k];
+
+						if (r <= sub_total)
+						{
+							brush_in_use = k;
+							break;
+						}
+					}
+
+					if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(pair_index.first, pair_index.second)))
+					{
+						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
+						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+					}
 				}
 			}
 
