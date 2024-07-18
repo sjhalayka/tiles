@@ -457,22 +457,22 @@ void draw_quad_line_loop(glm::vec3 colour, int win_width, int win_height, float 
 	complex<float> v2ndc = get_ndc_coords_from_window_coords(win_width, win_height, v2w);
 	complex<float> v3ndc = get_ndc_coords_from_window_coords(win_width, win_height, v3w);
 
-	//size_t count = 0;
+	size_t count = 0;
 
-	//if (!(v0ndc.real() < -1 || v0ndc.real() > 1 || v0ndc.imag() < -1 || v0ndc.imag() > 1))
-	//	count++;
+	if (!(v0ndc.real() < -1 || v0ndc.real() > 1 || v0ndc.imag() < -1 || v0ndc.imag() > 1))
+		count++;
 
-	//if (!(v1ndc.real() < -1 || v1ndc.real() > 1 || v1ndc.imag() < -1 || v1ndc.imag() > 1))
-	//	count++;
+	if (!(v1ndc.real() < -1 || v1ndc.real() > 1 || v1ndc.imag() < -1 || v1ndc.imag() > 1))
+		count++;
 
-	//if (!(v2ndc.real() < -1 || v2ndc.real() > 1 || v2ndc.imag() < -1 || v2ndc.imag() > 1))
-	//	count++;
+	if (!(v2ndc.real() < -1 || v2ndc.real() > 1 || v2ndc.imag() < -1 || v2ndc.imag() > 1))
+		count++;
 
-	//if (!(v3ndc.real() < -1 || v3ndc.real() > 1 || v3ndc.imag() < -1 || v3ndc.imag() > 1))
-	//	count++;
+	if (!(v3ndc.real() < -1 || v3ndc.real() > 1 || v3ndc.imag() < -1 || v3ndc.imag() > 1))
+		count++;
 
-	//if (count == 0)
-	//	return;
+	if (count == 0)
+		return;
 
 	glUseProgram(line_shader.get_program());
 

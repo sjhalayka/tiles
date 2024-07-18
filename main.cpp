@@ -1187,10 +1187,28 @@ int main(int, char**)
 
 					size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
 
-					if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(pair_index.first, pair_index.second)))
+					if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(pair_index))
 					{
-						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
-						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+						//background_tiles[index].uv_min = ImVec2(0, 0);// copy_background_tiles[0].uv_min;
+						//background_tiles[index].uv_max = ImVec2(0.1, 0.1);// copy_background_tiles[0].uv_max;
+
+						set<pair<size_t, size_t>>::const_iterator i = find(selected_indices.begin(), selected_indices.end(), pair_index);
+
+						if (i != selected_indices.end())
+						{
+							size_t copy_index = i->first * tiles_per_dimension + i->second;
+
+
+
+							background_tiles[index].uv_min = copy_background_tiles[copy_index].uv_min;
+							background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
+						}
+
+						else
+						{
+							background_tiles[index].uv_min = ImVec2(0, 0);// copy_background_tiles[0].uv_min;
+							background_tiles[index].uv_max = ImVec2(0.1, 0.1);// copy_background_tiles[0].uv_max;
+						}
 					}
 				}
 			}
@@ -1578,22 +1596,22 @@ int main(int, char**)
 		{
 
 
-			size_t rows = 1 + (copy_selected_end.x - copy_selected_start.x);
-			size_t cols = 1 + (copy_selected_end.y - copy_selected_start.y);
+			size_t rows = tiles_per_dimension;//1 + (copy_selected_end.x - copy_selected_start.x);
+			size_t cols = tiles_per_dimension;// 1 + (copy_selected_end.y - copy_selected_start.y);
 
 			//cout << rows << " " << cols << endl;
 
 			resize(copy_img, copy_img, cv::Size(rows, cols), 0, 0, cv::INTER_NEAREST);
 
-			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
+			for (int i = 0; i < tiles_per_dimension; i++)
 			{
-				for (int j = copy_selected_start.y; j <= copy_selected_end.y; j++)
+				for (int j = 0; j < tiles_per_dimension; j++)
 				{
 					int i_ = i;
 					int j_ = j;
 
-					int x = i_ - copy_selected_start.x;
-					int y = j_ - copy_selected_start.y;
+					int x = i_;
+					int y = j_;
 
 					if (copy_selected_indices.end() != find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						copy_img.at<unsigned char>(y, x) = 255;
@@ -1603,9 +1621,9 @@ int main(int, char**)
 			}
 
 
-			for (int i = copy_selected_start.x; i <= (copy_selected_end.x); i++)
+			for (int i = 0; i < tiles_per_dimension; i++)
 			{
-				for (int j = copy_selected_start.y; j <= (copy_selected_end.y); j++)
+				for (int j = 0; j < tiles_per_dimension; j++)
 				{
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
