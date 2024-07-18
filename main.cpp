@@ -1128,7 +1128,7 @@ int main(int, char**)
 
 						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
 
-						pair<size_t, size_t> centre_index = make_pair(1 + ceil(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor)), -1 + ceil(-zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor)));
+						pair<size_t, size_t> centre_index = make_pair( (-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor)), (-zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor)));
 
 						paste_to_draw.insert(centre_index);
 					}
