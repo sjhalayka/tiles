@@ -386,7 +386,7 @@ int main(int, char**)
 						pair<size_t, size_t> p = copy_selected_indices[i];
 
 						// flip
-						p.second = copy_selected_end.y - p.second;
+						//p.second = copy_selected_end.y - p.second;
 
 
 						copy_selected_indices[i] = p;
@@ -1596,7 +1596,7 @@ int main(int, char**)
 				{
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
-					int j_ = j;// copy_selected_end.y - j;
+					int j_ = j;//copy_selected_end.y - j;
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
@@ -1604,7 +1604,7 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					int index = i_ * tiles_per_dimension + j_;
+					int index = i_ * tiles_per_dimension + (copy_selected_end.y - j);
 
 					quad q;
 
