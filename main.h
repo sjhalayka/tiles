@@ -91,6 +91,14 @@ bool operator< (const glm::vec3& lhs, const glm::vec3& rhs)
 }
 
 
+namespace std
+{
+	bool operator==(const pair<size_t, size_t>& lhs, const pair<size_t, size_t>& rhs)
+	{
+		return lhs.first == rhs.first && lhs.second == rhs.second;
+	}
+}
+
 
 class quad
 {

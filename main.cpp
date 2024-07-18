@@ -5,10 +5,10 @@ glm::vec3 selected_start;
 glm::vec3 selected_end;
 
 
-set<pair<size_t, size_t>> copy_selected_indices;
+vector<pair<size_t, size_t>> copy_selected_indices;
 vector<background_tile> copy_background_tiles;
-glm::vec3 copy_selected_start;
-glm::vec3 copy_selected_end;
+glm::vec3 copy_selected_start(0, 0, 0);
+glm::vec3 copy_selected_end(0, 0, 0);
 
 Mat copy_img(1, 1, CV_8UC1);
 
@@ -319,7 +319,16 @@ int main(int, char**)
 			{
 				if (selected_indices.size() != 0)
 				{
-					copy_selected_indices = selected_indices;
+					//copy_selected_indices = selected_indices;
+
+
+					for (set<pair<size_t, size_t>>::iterator ci = selected_indices.begin(); ci != selected_indices.end(); ci++)
+					{
+						pair<size_t, size_t> p = *ci;
+						copy_selected_indices.push_back(p);
+					}
+
+
 					copy_background_tiles = background_tiles;
 
 					copy_selected_start.x = FLT_MAX;
@@ -329,7 +338,7 @@ int main(int, char**)
 					copy_selected_end.y = -FLT_MAX;
 
 
-					for (set<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
+					for (vector<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
 					{
 						if (ci->first < copy_selected_start.x)
 							copy_selected_start.x = ci->first;
@@ -357,6 +366,24 @@ int main(int, char**)
 						float temp = copy_selected_end.y;
 						copy_selected_end.y = copy_selected_start.y;
 						copy_selected_start.y = temp;
+					}
+
+					//copy_selected_indices.clear();
+
+
+					for (size_t i = 0; i < copy_selected_indices.size(); i++)
+	///				for (vector<pair<size_t, size_t>>::iterator i = copy_selected_indices.begin(); i != copy_selected_indices.end(); i++)
+					{
+						pair<size_t, size_t> p = copy_selected_indices[i];
+
+						p.second = copy_selected_end.y - p.second;
+
+						//p.second = glm::clamp(float(p.second), 0.0f, float(tiles_per_dimension - 1));
+
+
+
+						copy_selected_indices[i] = p;
+
 					}
 
 
@@ -1530,74 +1557,46 @@ int main(int, char**)
 		else if (tool == TOOL_PAINT_PASTE)
 		{
 
-			//		vector< pair<size_t, size_t>> vector_copy_selected_indices;
 
-			//		for (set<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
-			//		{
-			//			//pair<size_t, size_t> p = *ci;
+			size_t rows = 1 + (copy_selected_end.x - copy_selected_start.x);
+			size_t cols = 1 + (copy_selected_end.y - copy_selected_start.y);
 
-			//			//int max_block = tiles_per_dimension / block_size;// / block_size;
+			cout << rows << " " << cols << endl;
 
-			//			//p.second = max_block - p.second;
-
-			////			int argh = copy_selected_end.y - p.second;// *block_size;
-
-			//////			float half_height = copy_img.rows * block_size;
-
-			////			p.second = argh;
-
-			//			//const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
-			//			//const ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
-			//			//const ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
-
-			//			//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
-			//			//cout << img_block.x << " " << img_block.y << endl;
-
-
-
-			//			vector_copy_selected_indices.push_back(p);
-			//		}
-
-			//		copy_selected_indices.clear();
-
-			//		for (vector<pair<size_t, size_t>>::const_iterator ci = vector_copy_selected_indices.begin(); ci != vector_copy_selected_indices.end(); ci++)
-			//			copy_selected_indices.insert(*ci);
-
-
-
-
-			int rows = 1 + copy_selected_end.x - copy_selected_start.x;
-			int cols = 1 + copy_selected_end.y - copy_selected_start.y;
-
-			resize(copy_img, copy_img, cv::Size(rows, cols), 0, 0, cv::INTER_NEAREST);
+			resize(copy_img, copy_img, cv::Size(cols, rows), 0, 0, cv::INTER_NEAREST);
 
 			for (int i = copy_selected_start.x; i <= copy_selected_end.x; i++)
 			{
 				for (int j = copy_selected_start.y; j <= copy_selected_end.y; j++)
 				{
-					int x = i - copy_selected_start.x;
-					int y = j - copy_selected_start.y;
 
-					if (copy_selected_indices.end() != copy_selected_indices.find(make_pair(i, j)))
+					int j_ = copy_selected_end.y - j;
+
+
+					int x = i - copy_selected_start.x;
+					int y = j_ - copy_selected_start.y;
+
+
+					if (copy_selected_indices.end() != find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i, j_)))
 						copy_img.at<unsigned char>(y, x) = 255;
 					else
 						copy_img.at<unsigned char>(y, x) = 0;
 				}
 			}
 
+			//flip(copy_img, copy_img, 0);
 
 
 
-
-			for (int i = copy_selected_start.x; i <= floorf(copy_selected_end.x); i++)
+			for (int i = copy_selected_start.x; i <= (copy_selected_end.x); i++)
 			{
-				for (int j = copy_selected_start.y; j <= floorf(copy_selected_end.y); j++)
+				for (int j = copy_selected_start.y; j <= (copy_selected_end.y); j++)
 				{
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
 					int j_ = copy_selected_end.y - j;
 
-					if (copy_selected_indices.end() == copy_selected_indices.find(make_pair(i_, j_)))
+					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
 
 					int x, y;
@@ -1611,13 +1610,13 @@ int main(int, char**)
 					float half_height = copy_img.rows * block_size / 2.0f;
 
 					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[1].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[2].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
 					q.vertices[0].x += half_width * zoom_factor;
 					q.vertices[1].x += half_width * zoom_factor;
