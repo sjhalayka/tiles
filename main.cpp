@@ -24,7 +24,7 @@ vector<vector<background_tile>> background_tiles_backups;
 pair<size_t, size_t> copy_paste_mouse_position;
 
 pair<float, float> copy_paste_base_position(36* tiles_per_dimension / 2.0, 36* tiles_per_dimension / 2.0);
-pair<size_t, size_t> copy_paste_index;
+pair<float, float> copy_paste_relative_index;
 
 
 
@@ -1766,15 +1766,15 @@ int main(int, char**)
 					if (q.vertices[0].x < copy_paste_base_position.first)
 					{
 						copy_paste_base_position.first = q.vertices[0].x;
-						copy_paste_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+( copy_paste_base_position.second) / (block_size * zoom_factor));
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+( copy_paste_base_position.second) / (block_size * zoom_factor));
 					}
 
 					if (q.vertices[0].y < copy_paste_base_position.second)
 					{
 						copy_paste_base_position.second = q.vertices[0].y;
-						copy_paste_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+( copy_paste_base_position.second) / (block_size * zoom_factor));
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+( copy_paste_base_position.second) / (block_size * zoom_factor));
 					}
-			
+		
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
 
@@ -1785,7 +1785,7 @@ int main(int, char**)
 			}
 
 			cout << "copypaste base pos: " << copy_paste_base_position.first << " " << copy_paste_base_position.second << endl;
-			cout << "copypaste base index: " << copy_paste_index.first << " " << copy_paste_index.second << endl;
+			cout << "copypaste base relative index: " << copy_paste_relative_index.first << " " << copy_paste_relative_index.second << endl;
 			cout << endl << endl;
 
 		}
