@@ -1245,9 +1245,7 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					//ImVec2 mouse_centre_index_im = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
-
-					pair<size_t, size_t> mouse_centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(y) / (block_size * zoom_factor));
+					pair<size_t, size_t> mouse_centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 
 					pair<float, float> mouse_centre_offset(mouse_centre_index.first - pair_index.first, mouse_centre_index.second - pair_index.second);
 
@@ -1265,8 +1263,12 @@ int main(int, char**)
 
 					if (true)//i != to_draw.end())
 					{
-						background_tiles[index].uv_min = copy_background_tiles[copy_index].uv_min;
-						background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
+						//background_tiles[index].uv_min = ImVec2(0, 0);
+						//background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
+
+						// todo:
+						background_tiles[index].uv_min = copy_background_tiles[index].uv_min;
+						background_tiles[index].uv_max = copy_background_tiles[index].uv_max;
 
 					}
 					else
