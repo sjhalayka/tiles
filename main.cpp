@@ -22,8 +22,6 @@ vector<vector<background_tile>> background_tiles_backups;
 
 pair<size_t, size_t> copy_paste_mouse_position_index;// = make_pair(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 pair<size_t, size_t> copy_paste_mouse_position;
-
-
 pair<float, float> copy_paste_base_position(36 * tiles_per_dimension / 2.0, 36 * tiles_per_dimension / 2.0);
 pair<float, float> copy_paste_relative_index;
 
