@@ -20,8 +20,9 @@ vector<glm::vec3> selected_end_backups;
 vector<vector<background_tile>> background_tiles_backups;
 
 
-//pair<size_t, size_t> copy_paste_mouse_centre_index;// = make_pair(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
+pair<size_t, size_t> copy_paste_mouse_position_index;// = make_pair(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
 pair<size_t, size_t> copy_paste_mouse_position;
+
 
 pair<float, float> copy_paste_base_position(36 * tiles_per_dimension / 2.0, 36 * tiles_per_dimension / 2.0);
 pair<float, float> copy_paste_relative_index;
@@ -354,6 +355,16 @@ int main(int, char**)
 					copy_paste_mouse_position.first = mouse_x;
 					copy_paste_mouse_position.second = mouse_y;
 
+
+
+					ImVec2 zoomed_image_anchor = image_anchor;
+
+					zoomed_image_anchor.x /= zoom_factor;
+					zoomed_image_anchor.y /= zoom_factor;
+
+					copy_paste_mouse_position_index.first = -zoomed_image_anchor.x / (36)+copy_paste_mouse_position.first / (36 * zoom_factor);
+					copy_paste_mouse_position_index.second = -zoomed_image_anchor.y / (36) + (copy_paste_mouse_position.second) / (36 * zoom_factor);
+
 					copy_background_tiles = background_tiles;
 
 					copy_selected_start.x = 0;//FLT_MAX;
@@ -362,45 +373,7 @@ int main(int, char**)
 					copy_selected_end.x = tiles_per_dimension - 1;// -FLT_MAX;
 					copy_selected_end.y = tiles_per_dimension - 1;// -FLT_MAX;
 
-
-					//for (vector<pair<size_t, size_t>>::const_iterator ci = copy_selected_indices.begin(); ci != copy_selected_indices.end(); ci++)
-					//{
-					//	if (ci->first < copy_selected_start.x)
-					//		copy_selected_start.x = ci->first;
-
-					//	if (ci->second < copy_selected_start.y)
-					//		copy_selected_start.y = ci->second;
-
-					//	if (ci->first > copy_selected_end.x)
-					//		copy_selected_end.x = ci->first;
-
-					//	if (ci->second > copy_selected_end.y)
-					//		copy_selected_end.y = ci->second;
-
-					//}
-
-					//if (copy_selected_start.x > copy_selected_end.x)
-					//{
-					//	float temp = copy_selected_end.x;
-					//	copy_selected_end.x = copy_selected_start.x;
-					//	copy_selected_start.x = temp;
-					//}
-
-					//if (copy_selected_start.y > copy_selected_end.y)
-					//{
-					//	float temp = copy_selected_end.y;
-					//	copy_selected_end.y = copy_selected_start.y;
-					//	copy_selected_start.y = temp;
-					//}
-
-
-
-
-
-
-
 					for (size_t i = 0; i < copy_selected_indices.size(); i++)
-						///				for (vector<pair<size_t, size_t>>::iterator i = copy_selected_indices.begin(); i != copy_selected_indices.end(); i++)
 					{
 						pair<size_t, size_t> p = copy_selected_indices[i];
 
@@ -1247,92 +1220,16 @@ int main(int, char**)
 
 				if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(pair_index))
 				{
-					//background_tiles[index].uv_min = ImVec2(0, 0);// copy_background_tiles[0].uv_min;
-					//background_tiles[index].uv_max = ImVec2(0.1, 0.1);// copy_background_tiles[0].uv_max;
+					pair<size_t, size_t> mouse_plus(copy_paste_mouse_position_index.first - (float)copy_paste_relative_index.first, copy_paste_mouse_position_index.second - (float)copy_paste_relative_index.second);
 
+					//cout << "copy_paste_mouse_position_index: " << copy_paste_mouse_position_index.first << " " << copy_paste_mouse_position_index.second << endl;
+					//cout << "copypaste relative index: " << copy_paste_relative_index.first << " " << copy_paste_relative_index.second << endl;
+					//cout << "mouse plus: " << mouse_plus.first << " " << mouse_plus.second << endl;
 
+					size_t copy_index = mouse_plus.first * tiles_per_dimension + mouse_plus.second;
 
-
-
-
-					int mouse_x = 0, mouse_y = 0;
-					SDL_GetMouseState(&mouse_x, &mouse_y);
-
-
-
-					cout << "copypaste relative index: " << copy_paste_relative_index.first << " " << copy_paste_relative_index.second << endl;
-
-
-					//pair<float, float> new_copy_paste_mouse_position;
-					//new_copy_paste_mouse_position.first = mouse_x;
-					//new_copy_paste_mouse_position.second = mouse_y;
-
-					//pair<float, float> copy_paste_mouse_offset;
-					//copy_paste_mouse_offset.first = copy_paste_mouse_position.first - new_copy_paste_mouse_position.first;
-					//copy_paste_mouse_offset.second = copy_paste_mouse_position.second - new_copy_paste_mouse_position.second;
-
-
-
-
-
-					//cout << "intiial pos: " << copy_paste_mouse_position.first << " " << copy_paste_mouse_position.second << endl;
-
-					//cout << "new pos:     " << new_copy_paste_mouse_position.first << " " << new_copy_paste_mouse_position.second << endl;
-
-					//cout << "offset:      " << copy_paste_mouse_offset.first << " " << copy_paste_mouse_offset.second << endl;
-
-					//cout << endl;
-
-
-					//pair<size_t, size_t> mouse_centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(y) / (block_size * zoom_factor));
-
-
-
-
-//
-//					pair<float, float> mouse_centre_offset(copy_paste_mouse_centre_index.first - mouse_centre_index.first, copy_paste_mouse_centre_index.second - mouse_centre_index.second);
-//
-//					pair<size_t, size_t> mouse_plus(mouse_centre_offset.first + (float)copy_paste_mouse_centre_index.first, mouse_centre_offset.second + (float)copy_paste_mouse_centre_index.second);
-//
-//					cout << "pair: " << pair_index.first << " " << pair_index.second << endl;
-//
-//					cout << "copy_paste_: " << copy_paste_mouse_centre_index.first << " " << copy_paste_mouse_centre_index.second << endl;
-//
-//
-//					cout << "mouse centre: " << mouse_centre_index.first << " " << mouse_centre_index.second << endl;
-//
-//					cout << "mouse centre offset: " << mouse_centre_offset.first << " " << mouse_centre_offset.second << endl;
-//
-//					cout << "mouse plus: " << mouse_plus.first << " " << mouse_plus.second << endl;
-//
-//					cout << endl;
-//
-////					exit(0);
-//
-//					//pair<size_t, size_t> mouse_plus_index(pair_index.first + mouse_centre_index.first, pair_index.second + mouse_centre_index.second);
-//
-//					//cout << mouse_centre_index.first << " " << mouse_centre_index.second << endl;
-//
-//					size_t copy_index = mouse_plus.first * tiles_per_dimension + mouse_plus.second;
-
-
-					//set<pair<size_t, size_t>>::const_iterator i = find(to_draw.begin(), to_draw.end(), mouse_plus);
-
-					if (true)//i != to_draw.end())
-					{
-//						background_tiles[index].uv_min = ImVec2(0, 0);
-//						background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
-
-						// todo:
-						//background_tiles[index].uv_min = copy_background_tiles[copy_index].uv_min;
-						//background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
-
-					}
-					else
-					{
-						background_tiles[index].uv_min = ImVec2(0, 0);// copy_background_tiles[copy_index].uv_min;
-						background_tiles[index].uv_max = ImVec2(0.1, 0.1);// copy_background_tiles[copy_index].uv_max;
-					}
+					background_tiles[index].uv_min = copy_background_tiles[copy_index].uv_min;
+					background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
 				}
 			}
 
@@ -1778,11 +1675,6 @@ int main(int, char**)
 
 				}
 			}
-
-			//cout << "copypaste base pos: " << copy_paste_base_position.first << " " << copy_paste_base_position.second << endl;
-			//cout << "copypaste base relative index: " << copy_paste_relative_index.first << " " << copy_paste_relative_index.second << endl;
-			//cout << endl << endl;
-
 		}
 
 
