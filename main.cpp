@@ -360,7 +360,7 @@ int main(int, char**)
 					zoomed_image_anchor.x /= zoom_factor;
 					zoomed_image_anchor.y /= zoom_factor;
 
-					copy_paste_mouse_position_index.first = -zoomed_image_anchor.x / (36)+copy_paste_mouse_position.first / (36 * zoom_factor);
+					copy_paste_mouse_position_index.first = -zoomed_image_anchor.x / (36) + copy_paste_mouse_position.first / (36 * zoom_factor);
 					copy_paste_mouse_position_index.second = -zoomed_image_anchor.y / (36) + (copy_paste_mouse_position.second) / (36 * zoom_factor);
 
 					copy_background_tiles = background_tiles;
@@ -1218,24 +1218,34 @@ int main(int, char**)
 
 				if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(pair_index))
 				{
-					pair<size_t, size_t> mouse_plus(copy_paste_mouse_position_index.first + (float)copy_paste_relative_index.first, copy_paste_mouse_position_index.second + (float)copy_paste_relative_index.second);
+					pair<size_t, size_t> mouse_plus(pair_index.first - (float)copy_paste_relative_index.first, pair_index.second - (float)copy_paste_relative_index.second);
 
-					//cout << "copy_paste_mouse_position_index: " << copy_paste_mouse_position_index.first << " " << copy_paste_mouse_position_index.second << endl;
-					//cout << "copypaste relative index: " << copy_paste_relative_index.first << " " << copy_paste_relative_index.second << endl;
-					//cout << "mouse plus: " << mouse_plus.first << " " << mouse_plus.second << endl;
+					// todo: make it so that copy_index is equal to index when the offset is based on pair_index,
+					// and not copy_paste_mouse_position_index
+
+
+					cout << "pair_index: " << pair_index.first << " " << pair_index.second << endl;
+					cout << "copy_paste_mouse_position_index: " << copy_paste_mouse_position_index.first << " " << copy_paste_mouse_position_index.second << endl;
+					cout << "copypaste relative index: " << copy_paste_relative_index.first << " " << copy_paste_relative_index.second << endl;
+					cout << "mouse plus: " << mouse_plus.first << " " << mouse_plus.second << endl;
+					
+					cout << endl;
+
 
 					size_t copy_index = mouse_plus.first * tiles_per_dimension + mouse_plus.second;
 
 
-					ImVec2 uv_step = ImVec2(float(background_tiles[index].tile_size) / (float)main_tiles_width, float(background_tiles[index].tile_size) / (float)main_tiles_height);
-					
-					background_tiles[index].uv_min.x = copy_background_tiles[copy_index].uv_min.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
-					background_tiles[index].uv_min.y = copy_background_tiles[copy_index].uv_min.y;// +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
+					//background_tiles[index].uv_min = ImVec2(0, 0);
+					//background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
+
+
+					background_tiles[ index].uv_min.x = copy_background_tiles[copy_index].uv_min.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
+					background_tiles[ index].uv_min.y = copy_background_tiles[copy_index].uv_min.y;// +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
 					background_tiles[index].uv_max.x = copy_background_tiles[copy_index].uv_max.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
 					background_tiles[index].uv_max.y = copy_background_tiles[copy_index].uv_max.y;//  +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
 
 
-//					background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
+					//					background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
 				}
 			}
 
