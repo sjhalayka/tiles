@@ -1228,7 +1228,7 @@ int main(int, char**)
 					cout << "copy_paste_mouse_position_index: " << copy_paste_mouse_position_index.first << " " << copy_paste_mouse_position_index.second << endl;
 					cout << "copypaste relative index: " << copy_paste_relative_index.first << " " << copy_paste_relative_index.second << endl;
 					cout << "mouse plus: " << mouse_plus.first << " " << mouse_plus.second << endl;
-					
+
 					cout << endl;
 
 
@@ -1239,8 +1239,8 @@ int main(int, char**)
 					//background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
 
 
-					background_tiles[ index].uv_min.x = copy_background_tiles[copy_index].uv_min.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
-					background_tiles[ index].uv_min.y = copy_background_tiles[copy_index].uv_min.y;// +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
+					background_tiles[index].uv_min.x = copy_background_tiles[copy_index].uv_min.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
+					background_tiles[index].uv_min.y = copy_background_tiles[copy_index].uv_min.y;// +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
 					background_tiles[index].uv_max.x = copy_background_tiles[copy_index].uv_max.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
 					background_tiles[index].uv_max.y = copy_background_tiles[copy_index].uv_max.y;//  +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
 
@@ -1642,7 +1642,7 @@ int main(int, char**)
 
 
 
-					int x  = 0, y = 0;
+					int x = 0, y = 0;
 					SDL_GetMouseState(&x, &y);
 
 					int index = i_ * tiles_per_dimension + (copy_selected_end.y - j);
@@ -1724,6 +1724,19 @@ int main(int, char**)
 					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+
+
+
+
+					//q.vertices[0].x += copy_paste_base_position.first * 0.5 * zoom_factor;// -half_width;
+					//q.vertices[1].x += copy_paste_base_position.first * 0.5 * zoom_factor;// - half_width;
+					//q.vertices[2].x += copy_paste_base_position.first * 0.5 * zoom_factor;// - half_width;
+					//q.vertices[3].x += copy_paste_base_position.first * 0.5 * zoom_factor;// - half_width;
+
+					//q.vertices[0].y += copy_paste_base_position.second * 0.5 * zoom_factor;// - half_height;
+					//q.vertices[1].y += copy_paste_base_position.second * 0.5 * zoom_factor;// - half_height;
+					//q.vertices[2].y += copy_paste_base_position.second * 0.5 * zoom_factor;// - half_height;
+					//q.vertices[3].y += copy_paste_base_position.second * 0.5 * zoom_factor;// - half_height;
 
 
 					//q.vertices[0].x += half_width *zoom_factor;
