@@ -1644,8 +1644,9 @@ int main(int, char**)
 
 					int index = i_ * tiles_per_dimension + (copy_selected_end.y - j);
 
-
-
+					int mouse_x = 0, mouse_y = 0;
+					SDL_GetMouseState(&mouse_x, &mouse_y);
+				
 
 					quad q;
 
@@ -1661,15 +1662,16 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					q.vertices[0].x += half_width * zoom_factor;
-					q.vertices[1].x += half_width * zoom_factor;
-					q.vertices[2].x += half_width * zoom_factor;
-					q.vertices[3].x += half_width * zoom_factor;
 
-					q.vertices[0].y += half_height * zoom_factor;
-					q.vertices[1].y += half_height * zoom_factor;
-					q.vertices[2].y += half_height * zoom_factor;
-					q.vertices[3].y += half_height * zoom_factor;
+					q.vertices[0].x += half_width *zoom_factor;
+					q.vertices[1].x += half_width*zoom_factor;
+					q.vertices[2].x += half_width *zoom_factor;
+					q.vertices[3].x += half_width *zoom_factor;
+
+					q.vertices[0].y += half_height *zoom_factor;
+					q.vertices[1].y += half_height *zoom_factor;
+					q.vertices[2].y += half_height *zoom_factor;
+					q.vertices[3].y += half_height *zoom_factor;
 
 					if (q.vertices[0].x < copy_paste_base_position.first)
 					{
