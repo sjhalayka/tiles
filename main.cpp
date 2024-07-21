@@ -1687,7 +1687,7 @@ int main(int, char**)
 
 
 
-
+			cout << copy_paste_base_position.first << " " << copy_paste_base_position.second << endl;
 
 
 
@@ -1744,20 +1744,20 @@ int main(int, char**)
 					//q.vertices[2].x += half_width *zoom_factor;
 					//q.vertices[3].x += half_width *zoom_factor;
 
-					//q.vertices[0].y += half_height *zoom_factor;
-					//q.vertices[1].y += half_height *zoom_factor;
-					//q.vertices[2].y += half_height *zoom_factor;
-					//q.vertices[3].y += half_height *zoom_factor;
+					q.vertices[0].y += half_height *zoom_factor;
+					q.vertices[1].y += half_height *zoom_factor;
+					q.vertices[2].y += half_height *zoom_factor;
+					q.vertices[3].y += half_height *zoom_factor;
 
-					//q.vertices[0].x -= copy_paste_base_position.first*zoom_factor;
-					//q.vertices[1].x += copy_paste_base_position.first * zoom_factor;
-					//q.vertices[2].x += copy_paste_base_position.first * zoom_factor;
-					//q.vertices[3].x += copy_paste_base_position.first * zoom_factor;
+					////q.vertices[0].x += copy_paste_base_position.first*zoom_factor;
+					////q.vertices[1].x += copy_paste_base_position.first * zoom_factor;
+					////q.vertices[2].x += copy_paste_base_position.first * zoom_factor;
+					////q.vertices[3].x += copy_paste_base_position.first * zoom_factor;
 
-					//q.vertices[0].y += copy_paste_base_position.second * zoom_factor;
-					//q.vertices[1].y += copy_paste_base_position.second * zoom_factor;
-					//q.vertices[2].y += copy_paste_base_position.second * zoom_factor;
-					//q.vertices[3].y += copy_paste_base_position.second * zoom_factor;
+					////q.vertices[0].y += copy_paste_base_position.second * zoom_factor;
+					////q.vertices[1].y += copy_paste_base_position.second * zoom_factor;
+					////q.vertices[2].y += copy_paste_base_position.second * zoom_factor;
+					////q.vertices[3].y += copy_paste_base_position.second * zoom_factor;
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
