@@ -1668,12 +1668,6 @@ int main(int, char**)
 					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
-						
-
-					//q.vertices[0].y = io.DisplaySize.y - q.vertices[0].y;
-					//q.vertices[1].y = io.DisplaySize.y - q.vertices[1].y;
-					//q.vertices[2].y = io.DisplaySize.y - q.vertices[2].y;
-					//q.vertices[3].y = io.DisplaySize.y - q.vertices[3].y;
 
 					if (q.vertices[0].x < copy_paste_base_position.first)
 					{
@@ -1736,10 +1730,10 @@ int main(int, char**)
 
 			int base_mouse_x = 0, base_mouse_y = 0;
 			SDL_GetMouseState(&base_mouse_x, &base_mouse_y);
+			base_mouse_y = io.DisplaySize.y - base_mouse_y;
 
 			float diff_x = base_mouse_x - copy_paste_base_position.first;
 			float diff_y = base_mouse_y - copy_paste_base_position.second;
-
 
 			for (int i = 0; i < tiles_per_dimension; i++)
 			{
@@ -1776,13 +1770,7 @@ int main(int, char**)
 					q.vertices[3].y += diff_y;
 
 
-					//q.vertices[0].y = io.displaysize.y - q.vertices[0].y;
-					//q.vertices[1].y = io.displaysize.y - q.vertices[1].y;
-					//q.vertices[2].y = io.displaysize.y - q.vertices[2].y;
-					//q.vertices[3].y = io.displaysize.y - q.vertices[3].y;
 
-
-	
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
