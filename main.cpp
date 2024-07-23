@@ -25,7 +25,8 @@ pair<size_t, size_t> copy_paste_mouse_position;
 pair<float, float> copy_paste_base_position(36 * tiles_per_dimension / 2.0, 36 * tiles_per_dimension / 2.0);
 pair<float, float> copy_paste_relative_index;
 
-pair<float, float> copy_paste_end_position(0, 0);// 36 * tiles_per_dimension / 2.0, 36 * tiles_per_dimension / 2.0);
+pair<float, float> copy_paste_end_position(0, 0);
+pair<float, float> copy_paste_centre_position(0, 0);
 
 
 
@@ -1640,7 +1641,7 @@ int main(int, char**)
 
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
-					int j_ = copy_selected_end.y - j;
+					int j_ = j;// copy_selected_end.y - j;
 
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
@@ -1650,7 +1651,7 @@ int main(int, char**)
 					int x = 0, y = 0;
 					SDL_GetMouseState(&x, &y);
 
-					int index = i_ * tiles_per_dimension + j_;// +(copy_selected_end.y - j);
+					int index = i_ * tiles_per_dimension + j_;
 
 					quad q;
 
@@ -1782,6 +1783,15 @@ int main(int, char**)
 
 			//cout << copy_paste_base_position.first << " " << copy_paste_base_position.second << endl;
 
+			copy_paste_centre_position.first = (copy_paste_base_position.first + copy_paste_end_position.first) * 0.5f;
+			copy_paste_centre_position.second = (copy_paste_base_position.second + copy_paste_end_position.second) * 0.5f;
+
+
+			int base_mouse_x = 0, base_mouse_y = 0;
+			SDL_GetMouseState(&base_mouse_x, &base_mouse_y);
+
+			float diff_x = base_mouse_x - copy_paste_centre_position.first;
+			float diff_y = base_mouse_y - copy_paste_centre_position.second;
 
 			for (int i = 0; i < tiles_per_dimension; i++)
 			{
@@ -1789,7 +1799,7 @@ int main(int, char**)
 				{
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
-					int j_ = j;//copy_selected_end.y - j;
+					int j_ = j;// copy_selected_end.y - j;
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
@@ -1801,7 +1811,7 @@ int main(int, char**)
 					//x = copy_paste_base_position.first;
 				//	/y = -copy_paste_base_position.second;
 
-					int index = i_ * tiles_per_dimension + (copy_selected_end.y - j);
+					int index = i_ * tiles_per_dimension + j_;// (copy_selected_end.y - j);
 
 
 					quad q;
@@ -1817,6 +1827,16 @@ int main(int, char**)
 					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+
+					q.vertices[0].x += diff_x;// copy_paste_centre_position.first;
+					q.vertices[0].y += diff_y;// copy_paste_centre_position.second;
+					q.vertices[1].x += diff_x;//copy_paste_centre_position.first;
+					q.vertices[1].y += diff_y;//copy_paste_centre_position.second;
+					q.vertices[2].x += diff_x;//copy_paste_centre_position.first;
+					q.vertices[2].y += diff_y;//copy_paste_centre_position.second;
+					q.vertices[3].x += diff_x;//copy_paste_centre_position.first;
+					q.vertices[3].y += diff_y;//copy_paste_centre_position.second;
+
 
 
 
@@ -1877,6 +1897,10 @@ int main(int, char**)
 
 		draw_circle_line_loop(glm::vec3(0, 1, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor* (float)brush_size* block_size * 0.5f, 20);
 
+		pos.x = copy_paste_centre_position.first;
+		pos.y = copy_paste_centre_position.second;
+
+		draw_circle_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor* (float)brush_size* block_size * 0.5f, 20);
 
 
 
