@@ -1629,6 +1629,14 @@ int main(int, char**)
 			copy_paste_base_position.second = block_size * tiles_per_dimension / 2.0;
 
 
+
+
+
+
+
+
+
+
 			for (int i = 0; i < tiles_per_dimension; i++)
 			{
 				for (int j = 0; j < tiles_per_dimension; j++)
@@ -1636,6 +1644,104 @@ int main(int, char**)
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
 					int j_ = j;//copy_selected_end.y - j;
+
+					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
+						continue;
+
+					int x, y;
+					SDL_GetMouseState(&x, &y);
+
+					int index = i_ * tiles_per_dimension + (copy_selected_end.y - j);
+
+
+
+
+					quad q;
+
+					float half_width = -tiles_per_dimension * block_size / 2.0f;
+					float half_height = tiles_per_dimension * block_size / 2.0f;
+
+					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[1].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[2].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+
+
+
+					q.vertices[0].y = q.vertices[0].y - io.DisplaySize.y;
+					q.vertices[1].y = q.vertices[1].y - io.DisplaySize.y;
+					q.vertices[2].y = q.vertices[2].y - io.DisplaySize.y;
+					q.vertices[3].y = q.vertices[3].y - io.DisplaySize.y;
+
+
+					//q.vertices[0].x += half_width * zoom_factor;
+					//q.vertices[1].x += half_width * zoom_factor;
+					//q.vertices[2].x += half_width * zoom_factor;
+					//q.vertices[3].x += half_width * zoom_factor;
+
+					//q.vertices[0].y += half_height * zoom_factor;
+					//q.vertices[1].y += half_height * zoom_factor;
+					//q.vertices[2].y += half_height * zoom_factor;
+					//q.vertices[3].y += half_height * zoom_factor;
+
+					if (q.vertices[0].x < copy_paste_base_position.first)
+					{
+						copy_paste_base_position.first = q.vertices[0].x;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+					}
+
+					if (q.vertices[0].y < copy_paste_base_position.second)
+					{
+						copy_paste_base_position.second = q.vertices[0].y;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+					}
+
+
+
+					//draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
+					//draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+				}
+			}
+
+
+
+
+
+
+
+
+
+
+			for (int i = 0; i < tiles_per_dimension; i++)
+			{
+				for (int j = 0; j < tiles_per_dimension; j++)
+				{
+					// Flip the tiles upside down
+					int i_ = i;// copy_selected_end.x - i;
+					int j_ = j;//copy_selected_end.y - j;
+
+
+
+
+
+
+							int base_mouse_x = 0, base_mouse_y = 0;
+					SDL_GetMouseState(&base_mouse_x, &base_mouse_y);
+
+					float diff_x = base_mouse_x - copy_paste_base_position.first;
+					float diff_y = base_mouse_y - copy_paste_base_position.second;
+
+
+
+
+
+
+
 
 
 
@@ -1661,27 +1767,43 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					q.vertices[0].x += half_width * zoom_factor;
-					q.vertices[1].x += half_width * zoom_factor;
-					q.vertices[2].x += half_width * zoom_factor;
-					q.vertices[3].x += half_width * zoom_factor;
+					//q.vertices[0].x += half_width * zoom_factor;
+					//q.vertices[1].x += half_width * zoom_factor;
+					//q.vertices[2].x += half_width * zoom_factor;
+					//q.vertices[3].x += half_width * zoom_factor;
 
-					q.vertices[0].y += half_height * zoom_factor;
-					q.vertices[1].y += half_height * zoom_factor;
-					q.vertices[2].y += half_height * zoom_factor;
-					q.vertices[3].y += half_height * zoom_factor;
+					//q.vertices[0].y += half_height * zoom_factor;
+					//q.vertices[1].y += half_height * zoom_factor;
+					//q.vertices[2].y += half_height * zoom_factor;
+					//q.vertices[3].y += half_height * zoom_factor;
 
-					if (q.vertices[0].x < copy_paste_base_position.first)
-					{
-						copy_paste_base_position.first = q.vertices[0].x;
-						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
-					}
+					//if (q.vertices[0].x < copy_paste_base_position.first)
+					//{
+					//	copy_paste_base_position.first = q.vertices[0].x;
+					//	copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+					//}
 
-					if (q.vertices[0].y < copy_paste_base_position.second)
-					{
-						copy_paste_base_position.second = q.vertices[0].y;
-						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
-					}
+					//if (q.vertices[0].y < copy_paste_base_position.second)
+					//{
+					//	copy_paste_base_position.second = q.vertices[0].y;
+					//	copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+					//}
+
+
+					q.vertices[0].x += diff_x;
+					q.vertices[0].y += diff_y;
+					q.vertices[1].x += diff_x;
+					q.vertices[1].y += diff_y;
+					q.vertices[2].x += diff_x;
+					q.vertices[2].y += diff_y;
+					q.vertices[3].x += diff_x;
+					q.vertices[3].y += diff_y;
+
+
+					q.vertices[0].y = q.vertices[0].y - io.DisplaySize.y;
+					q.vertices[1].y = q.vertices[1].y - io.DisplaySize.y;
+					q.vertices[2].y = q.vertices[2].y - io.DisplaySize.y;
+					q.vertices[3].y = q.vertices[3].y - io.DisplaySize.y;
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
