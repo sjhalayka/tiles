@@ -1828,54 +1828,21 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					q.vertices[0].x += diff_x;// copy_paste_centre_position.first;
-					q.vertices[0].y += diff_y;// copy_paste_centre_position.second;
-					q.vertices[1].x += diff_x;//copy_paste_centre_position.first;
-					q.vertices[1].y += diff_y;//copy_paste_centre_position.second;
-					q.vertices[2].x += diff_x;//copy_paste_centre_position.first;
-					q.vertices[2].y += diff_y;//copy_paste_centre_position.second;
-					q.vertices[3].x += diff_x;//copy_paste_centre_position.first;
-					q.vertices[3].y += diff_y;//copy_paste_centre_position.second;
+					q.vertices[0].x += diff_x;
+					q.vertices[0].y += diff_y;
+					q.vertices[1].x += diff_x;
+					q.vertices[1].y += diff_y;
+					q.vertices[2].x += diff_x;
+					q.vertices[2].y += diff_y;
+					q.vertices[3].x += diff_x;
+					q.vertices[3].y += diff_y;
+
+					q.vertices[0].y = io.DisplaySize.y - q.vertices[0].y;
+					q.vertices[1].y = io.DisplaySize.y - q.vertices[1].y;
+					q.vertices[2].y = io.DisplaySize.y - q.vertices[2].y;
+					q.vertices[3].y = io.DisplaySize.y - q.vertices[3].y;
 
 
-
-
-
-					//	q.vertices[0].x -= copy_paste_base_position.first * zoom_factor;//  *zoom_factor;// -half_width;
-					//	q.vertices[1].x -= copy_paste_base_position.first * zoom_factor;// *zoom_factor;// - half_width;
-					//	q.vertices[2].x -= copy_paste_base_position.first * zoom_factor;//  *zoom_factor;// - half_width;
-					//	q.vertices[3].x -= copy_paste_base_position.first * zoom_factor;//  *zoom_factor;// - half_width;
-
-						//q.vertices[0].y -= copy_paste_base_position.second * zoom_factor;// *0.5 * zoom_factor;// - half_height;
-						//q.vertices[1].y -= copy_paste_base_position.second * zoom_factor;// *0.5 * zoom_factor;// - half_height;
-						//q.vertices[2].y -= copy_paste_base_position.second * zoom_factor;// *0.5 * zoom_factor;// - half_height;
-						//q.vertices[3].y -= copy_paste_base_position.second * zoom_factor;// *0.5 * zoom_factor;// - half_height;
-
-
-
-
-
-
-
-
-
-
-
-
-						//q.vertices[0].y += half_height * zoom_factor;
-						//q.vertices[1].y += half_height * zoom_factor;
-						//q.vertices[2].y += half_height * zoom_factor;
-						//q.vertices[3].y += half_height * zoom_factor;
-
-						////q.vertices[0].x += copy_paste_base_position.first*zoom_factor;
-						////q.vertices[1].x += copy_paste_base_position.first * zoom_factor;
-						////q.vertices[2].x += copy_paste_base_position.first * zoom_factor;
-						////q.vertices[3].x += copy_paste_base_position.first * zoom_factor;
-
-						////q.vertices[0].y += copy_paste_base_position.second * zoom_factor;
-						////q.vertices[1].y += copy_paste_base_position.second * zoom_factor;
-						////q.vertices[2].y += copy_paste_base_position.second * zoom_factor;
-						////q.vertices[3].y += copy_paste_base_position.second * zoom_factor;
 
 
 					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
@@ -1886,21 +1853,21 @@ int main(int, char**)
 		}
 
 
-		glm::vec3 pos;
-		pos.x = copy_paste_end_position.first;
-		pos.y = copy_paste_end_position.second;
+		//glm::vec3 pos;
+		//pos.x = copy_paste_end_position.first;
+		//pos.y = copy_paste_end_position.second;
 
-		draw_circle_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
+		//draw_circle_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
 
-		pos.x = copy_paste_base_position.first;
-		pos.y = copy_paste_base_position.second;
+		//pos.x = copy_paste_base_position.first;
+		//pos.y = copy_paste_base_position.second;
 
-		draw_circle_line_loop(glm::vec3(0, 1, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
+		//draw_circle_line_loop(glm::vec3(0, 1, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
 
-		pos.x = copy_paste_centre_position.first;
-		pos.y = copy_paste_centre_position.second;
+		//pos.x = copy_paste_centre_position.first;
+		//pos.y = copy_paste_centre_position.second;
 
-		draw_circle_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
+		//draw_circle_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
 
 
 
