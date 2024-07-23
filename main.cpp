@@ -1736,10 +1736,6 @@ int main(int, char**)
 					int i_ = i;
 					int j_ = j;
 
-					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
-						continue;
-
-
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
@@ -1771,6 +1767,8 @@ int main(int, char**)
 
 
 
+					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
+						continue;
 
 					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
