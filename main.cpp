@@ -25,11 +25,7 @@ pair<size_t, size_t> copy_paste_mouse_position;
 pair<float, float> copy_paste_base_position(36 * tiles_per_dimension / 2.0, 36 * tiles_per_dimension / 2.0);
 pair<float, float> copy_paste_relative_index;
 
-
-
-pair<float, float> copy_paste_end_position(0, 0);
-
-
+pair<float, float> copy_paste_end_position(0, 0);// 36 * tiles_per_dimension / 2.0, 36 * tiles_per_dimension / 2.0);
 
 
 
@@ -1636,14 +1632,19 @@ int main(int, char**)
 			copy_paste_end_position.first = 0;
 			copy_paste_end_position.second = 0;
 
+
 			for (int i = 0; i < tiles_per_dimension; i++)
 			{
 				for (int j = 0; j < tiles_per_dimension; j++)
 				{
+
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
 					int j_ = j;//copy_selected_end.y - j;
 
+
+					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
+						continue;
 
 
 					int x = 0, y = 0;
@@ -1671,54 +1672,15 @@ int main(int, char**)
 						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
 					}
 
-					if (q.vertices[1].x < copy_paste_base_position.first)
-					{
-						copy_paste_base_position.first = q.vertices[1].x;
-						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
-					}
-
-
-					if (q.vertices[2].x < copy_paste_base_position.first)
-					{
-						copy_paste_base_position.first = q.vertices[2].x;
-						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
-					}
-
-
-					if (q.vertices[3].x < copy_paste_base_position.first)
-					{
-						copy_paste_base_position.first = q.vertices[3].x;
-						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
-					}
-
-
-
-					
-					if (q.vertices[0].x > copy_paste_end_position.first)
-					{
-						copy_paste_end_position.first = q.vertices[0].x;
-					}
-
-					if (q.vertices[1].x > copy_paste_end_position.first)
-					{
-						copy_paste_end_position.first = q.vertices[1].x;
-					}
-
-					if (q.vertices[2].x > copy_paste_end_position.first)
-					{
-						copy_paste_end_position.first = q.vertices[2].x;
-					}
-
-					if (q.vertices[3].x > copy_paste_end_position.first)
-					{
-						copy_paste_end_position.first = q.vertices[3].x;
-					}
-
-
-
 					if (q.vertices[0].y < copy_paste_base_position.second)
 					{
 						copy_paste_base_position.second = q.vertices[0].y;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+					}
+
+					if (q.vertices[1].x < copy_paste_base_position.first)
+					{
+						copy_paste_base_position.first = q.vertices[1].x;
 						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
 					}
 
@@ -1728,9 +1690,21 @@ int main(int, char**)
 						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
 					}
 
+					if (q.vertices[2].x < copy_paste_base_position.first)
+					{
+						copy_paste_base_position.first = q.vertices[2].x;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+					}
+
 					if (q.vertices[2].y < copy_paste_base_position.second)
 					{
 						copy_paste_base_position.second = q.vertices[2].y;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+					}
+
+					if (q.vertices[3].x < copy_paste_base_position.first)
+					{
+						copy_paste_base_position.first = q.vertices[3].x;
 						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
 					}
 
@@ -1743,62 +1717,70 @@ int main(int, char**)
 
 
 
-					if (q.vertices[0].y > copy_paste_end_position.second)
+
+
+					if (q.vertices[0].x > copy_paste_end_position.first)
+					{
+						copy_paste_end_position.first = q.vertices[0].x;
+					}
+
+					if (q.vertices[0].y > copy_paste_base_position.second)
 					{
 						copy_paste_end_position.second = q.vertices[0].y;
 					}
 
-					if (q.vertices[1].y > copy_paste_end_position.second)
+					if (q.vertices[1].x > copy_paste_end_position.first)
+					{
+						copy_paste_end_position.first = q.vertices[1].x;
+					}
+
+					if (q.vertices[1].y > copy_paste_base_position.second)
 					{
 						copy_paste_end_position.second = q.vertices[1].y;
 					}
 
-					if (q.vertices[2].y > copy_paste_end_position.second)
+					if (q.vertices[2].x > copy_paste_end_position.first)
+					{
+						copy_paste_end_position.first = q.vertices[2].x;
+					}
+
+					if (q.vertices[2].y > copy_paste_base_position.second)
 					{
 						copy_paste_end_position.second = q.vertices[2].y;
 					}
 
-					if (q.vertices[3].y > copy_paste_end_position.second)
+					if (q.vertices[3].x > copy_paste_end_position.first)
+					{
+						copy_paste_end_position.first = q.vertices[3].x;
+					}
+
+					if (q.vertices[3].y > copy_paste_base_position.second)
 					{
 						copy_paste_end_position.second = q.vertices[3].y;
 					}
+
 
 				}
 			}
 
 
-			pair<float, float> copy_paste_centre(
-									0.5f * (copy_paste_end_position.first + copy_paste_base_position.first),
-									0.5f * (copy_paste_end_position.second + copy_paste_base_position.second));
+			//cout << copy_paste_base_position.first << " " << copy_paste_base_position.second << endl;
 
-
-
-			cout << "base " << copy_paste_base_position.first << " " << copy_paste_base_position.second << endl;
-			cout << "end "  << copy_paste_end_position.first << " " << copy_paste_end_position.second << endl;
-			cout << "centre " << copy_paste_centre.first << " " << copy_paste_centre.second << endl;
-			cout << endl;
-
-
-
-
-			int base_mouse_x = 0, base_mouse_y = 0;
-			SDL_GetMouseState(&base_mouse_y, &base_mouse_y);
-
-			//base_mouse_x = copy_paste_centre.first;
-			//base_mouse_y = copy_paste_centre.second;
 
 			for (int i = 0; i < tiles_per_dimension; i++)
 			{
 				for (int j = 0; j < tiles_per_dimension; j++)
 				{
-					int i_ = i;
-					int j_ = j;
+					// Flip the tiles upside down
+					int i_ = i;// copy_selected_end.x - i;
+					int j_ = j;//copy_selected_end.y - j;
+
+					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
+						continue;
 
 
 					int x = 0, y = 0;
 					SDL_GetMouseState(&x, &y);
-
-
 
 					//x = copy_paste_base_position.first;
 				//	/y = -copy_paste_base_position.second;
@@ -1806,15 +1788,11 @@ int main(int, char**)
 					int index = i_ * tiles_per_dimension + (copy_selected_end.y - j);
 
 
-
-
-
-
 					quad q;
 
 					float half_width = -tiles_per_dimension * block_size / 2.0f;
 					float half_height = tiles_per_dimension * block_size / 2.0f;
-						
+
 					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
 					q.vertices[1].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
@@ -1824,22 +1802,18 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					//cout << copy_paste_centre.first << " " << copy_paste_centre.second << endl;
-
-					float diff_x = (base_mouse_x - copy_paste_base_position.first);// *zoom_factor;
-					float diff_y = (base_mouse_y - copy_paste_base_position.second);// *zoom_factor;
 
 
 
-					q.vertices[0].x += diff_x * 0.5* zoom_factor;
-					q.vertices[1].x += diff_x * 0.5 * zoom_factor;
-					q.vertices[2].x += diff_x * 0.5 * zoom_factor;
-					q.vertices[3].x += diff_x * 0.5 * zoom_factor;
+				//	q.vertices[0].x -= copy_paste_base_position.first * zoom_factor;//  *zoom_factor;// -half_width;
+				//	q.vertices[1].x -= copy_paste_base_position.first * zoom_factor;// *zoom_factor;// - half_width;
+				//	q.vertices[2].x -= copy_paste_base_position.first * zoom_factor;//  *zoom_factor;// - half_width;
+				//	q.vertices[3].x -= copy_paste_base_position.first * zoom_factor;//  *zoom_factor;// - half_width;
 
-					q.vertices[0].y -= diff_y * 0.5 * zoom_factor;
-					q.vertices[1].y -= diff_y * 0.5* zoom_factor;
-					q.vertices[2].y -= diff_y * 0.5 * zoom_factor;
-					q.vertices[3].y += diff_y * 0.5 *zoom_factor;
+					//q.vertices[0].y -= copy_paste_base_position.second * zoom_factor;// *0.5 * zoom_factor;// - half_height;
+					//q.vertices[1].y -= copy_paste_base_position.second * zoom_factor;// *0.5 * zoom_factor;// - half_height;
+					//q.vertices[2].y -= copy_paste_base_position.second * zoom_factor;// *0.5 * zoom_factor;// - half_height;
+					//q.vertices[3].y -= copy_paste_base_position.second * zoom_factor;// *0.5 * zoom_factor;// - half_height;
 
 
 
@@ -1850,78 +1824,6 @@ int main(int, char**)
 
 
 
-
-
-
-
-
-					//q.vertices[0].x += half_width * zoom_factor;
-					//q.vertices[1].x += half_width * zoom_factor;
-					//q.vertices[2].x += half_width * zoom_factor;
-					//q.vertices[3].x += half_width * zoom_factor;
-
-
-
-		/*			q.vertices[0].x += copy_paste_base_position.first *zoom_factor;
-					q.vertices[1].x += copy_paste_base_position.first *zoom_factor;
-					q.vertices[2].x += copy_paste_base_position.first *zoom_factor;
-					q.vertices[3].x += copy_paste_base_position.first *zoom_factor;*/
-
-					//q.vertices[0].y += diff_y * zoom_factor;
-					//q.vertices[1].y += diff_y * zoom_factor;
-					//q.vertices[2].y += diff_y * zoom_factor;
-					//q.vertices[3].y += diff_y * zoom_factor;
-
-
-					//q.vertices[0].y += io.DisplaySize.y - copy_paste_base_position.second;// *zoom_factor;
-					//q.vertices[1].y += io.DisplaySize.y - copy_paste_base_position.second;// *zoom_factor;
-					//q.vertices[2].y += io.DisplaySize.y - copy_paste_base_position.second;// *zoom_factor;
-					//q.vertices[3].y += io.DisplaySize.y - copy_paste_base_position.second;// *zoom_factor;
-
-
-
-
-
-
-
-
-					//q.vertices[0].y += diff_y * zoom_factor;
-					//q.vertices[1].y += diff_y * zoom_factor;
-					//q.vertices[2].y += diff_y * zoom_factor;
-					//q.vertices[3].y += diff_y * zoom_factor;
-
-
-					//cout << "mosue_diff " << mouse_diff_x << " " << mouse_diff_y << endl;
-
-
-					//q.vertices[0].x += mouse_diff_x *zoom_factor;
-					//q.vertices[1].x += mouse_diff_x *zoom_factor;
-					//q.vertices[2].x += mouse_diff_x *zoom_factor;
-					//q.vertices[3].x += mouse_diff_x *zoom_factor;
-
-					//q.vertices[0].x += half_width * zoom_factor;
-					//q.vertices[1].x += half_width * zoom_factor;
-					//q.vertices[2].x += half_width * zoom_factor;
-					//q.vertices[3].x += half_width * zoom_factor;
-
-
-
-
-
-
-
-
-
-										//q.vertices[0].y += copy_paste_base_position.second * zoom_factor;
-					//q.vertices[1].y += copy_paste_base_position.second * zoom_factor;
-					//q.vertices[2].y += copy_paste_base_position.second * zoom_factor;
-					//q.vertices[3].y += copy_paste_base_position.second * zoom_factor;
-
-
-					//q.vertices[0].y += mouse_diff_y * zoom_factor;
-					//q.vertices[1].y += mouse_diff_y * zoom_factor;
-					//q.vertices[2].y += mouse_diff_y * zoom_factor;
-					//q.vertices[3].y += mouse_diff_y * zoom_factor;
 
 
 					//q.vertices[0].y += half_height * zoom_factor;
@@ -1929,88 +1831,15 @@ int main(int, char**)
 					//q.vertices[2].y += half_height * zoom_factor;
 					//q.vertices[3].y += half_height * zoom_factor;
 
-					//q.vertices[0].x -= base_mouse_x;// *zoom_factor;
-					//q.vertices[1].x -= base_mouse_x;// *zoom_factor;
-					//q.vertices[2].x -= base_mouse_x;// *zoom_factor;
-					//q.vertices[3].x -= base_mouse_x;// *zoom_factor;
+					////q.vertices[0].x += copy_paste_base_position.first*zoom_factor;
+					////q.vertices[1].x += copy_paste_base_position.first * zoom_factor;
+					////q.vertices[2].x += copy_paste_base_position.first * zoom_factor;
+					////q.vertices[3].x += copy_paste_base_position.first * zoom_factor;
 
-					//q.vertices[0].x += half_width * zoom_factor;
-					//q.vertices[1].x += half_width * zoom_factor;
-					//q.vertices[2].x += half_width * zoom_factor;
-					//q.vertices[3].x += half_width * zoom_factor;
-
-
-					//q.vertices[0].y -= (io.DisplaySize.y - base_mouse_y);/// *zoom_factor;
-					//q.vertices[1].y -= (io.DisplaySize.y - base_mouse_y);// *zoom_factor;
-					//q.vertices[2].y -= (io.DisplaySize.y - base_mouse_y);// *zoom_factor;
-					//q.vertices[3].y -= (io.DisplaySize.y - base_mouse_y);// *zoom_factor;
-
-					//q.vertices[0].y -= half_height *zoom_factor;
-					//q.vertices[1].y -= half_height *zoom_factor;
-					//q.vertices[2].y -= half_height *zoom_factor;
-					//q.vertices[3].y -= half_height *zoom_factor;
-
-
-
-
-
-
-
-
-
-
-
-					//q.vertices[0].x -= base_mouse_position.first;
-					//q.vertices[1].x -= base_mouse_position.first;
-					//q.vertices[2].x -= base_mouse_position.first;
-					//q.vertices[3].x -= base_mouse_position.first;
-
-					//q.vertices[0].y -= base_mouse_position.second;
-					//q.vertices[1].y -= base_mouse_position.second;
-					//q.vertices[2].y -= base_mouse_position.second;
-					//q.vertices[3].y -= base_mouse_position.second;
-
-
-
-					//cout << copy_paste_base_position.first << " " << copy_paste_base_position.second << endl;
-
-
-
-					//q.vertices[0].x += copy_paste_base_position.first;// *0.5 * zoom_factor;// -half_width;
-					//q.vertices[1].x += copy_paste_base_position.first;// *0.5 * zoom_factor;// - half_width;
-					//q.vertices[2].x += copy_paste_base_position.first;// *0.5 * zoom_factor;// - half_width;
-					//q.vertices[3].x += copy_paste_base_position.first;// *0.5 * zoom_factor;// - half_width;
-
-					//q.vertices[0].y += copy_paste_base_position.second;// *0.5 * zoom_factor;// - half_height;
-					//q.vertices[1].y += copy_paste_base_position.second;// *0.5 * zoom_factor;// - half_height;
-					//q.vertices[2].y += copy_paste_base_position.second;// *0.5 * zoom_factor;// - half_height;
-					//q.vertices[3].y += copy_paste_base_position.second;// *0.5 * zoom_factor;// - half_height;
-
-
-					//q.vertices[0].x += half_width *zoom_factor;
-					//q.vertices[1].x += half_width*zoom_factor;
-					//q.vertices[2].x += half_width *zoom_factor;
-					//q.vertices[3].x += half_width *zoom_factor;
-
-					//q.vertices[0].y += half_height *zoom_factor;
-					//q.vertices[1].y += half_height *zoom_factor;
-					//q.vertices[2].y += half_height *zoom_factor;
-					//q.vertices[3].y += half_height *zoom_factor;
-
-
-
-					//q.vertices[0].x += copy_paste_base_position.first*zoom_factor;
-					//q.vertices[1].x += copy_paste_base_position.first * zoom_factor;
-					//q.vertices[2].x += copy_paste_base_position.first * zoom_factor;
-					//q.vertices[3].x += copy_paste_base_position.first * zoom_factor;
-
-					//q.vertices[0].y += copy_paste_base_position.second * zoom_factor;
-					//q.vertices[1].y += copy_paste_base_position.second * zoom_factor;
-					//q.vertices[2].y += copy_paste_base_position.second * zoom_factor;
-					//q.vertices[3].y += copy_paste_base_position.second * zoom_factor;
-
-					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
-						continue;
+					////q.vertices[0].y += copy_paste_base_position.second * zoom_factor;
+					////q.vertices[1].y += copy_paste_base_position.second * zoom_factor;
+					////q.vertices[2].y += copy_paste_base_position.second * zoom_factor;
+					////q.vertices[3].y += copy_paste_base_position.second * zoom_factor;
 
 
 					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
@@ -2021,6 +1850,16 @@ int main(int, char**)
 		}
 
 
+		glm::vec3 pos;
+		pos.x = copy_paste_end_position.first;
+		pos.y = copy_paste_end_position.second;
+
+		draw_circle_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor* (float)brush_size* block_size * 0.5f, 20);
+
+		pos.x = copy_paste_base_position.first;
+		pos.y = copy_paste_base_position.second;
+
+		draw_circle_line_loop(glm::vec3(0, 1, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor* (float)brush_size* block_size * 0.5f, 20);
 
 
 
