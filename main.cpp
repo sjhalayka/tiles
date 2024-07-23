@@ -1789,10 +1789,10 @@ int main(int, char**)
 
 
 
-					//q.vertices[0].y = q.vertices[0].y - io.DisplaySize.y;
-					//q.vertices[1].y = q.vertices[1].y - io.DisplaySize.y;
-					//q.vertices[2].y = q.vertices[2].y - io.DisplaySize.y;
-					//q.vertices[3].y = q.vertices[3].y - io.DisplaySize.y;
+					//q.vertices[0].y = io.DisplaySize.y - q.vertices[0].y;
+					//q.vertices[1].y = io.DisplaySize.y - q.vertices[1].y;
+					//q.vertices[2].y = io.DisplaySize.y - q.vertices[2].y;
+					//q.vertices[3].y = io.DisplaySize.y - q.vertices[3].y;
 
 	
 
