@@ -1640,7 +1640,7 @@ int main(int, char**)
 
 					// Flip the tiles upside down
 					int i_ = i;// copy_selected_end.x - i;
-					int j_ = j;//copy_selected_end.y - j;
+					int j_ = copy_selected_end.y - j;
 
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
@@ -1650,7 +1650,7 @@ int main(int, char**)
 					int x = 0, y = 0;
 					SDL_GetMouseState(&x, &y);
 
-					int index = i_ * tiles_per_dimension + (copy_selected_end.y - j);
+					int index = i_ * tiles_per_dimension + j_;// +(copy_selected_end.y - j);
 
 					quad q;
 
@@ -1683,7 +1683,7 @@ int main(int, char**)
 						copy_paste_base_position.first = q.vertices[1].x;
 						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
 					}
-
+					
 					if (q.vertices[1].y < copy_paste_base_position.second)
 					{
 						copy_paste_base_position.second = q.vertices[1].y;
@@ -1722,41 +1722,57 @@ int main(int, char**)
 					if (q.vertices[0].x > copy_paste_end_position.first)
 					{
 						copy_paste_end_position.first = q.vertices[0].x;
+						//copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+
 					}
 
 					if (q.vertices[0].y > copy_paste_base_position.second)
 					{
 						copy_paste_end_position.second = q.vertices[0].y;
+						//copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+
 					}
 
 					if (q.vertices[1].x > copy_paste_end_position.first)
 					{
 						copy_paste_end_position.first = q.vertices[1].x;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+
 					}
 
 					if (q.vertices[1].y > copy_paste_base_position.second)
 					{
 						copy_paste_end_position.second = q.vertices[1].y;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+
 					}
 
 					if (q.vertices[2].x > copy_paste_end_position.first)
 					{
 						copy_paste_end_position.first = q.vertices[2].x;
-					}
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
 
+					}
+					
 					if (q.vertices[2].y > copy_paste_base_position.second)
 					{
 						copy_paste_end_position.second = q.vertices[2].y;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+
 					}
 
 					if (q.vertices[3].x > copy_paste_end_position.first)
 					{
 						copy_paste_end_position.first = q.vertices[3].x;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+
 					}
 
 					if (q.vertices[3].y > copy_paste_base_position.second)
 					{
 						copy_paste_end_position.second = q.vertices[3].y;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+
 					}
 
 
