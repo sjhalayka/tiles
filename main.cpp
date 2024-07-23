@@ -1641,9 +1641,8 @@ int main(int, char**)
 			{
 				for (int j = 0; j < tiles_per_dimension; j++)
 				{
-					// Flip the tiles upside down
-					int i_ = i;// copy_selected_end.x - i;
-					int j_ = j;//copy_selected_end.y - j;
+					int i_ = i;
+					int j_ = j;
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
@@ -1651,14 +1650,9 @@ int main(int, char**)
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-//					int index = i_ * tiles_per_dimension + (copy_selected_end.y - j);
 					int index = i_ * tiles_per_dimension + (tiles_per_dimension - 1 - j_);
 
-
 					quad q;
-
-					float half_width = -tiles_per_dimension * block_size / 2.0f;
-					float half_height = tiles_per_dimension * block_size / 2.0f;
 
 					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
@@ -1739,9 +1733,11 @@ int main(int, char**)
 			{
 				for (int j = 0; j < tiles_per_dimension; j++)
 				{
-					// Flip the tiles upside down
-					int i_ = i;// copy_selected_end.x - i;
-					int j_ = j;//copy_selected_end.y - j;
+					int i_ = i;
+					int j_ = j;
+
+					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
+						continue;
 
 
 					int x, y;
@@ -1769,11 +1765,12 @@ int main(int, char**)
 					q.vertices[3].x += diff_x;
 					q.vertices[3].y += diff_y;
 
+					//glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+					//pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
 
 
 
-					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
-						continue;
 
 					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
