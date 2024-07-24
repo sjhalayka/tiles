@@ -1151,7 +1151,69 @@ int main(int, char**)
 		{
 			int base_mouse_x, base_mouse_y;
 			SDL_GetMouseState(&base_mouse_x, &base_mouse_y);
-//			base_mouse_y = io.DisplaySize.y - base_mouse_y;
+			base_mouse_y = io.DisplaySize.y - base_mouse_y;
+
+
+			copy_paste_base_position.first = block_size * tiles_per_dimension;
+			copy_paste_base_position.second = block_size * tiles_per_dimension;
+
+
+			for (int i = 0; i < tiles_per_dimension; i++)
+			{
+				for (int j = 0; j < tiles_per_dimension; j++)
+				{
+					int i_ = i;
+					int j_ = j;
+
+					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
+						continue;
+
+					int x, y;
+					SDL_GetMouseState(&x, &y);
+
+					int index = i_ * tiles_per_dimension + (tiles_per_dimension - 1 - j_);
+
+					quad q;
+
+					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[1].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[2].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+
+					if (q.vertices[0].x < copy_paste_base_position.first)
+						copy_paste_base_position.first = q.vertices[0].x;
+
+					if (q.vertices[0].y < copy_paste_base_position.second)
+						copy_paste_base_position.second = q.vertices[0].y;
+
+					if (q.vertices[1].x < copy_paste_base_position.first)
+						copy_paste_base_position.first = q.vertices[1].x;
+
+					if (q.vertices[1].y < copy_paste_base_position.second)
+						copy_paste_base_position.second = q.vertices[1].y;
+
+					if (q.vertices[2].x < copy_paste_base_position.first)
+						copy_paste_base_position.first = q.vertices[2].x;
+
+					if (q.vertices[2].y < copy_paste_base_position.second)
+						copy_paste_base_position.second = q.vertices[2].y;
+
+					if (q.vertices[3].x < copy_paste_base_position.first)
+						copy_paste_base_position.first = q.vertices[3].x;
+
+					if (q.vertices[3].y < copy_paste_base_position.second)
+						copy_paste_base_position.second = q.vertices[3].y;
+				}
+			}
+
+			copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+
+
+
 
 			float diff_x = base_mouse_x - copy_paste_base_position.first;
 			float diff_y = base_mouse_y - copy_paste_base_position.second;
@@ -1188,6 +1250,8 @@ int main(int, char**)
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
 
+					//cout << diff_x << " " << diff_y << endl;
+
 					q.vertices[0].x += diff_x;
 					q.vertices[0].y += diff_y;
 
@@ -1223,7 +1287,8 @@ int main(int, char**)
 
 				if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(pair_index))
 				{
-					pair<float, float> mouse_plus(pair_index.first - (float)copy_paste_relative_index.first, pair_index.second - (float)copy_paste_relative_index.second);
+					pair<float, float> mouse_plus(pair_index.first + (float)copy_paste_relative_index.first, pair_index.second + (float)copy_paste_relative_index.second);
+
 
 					cout << "pair_index: " << pair_index.first << " " << pair_index.second << endl;
 					cout << "copy_paste_mouse_position_index: " << copy_paste_mouse_position_index.first << " " << copy_paste_mouse_position_index.second << endl;
@@ -1235,22 +1300,22 @@ int main(int, char**)
 
 					size_t copy_index = mouse_plus.first * tiles_per_dimension + mouse_plus.second;
 
-					index = (size_t)glm::clamp((float)index, 0.0f, tiles_per_dimension - 1.0f);
+				//	index = (size_t)glm::clamp((float)index, 0.0f, tiles_per_dimension - 1.0f);
 
-					copy_index = (size_t)glm::clamp((float)copy_index, 0.0f, tiles_per_dimension - 1.0f);
-
-
+				//	copy_index = (size_t)glm::clamp((float)copy_index, 0.0f, tiles_per_dimension - 1.0f);
 
 
 
-//					background_tiles[index].uv_min = ImVec2(0, 0);
-//					background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
 
 
-					background_tiles[index].uv_min.x = copy_background_tiles[copy_index].uv_min.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
-					background_tiles[index].uv_min.y = copy_background_tiles[copy_index].uv_min.y;// +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
-					background_tiles[index].uv_max.x = copy_background_tiles[copy_index].uv_max.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
-					background_tiles[index].uv_max.y = copy_background_tiles[copy_index].uv_max.y;//  +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
+					background_tiles[index].uv_min = ImVec2(0, 0);
+					background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
+
+
+					//background_tiles[index].uv_min.x = copy_background_tiles[copy_index].uv_min.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
+					//background_tiles[index].uv_min.y = copy_background_tiles[copy_index].uv_min.y;// +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
+					//background_tiles[index].uv_max.x = copy_background_tiles[copy_index].uv_max.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
+					//background_tiles[index].uv_max.y = copy_background_tiles[copy_index].uv_max.y;//  +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
 
 
 					//					background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
@@ -1607,8 +1672,6 @@ int main(int, char**)
 		}
 		else if (tool == TOOL_PAINT_PASTE)
 		{
-
-
 			size_t rows = tiles_per_dimension;
 			size_t cols = tiles_per_dimension;
 
