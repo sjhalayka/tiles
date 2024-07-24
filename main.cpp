@@ -7,8 +7,8 @@ glm::vec3 selected_end;
 
 vector<pair<size_t, size_t>> copy_selected_indices;
 vector<background_tile> copy_background_tiles;
-glm::vec3 copy_selected_start(0, 0, 0);
-glm::vec3 copy_selected_end(0, 0, 0);
+//glm::vec3 copy_selected_start(0, 0, 0);
+//glm::vec3 copy_selected_end(0, 0, 0);
 
 Mat copy_img(1, 1, CV_8UC1);
 
@@ -349,6 +349,7 @@ int main(int, char**)
 
 					int mouse_x = 0, mouse_y = 0;
 					SDL_GetMouseState(&mouse_x, &mouse_y);
+					mouse_y = io.DisplaySize.y - mouse_y;
 
 					copy_paste_mouse_position.first = mouse_x;
 					copy_paste_mouse_position.second = mouse_y;
@@ -365,19 +366,12 @@ int main(int, char**)
 
 					copy_background_tiles = background_tiles;
 
-					copy_selected_start.x = 0;//FLT_MAX;
-					copy_selected_start.y = 0;//FLT_MAX;
-
-					copy_selected_end.x = tiles_per_dimension - 1;// -FLT_MAX;
-					copy_selected_end.y = tiles_per_dimension - 1;// -FLT_MAX;
-
 					for (size_t i = 0; i < copy_selected_indices.size(); i++)
 					{
 						pair<size_t, size_t> p = copy_selected_indices[i];
 
 						// flip
-						p.second = copy_selected_end.y - p.second;
-
+						p.second = tiles_per_dimension - 1 - p.second;
 
 						copy_selected_indices[i] = p;
 
@@ -1155,14 +1149,20 @@ int main(int, char**)
 
 		else if (tool == TOOL_PAINT_PASTE && !hovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
 		{
-			int x, y;
-			SDL_GetMouseState(&x, &y);
+			int base_mouse_x, base_mouse_y;
+			SDL_GetMouseState(&base_mouse_x, &base_mouse_y);
+			base_mouse_y = io.DisplaySize.y - base_mouse_y;
+
+			float diff_x = base_mouse_x - copy_paste_base_position.first;
+			float diff_y = base_mouse_y - copy_paste_base_position.second;
+
 
 			for (int i = 0; i < tiles_per_dimension; i++)
 			{
 				for (int j = 0; j < tiles_per_dimension; j++)
 				{
-
+					int x, y;
+					SDL_GetMouseState(&x, &y);
 
 					unsigned char colour = copy_img.at<unsigned char>(j, i);
 
@@ -1187,17 +1187,23 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					q.vertices[0].x += half_width * zoom_factor;
-					q.vertices[1].x += half_width * zoom_factor;
-					q.vertices[2].x += half_width * zoom_factor;
-					q.vertices[3].x += half_width * zoom_factor;
 
-					q.vertices[0].y += half_height * zoom_factor;
-					q.vertices[1].y += half_height * zoom_factor;
-					q.vertices[2].y += half_height * zoom_factor;
-					q.vertices[3].y += half_height * zoom_factor;
+					q.vertices[0].x += diff_x;
+					q.vertices[0].y += diff_y;
+
+					q.vertices[1].x += diff_x;
+					q.vertices[1].y += diff_y;
+
+					q.vertices[2].x += diff_x;
+					q.vertices[2].y += diff_y;
+
+					q.vertices[3].x += diff_x;
+					q.vertices[3].y += diff_y;
+
+
 
 					glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
 
 					pair<size_t, size_t> centre_index = make_pair((-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor)), (-zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor)));
 
@@ -1209,7 +1215,6 @@ int main(int, char**)
 
 			to_draw = paste_to_draw;
 
-
 			for (set<pair<size_t, size_t>>::const_iterator ci = to_draw.begin(); ci != to_draw.end(); ci++)
 			{
 				pair<size_t, size_t> pair_index = make_pair(ci->first, ci->second);
@@ -1218,11 +1223,7 @@ int main(int, char**)
 
 				if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(pair_index))
 				{
-					pair<size_t, size_t> mouse_plus(pair_index.first - (float)copy_paste_relative_index.first, pair_index.second - (float)copy_paste_relative_index.second);
-
-					// todo: make it so that copy_index is equal to index when the offset is based on pair_index,
-					// and not copy_paste_mouse_position_index
-
+					pair<float, float> mouse_plus(pair_index.first - (float)copy_paste_relative_index.first, pair_index.second - (float)copy_paste_relative_index.second);
 
 					cout << "pair_index: " << pair_index.first << " " << pair_index.second << endl;
 					cout << "copy_paste_mouse_position_index: " << copy_paste_mouse_position_index.first << " " << copy_paste_mouse_position_index.second << endl;
@@ -1234,9 +1235,16 @@ int main(int, char**)
 
 					size_t copy_index = mouse_plus.first * tiles_per_dimension + mouse_plus.second;
 
+					index = (size_t)glm::clamp((float)index, 0.0f, tiles_per_dimension - 1.0f);
 
-					//background_tiles[index].uv_min = ImVec2(0, 0);
-					//background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
+					copy_index = (size_t)glm::clamp((float)copy_index, 0.0f, tiles_per_dimension - 1.0f);
+
+
+
+
+
+//					background_tiles[index].uv_min = ImVec2(0, 0);
+//					background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
 
 
 					background_tiles[index].uv_min.x = copy_background_tiles[copy_index].uv_min.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
@@ -1601,10 +1609,8 @@ int main(int, char**)
 		{
 
 
-			size_t rows = tiles_per_dimension;//1 + (copy_selected_end.x - copy_selected_start.x);
-			size_t cols = tiles_per_dimension;// 1 + (copy_selected_end.y - copy_selected_start.y);
-
-			//cout << rows << " " << cols << endl;
+			size_t rows = tiles_per_dimension;
+			size_t cols = tiles_per_dimension;
 
 			resize(copy_img, copy_img, cv::Size(rows, cols), 0, 0, cv::INTER_NEAREST);
 
@@ -1625,16 +1631,14 @@ int main(int, char**)
 				}
 			}
 
-			copy_paste_base_position.first = block_size * tiles_per_dimension / 2.0;
-			copy_paste_base_position.second = block_size * tiles_per_dimension / 2.0;
 
 
 
 
 
 
-
-
+			copy_paste_base_position.first = block_size * tiles_per_dimension / 2.0f;
+			copy_paste_base_position.second = block_size * tiles_per_dimension / 2.0f;
 
 
 			for (int i = 0; i < tiles_per_dimension; i++)
@@ -1736,6 +1740,9 @@ int main(int, char**)
 					int i_ = i;
 					int j_ = j;
 
+					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
+						continue;
+
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
@@ -1761,14 +1768,12 @@ int main(int, char**)
 					q.vertices[3].x += diff_x;
 					q.vertices[3].y += diff_y;
 
-					//glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+					glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
 
-					//pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
+					pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
 
 
 
-					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
-						continue;
 
 					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
