@@ -1752,6 +1752,11 @@ int main(int, char**)
 			}
 		}
 
+		glm::vec3 pos(copy_paste_base_position.first, copy_paste_base_position.second, 0.0f);
+		draw_circle_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor* (float)brush_size* block_size * 0.5f, 20);
+
+
+
 
 
 
