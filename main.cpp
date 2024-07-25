@@ -1258,7 +1258,7 @@ int main(int, char**)
 
 
 
-			copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+			copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+(copy_paste_average_position.first + diff_x) / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_average_position.second + diff_y) / (block_size * zoom_factor));
 
 
 
@@ -1852,7 +1852,7 @@ int main(int, char**)
 			copy_paste_average_position.second = (copy_paste_base_position.second + copy_paste_end_position.second) * 0.5f;
 
 
-			copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+			copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+(copy_paste_average_position.first + diff_x) / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_average_position.second + diff_y) / (block_size * zoom_factor));
 
 
 
@@ -1863,8 +1863,8 @@ int main(int, char**)
 			SDL_GetMouseState(&base_mouse_x, &base_mouse_y);
 			base_mouse_y = io.DisplaySize.y - base_mouse_y;
 
-			diff_x = base_mouse_x - copy_paste_base_position.first;
-			diff_y = base_mouse_y - copy_paste_base_position.second;
+			diff_x = base_mouse_x - copy_paste_average_position.first;
+			diff_y = base_mouse_y - copy_paste_average_position.second;
 
 			for (int i = 0; i < tiles_per_dimension; i++)
 			{
@@ -1914,21 +1914,21 @@ int main(int, char**)
 		pos.x += diff_x;
 		pos.y += diff_y;
 
-		draw_circle_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor* (float)brush_size* block_size * 0.5f, 20);
+		draw_circle_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
 
 		pos = glm::vec3(copy_paste_end_position.first, copy_paste_end_position.second, 0.0f);
 		pos.x += diff_x;
 		pos.y += diff_y;
 
 
-		draw_circle_line_loop(glm::vec3(0, 1, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor* (float)brush_size* block_size * 0.5f, 20);
+		draw_circle_line_loop(glm::vec3(0, 1, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
 
 		pos = glm::vec3(copy_paste_average_position.first, copy_paste_average_position.second, 0.0f);
 		pos.x += diff_x;
 		pos.y += diff_y;
 
 
-		draw_circle_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor* (float)brush_size* block_size * 0.5f, 20);
+		draw_circle_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
 
 
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
