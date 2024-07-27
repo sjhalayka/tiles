@@ -7,8 +7,8 @@ glm::vec3 selected_end;
 
 vector<pair<size_t, size_t>> copy_selected_indices;
 vector<background_tile> copy_background_tiles;
-//glm::vec3 copy_selected_start(0, 0, 0);
-//glm::vec3 copy_selected_end(0, 0, 0);
+glm::vec3 copy_selected_start(0, 0, 0);
+glm::vec3 copy_selected_end(0, 0, 0);
 
 Mat copy_img(1, 1, CV_8UC1);
 
@@ -23,17 +23,9 @@ vector<vector<background_tile>> background_tiles_backups;
 pair<size_t, size_t> copy_paste_mouse_position_index;
 pair<size_t, size_t> copy_paste_mouse_position;
 pair<float, float> copy_paste_base_position(36 * tiles_per_dimension / 2.0, 36 * tiles_per_dimension / 2.0);
-pair<float, float> copy_paste_end_position(0, 0);
-pair<float, float> copy_paste_average_position;
-
-
 pair<float, float> copy_paste_relative_index;
 
 
-
-
-
-float diff_x = 0, diff_y = 0;
 
 
 
@@ -97,7 +89,7 @@ int main(int, char**)
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 24);
 	SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 8);
 	SDL_WindowFlags window_flags = (SDL_WindowFlags)(SDL_WINDOW_OPENGL | SDL_WINDOW_MAXIMIZED | SDL_WINDOW_RESIZABLE | SDL_WINDOW_ALLOW_HIGHDPI);
-	SDL_Window* window = SDL_CreateWindow("World Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1280, 720, window_flags);
+	SDL_Window* window = SDL_CreateWindow("World Editor", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, 1920, 1080, window_flags);
 	if (window == nullptr)
 	{
 		printf("Error: SDL_CreateWindow(): %s\n", SDL_GetError());
@@ -283,9 +275,15 @@ int main(int, char**)
 	int tool = 0;
 
 	int brush_size = 20;
+	int block_size = 0;
+
+
 
 
 	vector<int> prev_tools;
+
+
+	bool show_interface = true;
 
 
 	while (!done)
@@ -333,6 +331,8 @@ int main(int, char**)
 			}
 
 
+			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_i)
+				show_interface = !show_interface;
 
 			if (event.type == SDL_KEYDOWN && event.key.keysym.sym == SDLK_c)
 			{
@@ -357,7 +357,6 @@ int main(int, char**)
 
 					int mouse_x = 0, mouse_y = 0;
 					SDL_GetMouseState(&mouse_x, &mouse_y);
-					mouse_y = io.DisplaySize.y - mouse_y;
 
 					copy_paste_mouse_position.first = mouse_x;
 					copy_paste_mouse_position.second = mouse_y;
@@ -374,12 +373,19 @@ int main(int, char**)
 
 					copy_background_tiles = background_tiles;
 
+					copy_selected_start.x = 0;//FLT_MAX;
+					copy_selected_start.y = 0;//FLT_MAX;
+
+					copy_selected_end.x = tiles_per_dimension - 1;// -FLT_MAX;
+					copy_selected_end.y = tiles_per_dimension - 1;// -FLT_MAX;
+
 					for (size_t i = 0; i < copy_selected_indices.size(); i++)
 					{
 						pair<size_t, size_t> p = copy_selected_indices[i];
 
 						// flip
-						p.second = tiles_per_dimension - 1 - p.second;
+						p.second = copy_selected_end.y - p.second;
+
 
 						copy_selected_indices[i] = p;
 
@@ -464,575 +470,710 @@ int main(int, char**)
 			}
 		}
 
-
-
-		// Start the Dear ImGui frame
-		ImGui_ImplOpenGL3_NewFrame();
-		ImGui_ImplSDL2_NewFrame();
-		ImGui::NewFrame();
-
-		// Only pan image if not hovering over an ImGui window
-		bool hovered = false;
-
-		ImGui::Begin("image", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
-
-		if (ImGui::IsWindowHovered())
-			hovered = true;
-
-		const ImVec2 img_size = { float(main_tiles_width), float(main_tiles_height) };
-
-		static char str0[128] = "36";
-		ImGui::InputText("Tile size", str0, IM_ARRAYSIZE(str0));
-
-		istringstream iss(str0);
-		int block_size = 0;
-		iss >> block_size;
-
+		if (show_interface)
 		{
-			ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
-			ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
-			ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-			ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
 
-			ImGui::Image((void*)(intptr_t)main_tiles_texture, img_size, uv_min, uv_max, tint_col, border_col);
-		}
+			// Start the Dear ImGui frame
+			ImGui_ImplOpenGL3_NewFrame();
+			ImGui_ImplSDL2_NewFrame();
+			ImGui::NewFrame();
 
-		const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
-		const ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
-		const ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
+			// Only pan image if not hovering over an ImGui window
+			bool hovered = false;
 
-		//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
-		//cout << img_block.x << " " << img_block.y << endl;
+			ImGui::Begin("image", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
+			if (ImGui::IsWindowHovered())
+				hovered = true;
 
-		bool left_clicked = false;
-		bool right_clicked = false;
+			const ImVec2 img_size = { float(main_tiles_width), float(main_tiles_height) };
 
-		if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-		{
-			left_clicked = true;
-		}
+			static char str0[128] = "36";
+			ImGui::InputText("Tile size", str0, IM_ARRAYSIZE(str0));
 
-		if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
-		{
-			right_clicked = true;
-		}
+			istringstream iss(str0);
 
-		ImGui::End();
+			iss >> block_size;
 
-
-
-
-
-		ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
-
-		if (ImGui::IsWindowHovered())
-			hovered = true;
-
-
-		ImGui::RadioButton("Circle Paint", &tool, TOOL_PAINT);
-		ImGui::RadioButton("Square Paint", &tool, TOOL_PAINT_SQUARE);
-		ImGui::RadioButton("Custom Paint", &tool, TOOL_PAINT_CUSTOM);
-		ImGui::RadioButton("Copy/Paste Paint", &tool, TOOL_PAINT_PASTE);
-
-		ImGui::RadioButton("Select", &tool, TOOL_SELECT);
-		ImGui::RadioButton("Select Add", &tool, TOOL_SELECT_ADD);
-		ImGui::RadioButton("Select Subtract", &tool, TOOL_SELECT_SUBTRACT);
-
-		static char str1[128] = "5";
-		ImGui::InputText("Brush size", str1, IM_ARRAYSIZE(str1));
-
-		istringstream iss1(str1);
-		iss1 >> brush_size;
-
-
-		ImGui::End();
-
-
-
-
-
-
-
-
-
-
-
-		ImGui::Begin("Left Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
-
-		if (ImGui::IsWindowHovered())
-			hovered = true;
-
-		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			left_add_button_func();
-
-		for (int i = 0; i < left_strings.size(); i++)
-		{
-			const ImVec2 thumbnail_img_size = { float(block_size), float(block_size) };
-
-			if (left_clicked && i == left_selected)
 			{
-				size_t x = size_t(mousePositionRelative.x) % block_size;
-				size_t y = size_t(mousePositionRelative.y) % block_size;
+				ImVec2 uv_min = ImVec2(0.0f, 0.0f);                 // Top-left
+				ImVec2 uv_max = ImVec2(1.0f, 1.0f);                 // Lower-right
+				ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+				ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 0.5f); // 50% opaque white
 
-				float u_start = (mousePositionRelative.x - x) / img_size.x;
-				float v_start = (mousePositionRelative.y - y) / img_size.y;
-
-				float u_end = block_size / img_size.x + u_start;
-				float v_end = block_size / img_size.y + v_start;
-
-				left_uv_mins[i] = ImVec2(u_start, v_start);
-				left_uv_maxs[i] = ImVec2(u_end, v_end);
-
-				//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
-				//cout << img_block.x << " " << img_block.y << endl;
-				//left_indices[i] = img_block;
+				ImGui::Image((void*)(intptr_t)main_tiles_texture, img_size, uv_min, uv_max, tint_col, border_col);
 			}
 
-			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-			const ImVec4 selected_border_col = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
-			const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+			const ImVec2 mousePositionAbsolute = ImGui::GetMousePos();
+			const ImVec2 screenPositionAbsolute = ImGui::GetItemRectMin();
+			const ImVec2 mousePositionRelative = ImVec2(mousePositionAbsolute.x - screenPositionAbsolute.x, mousePositionAbsolute.y - screenPositionAbsolute.y);
 
-			if (i == left_selected)
-				ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, selected_border_col);
-			else
-				ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, border_col);
+			//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+			//cout << img_block.x << " " << img_block.y << endl;
+
+
+			bool left_clicked = false;
+			bool right_clicked = false;
 
 			if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-				left_selected = i;
-
-
-
-			ImGui::SameLine();
-
-			if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))                         // Buttons return true when clicked (most widgets return true when edited/activated)
-				left_remove_button_func(i);
-
-			ImGui::SameLine();
-
-			string x = "Weight " + to_string(i);
-
-			ImGui::PushItemWidth(80);
-			ImGui::InputText(x.c_str(), &left_strings[i]);
-			ImGui::PopItemWidth();
-		}
-
-
-
-		ImGui::End();
-
-
-
-
-
-
-		ImGui::Begin("Right Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
-
-		if (ImGui::IsWindowHovered())
-			hovered = true;
-
-		if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-			right_add_button_func();
-
-		for (int i = 0; i < right_strings.size(); i++)
-		{
-			const ImVec2 thumbnail_img_size = { float(block_size), float(block_size) };
-
-			if (right_clicked && i == right_selected)
 			{
-				size_t x = size_t(mousePositionRelative.x) % block_size;
-				size_t y = size_t(mousePositionRelative.y) % block_size;
-
-				float u_start = (mousePositionRelative.x - x) / img_size.x;
-				float v_start = (mousePositionRelative.y - y) / img_size.y;
-
-				float u_end = block_size / img_size.x + u_start;
-				float v_end = block_size / img_size.y + v_start;
-
-				right_uv_mins[i] = ImVec2(u_start, v_start);
-				right_uv_maxs[i] = ImVec2(u_end, v_end);
+				left_clicked = true;
 			}
 
-			const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
-			const ImVec4 selected_border_col = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
-			const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
-
-			if (i == right_selected)
-				ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, selected_border_col);
-			else
-				ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, border_col);
-
-			if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-				right_selected = i;
-
-			ImGui::SameLine();
-
-			if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))
-				right_remove_button_func(i);
-
-			ImGui::SameLine();
-
-			string x = "Weight " + to_string(i);
-
-			ImGui::PushItemWidth(80);
-			ImGui::InputText(x.c_str(), &right_strings[i]);
-			ImGui::PopItemWidth();
-
-
-		}
-
-
-		ImGui::End();
-
-
-
-
-
-
-		// Rendering
-		ImGui::Render();
-
-		if (!hovered)
-		{
-			if (last_mousewheel < 0)
-				zoom_factor *= 0.5;
-			else if (last_mousewheel > 0)
-				zoom_factor *= 2.0;
-
-			if (last_mousewheel != 0)
+			if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Right))
 			{
-
-
-
-				//int x, y;
-				//SDL_GetMouseState(&x, &y);
-
-				//float win_x = x+ window_w / 2.0 - image_anchor.x;// / 2.0;
-				//float win_y = y + window_h / 2.0 - image_anchor.y;// / 2.0;
-
-				//win_x /= 36.0f * float(tiles_per_dimension);
-				//win_y /= 36.0f * float(tiles_per_dimension);
-
-
-
-				//win_x *= zoom_factor;
-				//win_y *= zoom_factor;
-
-				//win_x = glm::clamp(win_x, 0.0f, 1.0f);
-				//win_x = glm::clamp(win_x, 0.0f, 1.0f);
-
-
-
-
-
-				//view_focus.x = win_x;
-				//view_focus.y = win_y;
-
-
-				glm::vec3 view_focus(0.5, 0.5, 0.0);
-
-				ImVec2 zoomed_image_anchor = image_anchor;
-
-				zoomed_image_anchor.x /= zoom_factor;
-				zoomed_image_anchor.y /= zoom_factor;
-
-
-
-				int mouse_x, mouse_y;
-				SDL_GetMouseState(&mouse_x, &mouse_y);
-
-				ImVec2 c = ImVec2(-zoomed_image_anchor.x / (block_size)+mouse_x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - mouse_y) / (block_size * zoom_factor));
-
-
-
-				float x = image_anchor.x * 0.5 + c.x * block_size;// zoomed_image_anchor.x + int(c.x) * block_size;
-				float y = image_anchor.y * 0.5 + c.y * block_size;// zoomed_image_anchor.y + int(c.y) * block_size;
-
-
-				complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-				complex<float> v1w(static_cast<float>(x), static_cast<float>(y + block_size));
-				complex<float> v2w(static_cast<float>(x + block_size), static_cast<float>(y + block_size));
-				complex<float> v3w(static_cast<float>(x + block_size), static_cast<float>(y));
-
-				v0w.real(v0w.real() * zoom_factor);
-				v0w.imag(v0w.imag() * zoom_factor);
-				v1w.real(v1w.real() * zoom_factor);
-				v1w.imag(v1w.imag() * zoom_factor);
-				v2w.real(v2w.real() * zoom_factor);
-				v2w.imag(v2w.imag() * zoom_factor);
-				v3w.real(v3w.real() * zoom_factor);
-				v3w.imag(v3w.imag() * zoom_factor);
-
-				quad q;
-				q.vertices[0].x = v0w.real();
-				q.vertices[0].y = v0w.imag();
-				q.vertices[1].x = v1w.real();
-				q.vertices[1].y = v1w.imag();
-				q.vertices[2].x = v2w.real();
-				q.vertices[2].y = v2w.imag();
-				q.vertices[3].x = v3w.real();
-				q.vertices[3].y = v3w.imag();
-
-				glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
-
-
-
-				quad_centre /= block_size * tiles_per_dimension;
-
-
-				//cout << quad_centre.x << " " << quad_centre.y << " " << endl;
-
-				//draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
-
-
-
-				view_focus.x = glm::clamp(quad_centre.x, 0.0f, 1.0f);
-				view_focus.y = glm::clamp(quad_centre.y, 0.0f, 1.0f);
-
-
-				//view_focus.x = quad_centre.x / (window_w);
-				//view_focus.y = quad_centre.y / (window_h);
-
-
-
-				//ImVec2 zoomed_image_anchor = image_anchor;
-
-				//zoomed_image_anchor.x /= zoom_factor;
-				//zoomed_image_anchor.y /= zoom_factor;
-
-				//int mouse_x, mouse_y;
-				//SDL_GetMouseState(&mouse_x, &mouse_y);
-
-
-				//ImVec2 c = ImVec2(-zoomed_image_anchor.x / (block_size)+mouse_x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - mouse_y) / (block_size * zoom_factor));
-
-				// float x = zoomed_image_anchor.x  + int(c.x) * block_size;
-				// float y = zoomed_image_anchor.y  + int(c.y) * block_size;
-
-
-				//x /= block_size * tiles_per_dimension;
-				//y /= block_size * tiles_per_dimension;
-
-				//x += 1;
-				//x /= 2;
-				//y += 1;
-				//y /= 2;
-
-
-
-
-
-
-
-				//glm::vec3 centre;
-				//centre.x = window_w / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
-				//centre.y = window_h / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
-
-				//centre.x += image_anchor.x * zoom_factor;
-				//centre.y += image_anchor.y * zoom_factor;
-
-				//centre /= 36.0f * float(tiles_per_dimension);
-
-				////cout << centre.x << " " << centre.y << endl;
-
-				//view_focus.x = centre.x;// / (36.0f * float(tiles_per_dimension));// / 36.0f * float(tiles_per_dimension) / 2.0;
-				//view_focus.y = centre.y;// / (36.0f * float(tiles_per_dimension));// / 36.0f * float(tiles_per_dimension) / 2.0; */
-
-				//
-
-				//int x, y;
-				//SDL_GetMouseState(&x, &y);
-
-				//float x1 = (float(window_w) / 2.0 - pixels_per_tile * float(tiles_per_dimension) / 2.0f);
-				//float y1 = (float(window_h) / 2.0 - pixels_per_tile * float(tiles_per_dimension) / 2.0f);
-
-
-
-				//x1 += 0.5*image_anchor.x; // top left corner of image
-				//y1 -= 0.5*image_anchor.y;
-
-				//x1 /= pixels_per_tile * float(tiles_per_dimension);
-				//y1 /= pixels_per_tile * float(tiles_per_dimension);
-
-				//cout << x1 << "  " << y1 << endl;
-
-				//float x1 = x0 + pixels_per_tile * float(tiles_per_dimension) / 2.0; // bottom right corner of image
-				//float y1 = y0 + pixels_per_tile * float(tiles_per_dimension) / 2.0;
-
-
-
-
-				//x1 = glm::clamp(x1, 0.0f, 1.0f);
-				//y1 = glm::clamp(y1, 0.0f, 1.0f);
-
-
-				//view_focus.x = x1;// / (tiles_per_dimension * block_size);
-				//view_focus.y = y1;// / (tiles_per_dimension * block_size);
-				//view_focus.x = glm::clamp(view_focus.x, 0.0f, 1.0f);
-				//view_focus.y = glm::clamp(view_focus.y, 0.0f, 1.0f);
-
-				//float win_x = x + window_w / 2.0; // / 2.0 + image_anchor.x / 2.0;// / zoom_factor;
-				//float win_y = y + window_h / 2.0; // / 2.0 + image_anchor.y / 2.0;// / zoom_factor;
-
-				//win_x /= -main_tiles_width;// tiles_per_dimension* block_size;
-				//win_y /= main_tiles_height;// tiles_per_dimension* block_size;
-
-				//win_x = glm::clamp(win_x, 0.0f, 1.0f);
-				//win_y = glm::clamp(win_y, 0.0f, 1.0f);
-
-//				win_x /=   float(tiles_per_dimension);
-//				win_y /=  float(tiles_per_dimension);
-
-				//view_focus.x = window_w / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
-				//centre.y = window_h / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
-
-				//centre.x += image_anchor.x * zoom_factor;
-				//centre.y += image_anchor.y * zoom_factor;
-
-
-				//view_focus.x = x1;// image_anchor.x / main_tiles_width;// / (tiles_per_dimension * block_size); ;// background_tiles[index].tile_size);
-				//view_focus.y = y1; // image_anchor.y / main_tiles_height;// / (tiles_per_dimension * block_size);// background_tiles[index].tile_size);
-
-
-				image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * view_focus.x;
-				image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * view_focus.y;
+				right_clicked = true;
 			}
-		}
 
-		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
-		{
-			ImVec2 motion = ImGui::GetMouseDragDelta();
-			image_anchor.x += motion.x;
-			image_anchor.y += -motion.y;
-
-			ImGui::ResetMouseDragDelta();
-		}
+			ImGui::End();
 
 
 
-		ImVec2 zoomed_image_anchor = image_anchor;
-
-		zoomed_image_anchor.x /= zoom_factor;
-		zoomed_image_anchor.y /= zoom_factor;
 
 
+			ImGui::Begin("Tools", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
 
-		if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
-		{
-			int x, y;
-			SDL_GetMouseState(&x, &y);
-
-			selected_end = glm::vec3((float)x, (float)y, 0);
-		}
+			if (ImGui::IsWindowHovered())
+				hovered = true;
 
 
-		set<pair<size_t, size_t>> to_draw;
-		set<pair<size_t, size_t>> custom_to_draw;
-		set<pair<size_t, size_t>> paste_to_draw;
+			ImGui::RadioButton("Circle Paint", &tool, TOOL_PAINT);
+			ImGui::RadioButton("Square Paint", &tool, TOOL_PAINT_SQUARE);
+			ImGui::RadioButton("Custom Paint", &tool, TOOL_PAINT_CUSTOM);
+			ImGui::RadioButton("Copy/Paste Paint", &tool, TOOL_PAINT_PASTE);
+
+			ImGui::RadioButton("Select", &tool, TOOL_SELECT);
+			ImGui::RadioButton("Select Add", &tool, TOOL_SELECT_ADD);
+			ImGui::RadioButton("Select Subtract", &tool, TOOL_SELECT_SUBTRACT);
+
+			static char str1[128] = "5";
+			ImGui::InputText("Brush size", str1, IM_ARRAYSIZE(str1));
+
+			istringstream iss1(str1);
+			iss1 >> brush_size;
 
 
-		// Paint using left mouse button
-		if ((tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE || tool == TOOL_PAINT_CUSTOM) && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
-		{
-			vector<float> weights;
-			float total = 0;
+			ImGui::End();
+
+
+
+
+
+
+
+
+
+
+
+			ImGui::Begin("Left Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
+
+			if (ImGui::IsWindowHovered())
+				hovered = true;
+
+			if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				left_add_button_func();
 
 			for (int i = 0; i < left_strings.size(); i++)
 			{
-				const float weight = stof(left_strings[i]);
-				weights.push_back(weight);
-				total += weight;
+				const ImVec2 thumbnail_img_size = { float(block_size), float(block_size) };
+
+				if (left_clicked && i == left_selected)
+				{
+					size_t x = size_t(mousePositionRelative.x) % block_size;
+					size_t y = size_t(mousePositionRelative.y) % block_size;
+
+					float u_start = (mousePositionRelative.x - x) / img_size.x;
+					float v_start = (mousePositionRelative.y - y) / img_size.y;
+
+					float u_end = block_size / img_size.x + u_start;
+					float v_end = block_size / img_size.y + v_start;
+
+					left_uv_mins[i] = ImVec2(u_start, v_start);
+					left_uv_maxs[i] = ImVec2(u_end, v_end);
+
+					//ImVec2 img_block = ImVec2(floor(mousePositionRelative.x / block_size), floor(mousePositionRelative.y / block_size));
+					//cout << img_block.x << " " << img_block.y << endl;
+					//left_indices[i] = img_block;
+				}
+
+				const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+				const ImVec4 selected_border_col = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+				const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+				if (i == left_selected)
+					ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, selected_border_col);
+				else
+					ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, left_uv_mins[i], left_uv_maxs[i], tint_col, border_col);
+
+				if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+					left_selected = i;
+
+
+
+				ImGui::SameLine();
+
+				if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))                         // Buttons return true when clicked (most widgets return true when edited/activated)
+					left_remove_button_func(i);
+
+				ImGui::SameLine();
+
+				string x = "Weight " + to_string(i);
+
+				ImGui::PushItemWidth(80);
+				ImGui::InputText(x.c_str(), &left_strings[i]);
+				ImGui::PopItemWidth();
 			}
 
-			if (total != 0.0f && total != -0.0f)
+
+
+			ImGui::End();
+
+
+
+
+
+
+			ImGui::Begin("Right Brush", nullptr, ImGuiWindowFlags_HorizontalScrollbar);
+
+			if (ImGui::IsWindowHovered())
+				hovered = true;
+
+			if (ImGui::Button("Add"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+				right_add_button_func();
+
+			for (int i = 0; i < right_strings.size(); i++)
 			{
-				for (int i = 0; i < left_strings.size(); i++)
-					weights[i] /= total;
+				const ImVec2 thumbnail_img_size = { float(block_size), float(block_size) };
+
+				if (right_clicked && i == right_selected)
+				{
+					size_t x = size_t(mousePositionRelative.x) % block_size;
+					size_t y = size_t(mousePositionRelative.y) % block_size;
+
+					float u_start = (mousePositionRelative.x - x) / img_size.x;
+					float v_start = (mousePositionRelative.y - y) / img_size.y;
+
+					float u_end = block_size / img_size.x + u_start;
+					float v_end = block_size / img_size.y + v_start;
+
+					right_uv_mins[i] = ImVec2(u_start, v_start);
+					right_uv_maxs[i] = ImVec2(u_end, v_end);
+				}
+
+				const ImVec4 tint_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);   // No tint
+				const ImVec4 selected_border_col = ImVec4(1.0f, 0.5f, 0.0f, 1.0f);
+				const ImVec4 border_col = ImVec4(1.0f, 1.0f, 1.0f, 1.0f);
+
+				if (i == right_selected)
+					ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, selected_border_col);
+				else
+					ImGui::Image((void*)(intptr_t)main_tiles_texture, thumbnail_img_size, right_uv_mins[i], right_uv_maxs[i], tint_col, border_col);
+
+				if (ImGui::IsItemHovered() && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+					right_selected = i;
+
+				ImGui::SameLine();
+
+				if (ImGui::Button((string("Remove ") + to_string(i)).c_str()))
+					right_remove_button_func(i);
+
+				ImGui::SameLine();
+
+				string x = "Weight " + to_string(i);
+
+				ImGui::PushItemWidth(80);
+				ImGui::InputText(x.c_str(), &right_strings[i]);
+				ImGui::PopItemWidth();
+
+
 			}
 
 
-			size_t brush_in_use = 0;
+			ImGui::End();
 
 
-			float max_brush_size = brush_size;
 
-			if (tool == TOOL_PAINT_CUSTOM)
+
+
+
+			// Rendering
+			ImGui::Render();
+
+			if (!hovered)
 			{
-				if (custom_brush1_width > max_brush_size)
-					max_brush_size = custom_brush1_width;
+				if (last_mousewheel < 0)
+					zoom_factor *= 0.5;
+				else if (last_mousewheel > 0)
+					zoom_factor *= 2.0;
 
-				if (custom_brush1_height > max_brush_size)
-					max_brush_size = custom_brush1_height;
+				if (last_mousewheel != 0)
+				{
+
+
+
+					//int x, y;
+					//SDL_GetMouseState(&x, &y);
+
+					//float win_x = x+ window_w / 2.0 - image_anchor.x;// / 2.0;
+					//float win_y = y + window_h / 2.0 - image_anchor.y;// / 2.0;
+
+					//win_x /= 36.0f * float(tiles_per_dimension);
+					//win_y /= 36.0f * float(tiles_per_dimension);
+
+
+
+					//win_x *= zoom_factor;
+					//win_y *= zoom_factor;
+
+					//win_x = glm::clamp(win_x, 0.0f, 1.0f);
+					//win_x = glm::clamp(win_x, 0.0f, 1.0f);
+
+
+
+
+
+					//view_focus.x = win_x;
+					//view_focus.y = win_y;
+
+
+					glm::vec3 view_focus(0.5, 0.5, 0.0);
+
+					ImVec2 zoomed_image_anchor = image_anchor;
+
+					zoomed_image_anchor.x /= zoom_factor;
+					zoomed_image_anchor.y /= zoom_factor;
+
+
+
+					int mouse_x, mouse_y;
+					SDL_GetMouseState(&mouse_x, &mouse_y);
+
+					ImVec2 c = ImVec2(-zoomed_image_anchor.x / (block_size)+mouse_x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - mouse_y) / (block_size * zoom_factor));
+
+
+
+					float x = image_anchor.x * 0.5 + c.x * block_size;// zoomed_image_anchor.x + int(c.x) * block_size;
+					float y = image_anchor.y * 0.5 + c.y * block_size;// zoomed_image_anchor.y + int(c.y) * block_size;
+
+
+					complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+					complex<float> v1w(static_cast<float>(x), static_cast<float>(y + block_size));
+					complex<float> v2w(static_cast<float>(x + block_size), static_cast<float>(y + block_size));
+					complex<float> v3w(static_cast<float>(x + block_size), static_cast<float>(y));
+
+					v0w.real(v0w.real() * zoom_factor);
+					v0w.imag(v0w.imag() * zoom_factor);
+					v1w.real(v1w.real() * zoom_factor);
+					v1w.imag(v1w.imag() * zoom_factor);
+					v2w.real(v2w.real() * zoom_factor);
+					v2w.imag(v2w.imag() * zoom_factor);
+					v3w.real(v3w.real() * zoom_factor);
+					v3w.imag(v3w.imag() * zoom_factor);
+
+					quad q;
+					q.vertices[0].x = v0w.real();
+					q.vertices[0].y = v0w.imag();
+					q.vertices[1].x = v1w.real();
+					q.vertices[1].y = v1w.imag();
+					q.vertices[2].x = v2w.real();
+					q.vertices[2].y = v2w.imag();
+					q.vertices[3].x = v3w.real();
+					q.vertices[3].y = v3w.imag();
+
+					glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+
+
+					quad_centre /= block_size * tiles_per_dimension;
+
+
+					//cout << quad_centre.x << " " << quad_centre.y << " " << endl;
+
+					//draw_quad_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
+
+
+
+					view_focus.x = glm::clamp(quad_centre.x, 0.0f, 1.0f);
+					view_focus.y = glm::clamp(quad_centre.y, 0.0f, 1.0f);
+
+
+					//view_focus.x = quad_centre.x / (window_w);
+					//view_focus.y = quad_centre.y / (window_h);
+
+
+
+					//ImVec2 zoomed_image_anchor = image_anchor;
+
+					//zoomed_image_anchor.x /= zoom_factor;
+					//zoomed_image_anchor.y /= zoom_factor;
+
+					//int mouse_x, mouse_y;
+					//SDL_GetMouseState(&mouse_x, &mouse_y);
+
+
+					//ImVec2 c = ImVec2(-zoomed_image_anchor.x / (block_size)+mouse_x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - mouse_y) / (block_size * zoom_factor));
+
+					// float x = zoomed_image_anchor.x  + int(c.x) * block_size;
+					// float y = zoomed_image_anchor.y  + int(c.y) * block_size;
+
+
+					//x /= block_size * tiles_per_dimension;
+					//y /= block_size * tiles_per_dimension;
+
+					//x += 1;
+					//x /= 2;
+					//y += 1;
+					//y /= 2;
+
+
+
+
+
+
+
+					//glm::vec3 centre;
+					//centre.x = window_w / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
+					//centre.y = window_h / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
+
+					//centre.x += image_anchor.x * zoom_factor;
+					//centre.y += image_anchor.y * zoom_factor;
+
+					//centre /= 36.0f * float(tiles_per_dimension);
+
+					////cout << centre.x << " " << centre.y << endl;
+
+					//view_focus.x = centre.x;// / (36.0f * float(tiles_per_dimension));// / 36.0f * float(tiles_per_dimension) / 2.0;
+					//view_focus.y = centre.y;// / (36.0f * float(tiles_per_dimension));// / 36.0f * float(tiles_per_dimension) / 2.0; */
+
+					//
+
+					//int x, y;
+					//SDL_GetMouseState(&x, &y);
+
+					//float x1 = (float(window_w) / 2.0 - pixels_per_tile * float(tiles_per_dimension) / 2.0f);
+					//float y1 = (float(window_h) / 2.0 - pixels_per_tile * float(tiles_per_dimension) / 2.0f);
+
+
+
+					//x1 += 0.5*image_anchor.x; // top left corner of image
+					//y1 -= 0.5*image_anchor.y;
+
+					//x1 /= pixels_per_tile * float(tiles_per_dimension);
+					//y1 /= pixels_per_tile * float(tiles_per_dimension);
+
+					//cout << x1 << "  " << y1 << endl;
+
+					//float x1 = x0 + pixels_per_tile * float(tiles_per_dimension) / 2.0; // bottom right corner of image
+					//float y1 = y0 + pixels_per_tile * float(tiles_per_dimension) / 2.0;
+
+
+
+
+					//x1 = glm::clamp(x1, 0.0f, 1.0f);
+					//y1 = glm::clamp(y1, 0.0f, 1.0f);
+
+
+					//view_focus.x = x1;// / (tiles_per_dimension * block_size);
+					//view_focus.y = y1;// / (tiles_per_dimension * block_size);
+					//view_focus.x = glm::clamp(view_focus.x, 0.0f, 1.0f);
+					//view_focus.y = glm::clamp(view_focus.y, 0.0f, 1.0f);
+
+					//float win_x = x + window_w / 2.0; // / 2.0 + image_anchor.x / 2.0;// / zoom_factor;
+					//float win_y = y + window_h / 2.0; // / 2.0 + image_anchor.y / 2.0;// / zoom_factor;
+
+					//win_x /= -main_tiles_width;// tiles_per_dimension* block_size;
+					//win_y /= main_tiles_height;// tiles_per_dimension* block_size;
+
+					//win_x = glm::clamp(win_x, 0.0f, 1.0f);
+					//win_y = glm::clamp(win_y, 0.0f, 1.0f);
+
+	//				win_x /=   float(tiles_per_dimension);
+	//				win_y /=  float(tiles_per_dimension);
+
+					//view_focus.x = window_w / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
+					//centre.y = window_h / 2.0 -36.0f * float(tiles_per_dimension) / 2.0 / zoom_factor;
+
+					//centre.x += image_anchor.x * zoom_factor;
+					//centre.y += image_anchor.y * zoom_factor;
+
+
+					//view_focus.x = x1;// image_anchor.x / main_tiles_width;// / (tiles_per_dimension * block_size); ;// background_tiles[index].tile_size);
+					//view_focus.y = y1; // image_anchor.y / main_tiles_height;// / (tiles_per_dimension * block_size);// background_tiles[index].tile_size);
+
+
+					image_anchor.x = window_w / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * view_focus.x;
+					image_anchor.y = window_h / 2.0 - 36.0f * float(tiles_per_dimension) * zoom_factor * view_focus.y;
+				}
 			}
 
-			//if (tool == TOOL_PAINT_PASTE)
-			//{
-			//	if (copy_img.cols > max_brush_size)
-			//		max_brush_size = copy_img.cols;
+			if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0) && ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+			{
+				ImVec2 motion = ImGui::GetMouseDragDelta();
+				image_anchor.x += motion.x;
+				image_anchor.y += -motion.y;
 
-			//	if (copy_img.rows > max_brush_size)
-			//		max_brush_size = copy_img.rows;
-			//}
-
-			int x, y;
-			SDL_GetMouseState(&x, &y);
+				ImGui::ResetMouseDragDelta();
+			}
 
 
 
+			ImVec2 zoomed_image_anchor = image_anchor;
 
-			ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
-
-			ImVec2 centre_chunk;
-			centre_chunk.x = -zoomed_image_anchor.x / tiles_per_chunk_dimension / (block_size)+x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-			centre_chunk.y = -zoomed_image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-
-			float relative_brush_size = round(max_brush_size / float(tiles_per_chunk_dimension));
-			//		cout << relative_brush_size << endl;
-
-			ImVec2 start_chunk;
-			start_chunk.x = centre_chunk.x - relative_brush_size;
-			start_chunk.y = centre_chunk.y - relative_brush_size;
-
-			ImVec2 end_chunk;
-			end_chunk.x = centre_chunk.x + relative_brush_size;
-			end_chunk.y = centre_chunk.y + relative_brush_size;
-
-			start_chunk.x = glm::clamp(start_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
-			start_chunk.y = glm::clamp(start_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
-
-			end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
-			end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
-
-			//cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
-			//cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
+			zoomed_image_anchor.x /= zoom_factor;
+			zoomed_image_anchor.y /= zoom_factor;
 
 
 
-
-
-			if (tool == TOOL_PAINT_CUSTOM && !hovered)
+			if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Left, 0))
 			{
 				int x, y;
 				SDL_GetMouseState(&x, &y);
 
-				for (int i = 0; i < custom_brush1_img.cols; i++)
+				selected_end = glm::vec3((float)x, (float)y, 0);
+			}
+
+
+			set<pair<size_t, size_t>> to_draw;
+			set<pair<size_t, size_t>> custom_to_draw;
+			set<pair<size_t, size_t>> paste_to_draw;
+
+
+			// Paint using left mouse button
+			if ((tool == TOOL_PAINT || tool == TOOL_PAINT_SQUARE || tool == TOOL_PAINT_CUSTOM) && !hovered && (ImGui::IsMouseDown(ImGuiMouseButton_Left)) && left_strings.size() > 0)
+			{
+				vector<float> weights;
+				float total = 0;
+
+				for (int i = 0; i < left_strings.size(); i++)
 				{
-					for (int j = 0; j < custom_brush1_img.rows; j++)
+					const float weight = stof(left_strings[i]);
+					weights.push_back(weight);
+					total += weight;
+				}
+
+				if (total != 0.0f && total != -0.0f)
+				{
+					for (int i = 0; i < left_strings.size(); i++)
+						weights[i] /= total;
+				}
+
+
+				size_t brush_in_use = 0;
+
+
+				float max_brush_size = brush_size;
+
+				if (tool == TOOL_PAINT_CUSTOM)
+				{
+					if (custom_brush1_width > max_brush_size)
+						max_brush_size = custom_brush1_width;
+
+					if (custom_brush1_height > max_brush_size)
+						max_brush_size = custom_brush1_height;
+				}
+
+				//if (tool == TOOL_PAINT_PASTE)
+				//{
+				//	if (copy_img.cols > max_brush_size)
+				//		max_brush_size = copy_img.cols;
+
+				//	if (copy_img.rows > max_brush_size)
+				//		max_brush_size = copy_img.rows;
+				//}
+
+				int x, y;
+				SDL_GetMouseState(&x, &y);
+
+
+
+
+				ImVec2 centre_index = ImVec2(-zoomed_image_anchor.x / (block_size)+x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(io.DisplaySize.y - y) / (block_size * zoom_factor));
+
+				ImVec2 centre_chunk;
+				centre_chunk.x = -zoomed_image_anchor.x / tiles_per_chunk_dimension / (block_size)+x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+				centre_chunk.y = -zoomed_image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+
+				float relative_brush_size = round(max_brush_size / float(tiles_per_chunk_dimension));
+				//		cout << relative_brush_size << endl;
+
+				ImVec2 start_chunk;
+				start_chunk.x = centre_chunk.x - relative_brush_size;
+				start_chunk.y = centre_chunk.y - relative_brush_size;
+
+				ImVec2 end_chunk;
+				end_chunk.x = centre_chunk.x + relative_brush_size;
+				end_chunk.y = centre_chunk.y + relative_brush_size;
+
+				start_chunk.x = glm::clamp(start_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
+				start_chunk.y = glm::clamp(start_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+
+				end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
+				end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+
+				//cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
+				//cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
+
+
+
+
+
+				if (tool == TOOL_PAINT_CUSTOM && !hovered)
+				{
+					int x, y;
+					SDL_GetMouseState(&x, &y);
+
+					for (int i = 0; i < custom_brush1_img.cols; i++)
 					{
-						unsigned char colour = 0;
-
-						if (custom_brush1_img.channels() == 4)
+						for (int j = 0; j < custom_brush1_img.rows; j++)
 						{
-							Vec<unsigned char, 4> p = custom_brush1_img.at<Vec<unsigned char, 4>>(j, i);
-							colour = p[0];
+							unsigned char colour = 0;
+
+							if (custom_brush1_img.channels() == 4)
+							{
+								Vec<unsigned char, 4> p = custom_brush1_img.at<Vec<unsigned char, 4>>(j, i);
+								colour = p[0];
+							}
+							else if (custom_brush1_img.channels() == 3)
+							{
+								Vec<unsigned char, 3> p = custom_brush1_img.at<Vec<unsigned char, 3>>(j, i);
+								colour = p[0];
+							}
+
+
+
+
+							if (colour != 255)
+								continue;
+
+
+
+							quad q;
+
+							float half_width = -custom_brush1_img.cols * block_size / 2.0f;
+							float half_height = custom_brush1_img.rows * block_size / 2.0f;
+
+							q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+							q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+							q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+							q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+							q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+							q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
+							q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
+							q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
+
+							q.vertices[0].x += half_width * zoom_factor;
+							q.vertices[1].x += half_width * zoom_factor;
+							q.vertices[2].x += half_width * zoom_factor;
+							q.vertices[3].x += half_width * zoom_factor;
+
+							q.vertices[0].y += half_height * zoom_factor;
+							q.vertices[1].y += half_height * zoom_factor;
+							q.vertices[2].y += half_height * zoom_factor;
+							q.vertices[3].y += half_height * zoom_factor;
+
+							glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+							pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
+
+							custom_to_draw.insert(centre_index);
 						}
-						else if (custom_brush1_img.channels() == 3)
+					}
+				}
+
+
+				for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
+				{
+					for (size_t l = start_chunk.y; l <= end_chunk.y; l++)
+					{
+						size_t chunk_index = k * num_chunks_per_map_dimension + l;
+
+						for (size_t m = 0; m < background_chunks[chunk_index].indices.size(); m++)
 						{
-							Vec<unsigned char, 3> p = custom_brush1_img.at<Vec<unsigned char, 3>>(j, i);
-							colour = p[0];
+							size_t i = background_chunks[chunk_index].indices[m].x;
+							size_t j = background_chunks[chunk_index].indices[m].y;
+
+							size_t index = i * tiles_per_dimension + j;
+
+							if (tool == TOOL_PAINT)
+							{
+								glm::vec3 a((float)i, (float)j, 0);
+								glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
+
+								if (distance(a, b) <= (brush_size * 0.5))
+									to_draw.insert(make_pair(i, j));
+							}
+							else if (tool == TOOL_PAINT_SQUARE)
+							{
+								if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)
+									to_draw.insert(make_pair(i, j));
+							}
+							else if (tool == TOOL_PAINT_CUSTOM)
+							{
+								if (custom_to_draw.end() != custom_to_draw.find(make_pair(i, j)))
+									to_draw.insert(make_pair(i, j));
+							}
+
+						}
+					}
+
+					for (set<pair<size_t, size_t>>::const_iterator ci = to_draw.begin(); ci != to_draw.end(); ci++)
+					{
+						pair<size_t, size_t> pair_index = make_pair(ci->first, ci->second);
+
+						// This makes things terribly slow for very large brush sizes(e.g., 500 tiles)
+						//if (prev_draw.end() != find(prev_draw.begin(), prev_draw.end(), make_pair(pair_index.first, pair_index.second)))
+						//	continue;
+
+
+						size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
+
+						size_t brush_in_use = 0;
+
+						const float r = distribution(generator);
+
+						float sub_total = 0;
+
+						for (int k = 0; k < left_strings.size(); k++)
+						{
+							sub_total += weights[k];
+
+							if (r <= sub_total)
+							{
+								brush_in_use = k;
+								break;
+							}
 						}
 
+						if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(pair_index.first, pair_index.second)))
+						{
+							background_tiles[index].uv_min = left_uv_mins[brush_in_use];
+							background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
+						}
+					}
 
+
+
+				}
+
+
+
+
+
+			}
+
+
+			else if (tool == TOOL_PAINT_PASTE && !hovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
+			{
+				int x, y;
+				SDL_GetMouseState(&x, &y);
+
+				for (int i = 0; i < tiles_per_dimension; i++)
+				{
+					for (int j = 0; j < tiles_per_dimension; j++)
+					{
+
+
+						unsigned char colour = copy_img.at<unsigned char>(j, i);
 
 
 						if (colour != 255)
@@ -1040,10 +1181,11 @@ int main(int, char**)
 
 
 
+
 						quad q;
 
-						float half_width = -custom_brush1_img.cols * block_size / 2.0f;
-						float half_height = custom_brush1_img.rows * block_size / 2.0f;
+						float half_width = -tiles_per_dimension * block_size / 2.0f;
+						float half_height = tiles_per_dimension * block_size / 2.0f;
 
 						q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 						q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
@@ -1066,438 +1208,180 @@ int main(int, char**)
 
 						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
 
-						pair<size_t, size_t> centre_index = make_pair(-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor));
+						pair<size_t, size_t> centre_index = make_pair((-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor)), (-zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor)));
 
-						custom_to_draw.insert(centre_index);
+						paste_to_draw.insert(centre_index);
 					}
 				}
-			}
 
 
-			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
-			{
-				for (size_t l = start_chunk.y; l <= end_chunk.y; l++)
-				{
-					size_t chunk_index = k * num_chunks_per_map_dimension + l;
 
-					for (size_t m = 0; m < background_chunks[chunk_index].indices.size(); m++)
-					{
-						size_t i = background_chunks[chunk_index].indices[m].x;
-						size_t j = background_chunks[chunk_index].indices[m].y;
+				to_draw = paste_to_draw;
 
-						size_t index = i * tiles_per_dimension + j;
-
-						if (tool == TOOL_PAINT)
-						{
-							glm::vec3 a((float)i, (float)j, 0);
-							glm::vec3 b((float)centre_index.x, (float)centre_index.y, 0);
-
-							if (distance(a, b) <= (brush_size * 0.5))
-								to_draw.insert(make_pair(i, j));
-						}
-						else if (tool == TOOL_PAINT_SQUARE)
-						{
-							if (abs(i - centre_index.x) <= (brush_size * 0.5) && abs(j - centre_index.y) <= (brush_size) * 0.5)
-								to_draw.insert(make_pair(i, j));
-						}
-						else if (tool == TOOL_PAINT_CUSTOM)
-						{
-							if (custom_to_draw.end() != custom_to_draw.find(make_pair(i, j)))
-								to_draw.insert(make_pair(i, j));
-						}
-
-					}
-				}
 
 				for (set<pair<size_t, size_t>>::const_iterator ci = to_draw.begin(); ci != to_draw.end(); ci++)
 				{
 					pair<size_t, size_t> pair_index = make_pair(ci->first, ci->second);
 
-					// This makes things terribly slow for very large brush sizes(e.g., 500 tiles)
-					//if (prev_draw.end() != find(prev_draw.begin(), prev_draw.end(), make_pair(pair_index.first, pair_index.second)))
-					//	continue;
-
-
 					size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
 
-					size_t brush_in_use = 0;
-
-					const float r = distribution(generator);
-
-					float sub_total = 0;
-
-					for (int k = 0; k < left_strings.size(); k++)
+					if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(pair_index))
 					{
-						sub_total += weights[k];
+						pair<size_t, size_t> mouse_plus(pair_index.first - (float)copy_paste_relative_index.first, pair_index.second - (float)copy_paste_relative_index.second);
 
-						if (r <= sub_total)
-						{
-							brush_in_use = k;
-							break;
-						}
+						// todo: make it so that copy_index is equal to index when the offset is based on pair_index,
+						// and not copy_paste_mouse_position_index
+
+
+						cout << "pair_index: " << pair_index.first << " " << pair_index.second << endl;
+						cout << "copy_paste_mouse_position_index: " << copy_paste_mouse_position_index.first << " " << copy_paste_mouse_position_index.second << endl;
+						cout << "copypaste relative index: " << copy_paste_relative_index.first << " " << copy_paste_relative_index.second << endl;
+						cout << "mouse plus: " << mouse_plus.first << " " << mouse_plus.second << endl;
+
+						cout << endl;
+
+
+						size_t copy_index = mouse_plus.first * tiles_per_dimension + mouse_plus.second;
+
+
+						//background_tiles[index].uv_min = ImVec2(0, 0);
+						//background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
+
+
+						background_tiles[index].uv_min.x = copy_background_tiles[copy_index].uv_min.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
+						background_tiles[index].uv_min.y = copy_background_tiles[copy_index].uv_min.y;// +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
+						background_tiles[index].uv_max.x = copy_background_tiles[copy_index].uv_max.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
+						background_tiles[index].uv_max.y = copy_background_tiles[copy_index].uv_max.y;//  +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
+
+
+						//					background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
 					}
+				}
 
-					if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(make_pair(pair_index.first, pair_index.second)))
+
+
+
+
+
+
+
+				//prev_draw = to_draw;
+				to_draw.clear();
+
+			}
+
+
+
+			if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && make_selection && !hovered)// && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+			{
+				make_selection = false;
+
+				if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
+				{
+					prev_tools.clear();
+					prev_tools.push_back(TOOL_SELECT);
+					selected_indices.clear();
+				}
+
+				glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
+				glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
+
+				start_chunk.x = -zoomed_image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+				start_chunk.y = -zoomed_image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+
+				end_chunk.x = -zoomed_image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_end.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+				end_chunk.y = -zoomed_image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
+
+				if (end_chunk.x < start_chunk.x)
+				{
+					float temp = end_chunk.x;
+					end_chunk.x = start_chunk.x;
+					start_chunk.x = temp;
+				}
+
+				if (end_chunk.y < start_chunk.y)
+				{
+					float temp = end_chunk.y;
+					end_chunk.y = start_chunk.y;
+					start_chunk.y = temp;
+				}
+
+				start_chunk -= 1.0;
+				end_chunk += 1.0;
+
+				start_chunk.x = glm::clamp(start_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
+				start_chunk.y = glm::clamp(start_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+
+				end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
+				end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
+
+				//cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
+				//cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
+
+				for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
+				{
+					for (size_t l = start_chunk.y; l <= end_chunk.y; l++)
 					{
-						background_tiles[index].uv_min = left_uv_mins[brush_in_use];
-						background_tiles[index].uv_max = left_uv_maxs[brush_in_use];
-					}
-				}
+						size_t chunk_index = k * num_chunks_per_map_dimension + l;
 
-
-
-			}
-
-
-
-
-
-		}
-
-
-		else if (tool == TOOL_PAINT_PASTE && !hovered && ImGui::IsMouseDown(ImGuiMouseButton_Left))
-		{
-
-
-			copy_paste_base_position.first = FLT_MAX;
-			copy_paste_base_position.second = FLT_MAX;
-			copy_paste_end_position.first = -FLT_MAX;
-			copy_paste_end_position.second = -FLT_MAX;
-
-
-			for (int i = 0; i < tiles_per_dimension; i++)
-			{
-				for (int j = 0; j < tiles_per_dimension; j++)
-				{
-					int i_ = i;
-					int j_ = j;
-
-					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
-						continue;
-
-					int x, y;
-					SDL_GetMouseState(&x, &y);
-
-					int index = i_ * tiles_per_dimension + (tiles_per_dimension - 1 - j_);
-
-					quad q;
-
-					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[1].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[2].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
-
-					//q.vertices[0].x += diff_x;
-					//q.vertices[0].y += diff_y;
-					//q.vertices[1].x += diff_x;
-					//q.vertices[1].y += diff_y;
-					//q.vertices[2].x += diff_x;
-					//q.vertices[2].y += diff_y;
-					//q.vertices[3].x += diff_x;
-					//q.vertices[3].y += diff_y;
-
-					if (q.vertices[0].x < copy_paste_base_position.first)
-						copy_paste_base_position.first = q.vertices[0].x;
-
-					if (q.vertices[0].y < copy_paste_base_position.second)
-						copy_paste_base_position.second = q.vertices[0].y;
-
-					if (q.vertices[1].x < copy_paste_base_position.first)
-						copy_paste_base_position.first = q.vertices[1].x;
-
-					if (q.vertices[1].y < copy_paste_base_position.second)
-						copy_paste_base_position.second = q.vertices[1].y;
-
-					if (q.vertices[2].x < copy_paste_base_position.first)
-						copy_paste_base_position.first = q.vertices[2].x;
-
-					if (q.vertices[2].y < copy_paste_base_position.second)
-						copy_paste_base_position.second = q.vertices[2].y;
-
-					if (q.vertices[3].x < copy_paste_base_position.first)
-						copy_paste_base_position.first = q.vertices[3].x;
-
-					if (q.vertices[3].y < copy_paste_base_position.second)
-						copy_paste_base_position.second = q.vertices[3].y;
-
-
-					if (q.vertices[0].x > copy_paste_end_position.first)
-						copy_paste_end_position.first = q.vertices[0].x;
-
-					if (q.vertices[0].y > copy_paste_end_position.second)
-						copy_paste_end_position.second = q.vertices[0].y;
-
-					if (q.vertices[1].x > copy_paste_end_position.first)
-						copy_paste_end_position.first = q.vertices[1].x;
-
-					if (q.vertices[1].y > copy_paste_end_position.second)
-						copy_paste_end_position.second = q.vertices[1].y;
-
-					if (q.vertices[2].x > copy_paste_end_position.first)
-						copy_paste_end_position.first = q.vertices[2].x;
-
-					if (q.vertices[2].y > copy_paste_end_position.second)
-						copy_paste_end_position.second = q.vertices[2].y;
-
-					if (q.vertices[3].x > copy_paste_end_position.first)
-						copy_paste_end_position.first = q.vertices[3].x;
-
-					if (q.vertices[3].y > copy_paste_end_position.second)
-						copy_paste_end_position.second = q.vertices[3].y;
-
-
-				}
-			}
-
-			copy_paste_average_position.first = (copy_paste_base_position.first + copy_paste_end_position.first) * 0.5f;
-			copy_paste_average_position.second = (copy_paste_base_position.second + copy_paste_end_position.second) * 0.5f;
-
-
-
-			copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+(copy_paste_average_position.first + diff_x) / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_average_position.second + diff_y) / (block_size * zoom_factor));
-
-
-
-
-			int base_mouse_x, base_mouse_y;
-			SDL_GetMouseState(&base_mouse_x, &base_mouse_y);
-			//			base_mouse_y = io.DisplaySize.y - base_mouse_y;
-
-			diff_x = base_mouse_x - copy_paste_base_position.first;
-			diff_y = base_mouse_y - copy_paste_base_position.second;
-
-
-			for (int i = 0; i < tiles_per_dimension; i++)
-			{
-				for (int j = 0; j < tiles_per_dimension; j++)
-				{
-					int x, y;
-					SDL_GetMouseState(&x, &y);
-
-					unsigned char colour = copy_img.at<unsigned char>(j, i);
-
-
-					if (colour != 255)
-						continue;
-
-
-
-
-					quad q;
-
-					float half_width = -tiles_per_dimension * block_size / 2.0f;
-					float half_height = tiles_per_dimension * block_size / 2.0f;
-
-					q.vertices[0].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[1].x = x + block_size * zoom_factor * i - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[2].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[3].x = x + block_size * zoom_factor * i + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
-
-
-					q.vertices[0].x += diff_x;
-					q.vertices[0].y += diff_y;
-
-					q.vertices[1].x += diff_x;
-					q.vertices[1].y += diff_y;
-
-					q.vertices[2].x += diff_x;
-					q.vertices[2].y += diff_y;
-
-					q.vertices[3].x += diff_x;
-					q.vertices[3].y += diff_y;
-
-
-
-					glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
-
-
-					pair<size_t, size_t> centre_index = make_pair((-zoomed_image_anchor.x / (block_size)+quad_centre.x / (block_size * zoom_factor)), (-zoomed_image_anchor.y / (block_size)+(quad_centre.y) / (block_size * zoom_factor)));
-
-					paste_to_draw.insert(centre_index);
-				}
-			}
-
-
-
-			to_draw = paste_to_draw;
-
-			for (set<pair<size_t, size_t>>::const_iterator ci = to_draw.begin(); ci != to_draw.end(); ci++)
-			{
-				pair<size_t, size_t> pair_index = make_pair(ci->first, ci->second);
-
-				size_t index = pair_index.first * tiles_per_dimension + pair_index.second;
-
-				if (selected_indices.size() == 0 || selected_indices.end() != selected_indices.find(pair_index))
-				{
-					pair<float, float> mouse_plus(pair_index.first - (float)copy_paste_relative_index.first, pair_index.second - (float)copy_paste_relative_index.second);
-					pair<float, float> mouse_abs(pair_index.first + mouse_plus.first, pair_index.first + mouse_plus.second);// -(float)copy_paste_relative_index.first, pair_index.second - (float)copy_paste_relative_index.second);
-
-					cout << "pair_index: " << pair_index.first << " " << pair_index.second << endl;
-					cout << "copy_paste_mouse_position_index: " << copy_paste_mouse_position_index.first << " " << copy_paste_mouse_position_index.second << endl;
-					cout << "copypaste relative index: " << copy_paste_relative_index.first << " " << copy_paste_relative_index.second << endl;
-					cout << "mouse plus: " << mouse_plus.first << " " << mouse_plus.second << endl;
-
-					cout << "mouse abs: " << mouse_abs.first << " " << mouse_abs.second << endl;
-
-					cout << endl;
-
-
-					size_t copy_index = mouse_plus.first * tiles_per_dimension + mouse_plus.second;
-
-					index = (size_t)glm::clamp((float)index, 0.0f, tiles_per_dimension - 1.0f);
-
-					copy_index = (size_t)glm::clamp((float)copy_index, 0.0f, tiles_per_dimension - 1.0f);
-
-
-
-
-
-					//					background_tiles[index].uv_min = ImVec2(0, 0);
-					//					background_tiles[index].uv_max = ImVec2(float(background_tiles[index].tile_size) / main_tiles_width, float(background_tiles[index].tile_size) / main_tiles_height);
-
-
-					background_tiles[index].uv_min.x = copy_background_tiles[copy_index].uv_min.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
-					background_tiles[index].uv_min.y = copy_background_tiles[copy_index].uv_min.y;// +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
-					background_tiles[index].uv_max.x = copy_background_tiles[copy_index].uv_max.x;//  +uv_step.x * (copy_paste_relative_index.first);// copy_background_tiles[copy_index].uv_min;
-					background_tiles[index].uv_max.y = copy_background_tiles[copy_index].uv_max.y;//  +uv_step.y * (copy_paste_relative_index.second);// copy_background_tiles[copy_index].uv_min;
-
-
-					//					background_tiles[index].uv_max = copy_background_tiles[copy_index].uv_max;
-				}
-			}
-
-
-
-
-
-
-
-
-			//prev_draw = to_draw;
-			to_draw.clear();
-
-		}
-
-
-
-		if ((tool == TOOL_SELECT || tool == TOOL_SELECT_ADD || tool == TOOL_SELECT_SUBTRACT) && make_selection && !hovered)// && !ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
-		{
-			make_selection = false;
-
-			if (tool == TOOL_SELECT && prev_tools.size() > 0 && prev_tools[prev_tools.size() - 1] == TOOL_SELECT)
-			{
-				prev_tools.clear();
-				prev_tools.push_back(TOOL_SELECT);
-				selected_indices.clear();
-			}
-
-			glm::vec3 start_chunk;// = glm::vec3(num_chunks_per_map_dimension - 1, num_chunks_per_map_dimension - 1, 0);
-			glm::vec3 end_chunk;// = glm::vec3(0.0f, 0.0f, 0.0f);
-
-			start_chunk.x = -zoomed_image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_start.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-			start_chunk.y = -zoomed_image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_start.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-
-			end_chunk.x = -zoomed_image_anchor.x / tiles_per_chunk_dimension / (block_size)+selected_end.x / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-			end_chunk.y = -zoomed_image_anchor.y / tiles_per_chunk_dimension / (block_size)+((int)io.DisplaySize.y - selected_end.y) / (block_size * zoom_factor) / (tiles_per_chunk_dimension);
-
-			if (end_chunk.x < start_chunk.x)
-			{
-				float temp = end_chunk.x;
-				end_chunk.x = start_chunk.x;
-				start_chunk.x = temp;
-			}
-
-			if (end_chunk.y < start_chunk.y)
-			{
-				float temp = end_chunk.y;
-				end_chunk.y = start_chunk.y;
-				start_chunk.y = temp;
-			}
-
-			start_chunk -= 1.0;
-			end_chunk += 1.0;
-
-			start_chunk.x = glm::clamp(start_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
-			start_chunk.y = glm::clamp(start_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
-
-			end_chunk.x = glm::clamp(end_chunk.x, (float)0, (float)num_chunks_per_map_dimension - 1);
-			end_chunk.y = glm::clamp(end_chunk.y, (float)0, (float)num_chunks_per_map_dimension - 1);
-
-			//cout << "start chunk " << start_chunk.x << ' ' << start_chunk.y << endl;
-			//cout << "end chunk " << end_chunk.x << ' ' << end_chunk.y << endl;
-
-			for (size_t k = start_chunk.x; k <= end_chunk.x; k++)
-			{
-				for (size_t l = start_chunk.y; l <= end_chunk.y; l++)
-				{
-					size_t chunk_index = k * num_chunks_per_map_dimension + l;
-
-					for (size_t m = 0; m < background_chunks[chunk_index].indices.size(); m++)
-					{
-						size_t i = background_chunks[chunk_index].indices[m].x;
-						size_t j = background_chunks[chunk_index].indices[m].y;
-
-						size_t index = i * tiles_per_dimension + j;
-
-						const float x = ((zoomed_image_anchor.x) + int(i) * background_tiles[index].tile_size);
-						const float y = ((zoomed_image_anchor.y) + int(j) * background_tiles[index].tile_size);
-
-						complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
-						complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
-						complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
-						complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
-
-						v0w.real(v0w.real() * zoom_factor);
-						v0w.imag(v0w.imag() * zoom_factor);
-						v1w.real(v1w.real() * zoom_factor);
-						v1w.imag(v1w.imag() * zoom_factor);
-						v2w.real(v2w.real() * zoom_factor);
-						v2w.imag(v2w.imag() * zoom_factor);
-						v3w.real(v3w.real() * zoom_factor);
-						v3w.imag(v3w.imag() * zoom_factor);
-
-						quad q;
-						q.vertices[0].x = v0w.real();
-						q.vertices[0].y = v0w.imag();
-						q.vertices[1].x = v1w.real();
-						q.vertices[1].y = v1w.imag();
-						q.vertices[2].x = v2w.real();
-						q.vertices[2].y = v2w.imag();
-						q.vertices[3].x = v3w.real();
-						q.vertices[3].y = v3w.imag();
-
-						glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
-
-						vector<glm::vec3> points;
-						points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
-						points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0));
-						points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
-						points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
-
-						if (point_in_polygon(quad_centre, points) ||
-							point_in_polygon(q.vertices[0], points) ||
-							point_in_polygon(q.vertices[1], points) ||
-							point_in_polygon(q.vertices[2], points) ||
-							point_in_polygon(q.vertices[3], points))
+						for (size_t m = 0; m < background_chunks[chunk_index].indices.size(); m++)
 						{
-							if (tool == TOOL_SELECT_SUBTRACT)
-								selected_indices.erase(make_pair(i, j));
-							else
-								selected_indices.insert(make_pair(i, j));
+							size_t i = background_chunks[chunk_index].indices[m].x;
+							size_t j = background_chunks[chunk_index].indices[m].y;
+
+							size_t index = i * tiles_per_dimension + j;
+
+							const float x = ((zoomed_image_anchor.x) + int(i) * background_tiles[index].tile_size);
+							const float y = ((zoomed_image_anchor.y) + int(j) * background_tiles[index].tile_size);
+
+							complex<float> v0w(static_cast<float>(x), static_cast<float>(y));
+							complex<float> v1w(static_cast<float>(x), static_cast<float>(y + background_tiles[index].tile_size));
+							complex<float> v2w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y + background_tiles[index].tile_size));
+							complex<float> v3w(static_cast<float>(x + background_tiles[index].tile_size), static_cast<float>(y));
+
+							v0w.real(v0w.real() * zoom_factor);
+							v0w.imag(v0w.imag() * zoom_factor);
+							v1w.real(v1w.real() * zoom_factor);
+							v1w.imag(v1w.imag() * zoom_factor);
+							v2w.real(v2w.real() * zoom_factor);
+							v2w.imag(v2w.imag() * zoom_factor);
+							v3w.real(v3w.real() * zoom_factor);
+							v3w.imag(v3w.imag() * zoom_factor);
+
+							quad q;
+							q.vertices[0].x = v0w.real();
+							q.vertices[0].y = v0w.imag();
+							q.vertices[1].x = v1w.real();
+							q.vertices[1].y = v1w.imag();
+							q.vertices[2].x = v2w.real();
+							q.vertices[2].y = v2w.imag();
+							q.vertices[3].x = v3w.real();
+							q.vertices[3].y = v3w.imag();
+
+							glm::vec3 quad_centre = (q.vertices[0] + q.vertices[1] + q.vertices[2] + q.vertices[3]) * 0.25f;
+
+							vector<glm::vec3> points;
+							points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_start.y, 0));
+							points.push_back(glm::vec3(selected_start.x, (int)io.DisplaySize.y - selected_end.y, 0));
+							points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_end.y, 0));
+							points.push_back(glm::vec3(selected_end.x, (int)io.DisplaySize.y - selected_start.y, 0));
+
+							if (point_in_polygon(quad_centre, points) ||
+								point_in_polygon(q.vertices[0], points) ||
+								point_in_polygon(q.vertices[1], points) ||
+								point_in_polygon(q.vertices[2], points) ||
+								point_in_polygon(q.vertices[3], points))
+							{
+								if (tool == TOOL_SELECT_SUBTRACT)
+									selected_indices.erase(make_pair(i, j));
+								else
+									selected_indices.insert(make_pair(i, j));
+							}
 						}
 					}
 				}
 			}
 		}
-
 
 		//if (!hovered && ImGui::IsMouseDragging(ImGuiMouseButton_Right, 0))
 		//{
@@ -1511,6 +1395,15 @@ int main(int, char**)
 		glViewport(0, 0, (int)io.DisplaySize.x, (int)io.DisplaySize.y);
 		glClearColor(clear_color.x * clear_color.w, clear_color.y * clear_color.w, clear_color.z * clear_color.w, clear_color.w);
 		glClear(GL_COLOR_BUFFER_BIT);
+
+
+
+		ImVec2 zoomed_image_anchor = image_anchor;
+
+		zoomed_image_anchor.x /= zoom_factor;
+		zoomed_image_anchor.y /= zoom_factor;
+
+
 
 		vector<float> vertex_data;
 		vector<GLuint> index_data;
@@ -1643,6 +1536,7 @@ int main(int, char**)
 			SDL_GetMouseState(&x, &y);
 			glm::vec3 pos(x, (int)io.DisplaySize.y - y, 0);
 
+			//if(show_interface)
 			draw_circle_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
 		}
 		else if (tool == TOOL_PAINT_SQUARE)
@@ -1726,8 +1620,10 @@ int main(int, char**)
 		{
 
 
-			size_t rows = tiles_per_dimension;
-			size_t cols = tiles_per_dimension;
+			size_t rows = tiles_per_dimension;//1 + (copy_selected_end.x - copy_selected_start.x);
+			size_t cols = tiles_per_dimension;// 1 + (copy_selected_end.y - copy_selected_start.y);
+
+			//cout << rows << " " << cols << endl;
 
 			resize(copy_img, copy_img, cv::Size(rows, cols), 0, 0, cv::INTER_NEAREST);
 
@@ -1748,33 +1644,32 @@ int main(int, char**)
 				}
 			}
 
+			copy_paste_base_position.first = block_size * tiles_per_dimension / 2.0;
+			copy_paste_base_position.second = block_size * tiles_per_dimension / 2.0;
 
-
-
-
-
-
-			copy_paste_base_position.first = FLT_MAX;// block_size* tiles_per_dimension;
-			copy_paste_base_position.second = FLT_MAX; block_size* tiles_per_dimension;
-			copy_paste_end_position.first = -FLT_MAX;
-			copy_paste_end_position.second = -FLT_MAX;
 
 			for (int i = 0; i < tiles_per_dimension; i++)
 			{
 				for (int j = 0; j < tiles_per_dimension; j++)
 				{
-					int i_ = i;
-					int j_ = j;
+					// Flip the tiles upside down
+					int i_ = i;// copy_selected_end.x - i;
+					int j_ = j;//copy_selected_end.y - j;
 
-					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
-						continue;
+
 
 					int x, y;
 					SDL_GetMouseState(&x, &y);
 
-					int index = i_ * tiles_per_dimension + (tiles_per_dimension - 1 - j_);
+					int index = i_ * tiles_per_dimension + (copy_selected_end.y - j);
+
+
+
 
 					quad q;
+
+					float half_width = -tiles_per_dimension * block_size / 2.0f;
+					float half_height = tiles_per_dimension * block_size / 2.0f;
 
 					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
@@ -1785,121 +1680,30 @@ int main(int, char**)
 					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
 					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
 
-					//q.vertices[0].x += diff_x;
-					//q.vertices[0].y += diff_y;
-					//q.vertices[1].x += diff_x;
-					//q.vertices[1].y += diff_y;
-					//q.vertices[2].x += diff_x;
-					//q.vertices[2].y += diff_y;
-					//q.vertices[3].x += diff_x;
-					//q.vertices[3].y += diff_y;
+					q.vertices[0].x += half_width * zoom_factor;
+					q.vertices[1].x += half_width * zoom_factor;
+					q.vertices[2].x += half_width * zoom_factor;
+					q.vertices[3].x += half_width * zoom_factor;
 
+					q.vertices[0].y += half_height * zoom_factor;
+					q.vertices[1].y += half_height * zoom_factor;
+					q.vertices[2].y += half_height * zoom_factor;
+					q.vertices[3].y += half_height * zoom_factor;
 
 					if (q.vertices[0].x < copy_paste_base_position.first)
+					{
 						copy_paste_base_position.first = q.vertices[0].x;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+					}
 
 					if (q.vertices[0].y < copy_paste_base_position.second)
+					{
 						copy_paste_base_position.second = q.vertices[0].y;
-
-					if (q.vertices[1].x < copy_paste_base_position.first)
-						copy_paste_base_position.first = q.vertices[1].x;
-
-					if (q.vertices[1].y < copy_paste_base_position.second)
-						copy_paste_base_position.second = q.vertices[1].y;
-
-					if (q.vertices[2].x < copy_paste_base_position.first)
-						copy_paste_base_position.first = q.vertices[2].x;
-
-					if (q.vertices[2].y < copy_paste_base_position.second)
-						copy_paste_base_position.second = q.vertices[2].y;
-
-					if (q.vertices[3].x < copy_paste_base_position.first)
-						copy_paste_base_position.first = q.vertices[3].x;
-
-					if (q.vertices[3].y < copy_paste_base_position.second)
-						copy_paste_base_position.second = q.vertices[3].y;
-
-
-
-
-					if (q.vertices[0].x > copy_paste_end_position.first)
-						copy_paste_end_position.first = q.vertices[0].x;
-
-					if (q.vertices[0].y > copy_paste_end_position.second)
-						copy_paste_end_position.second = q.vertices[0].y;
-
-					if (q.vertices[1].x > copy_paste_end_position.first)
-						copy_paste_end_position.first = q.vertices[1].x;
-
-					if (q.vertices[1].y > copy_paste_end_position.second)
-						copy_paste_end_position.second = q.vertices[1].y;
-
-					if (q.vertices[2].x > copy_paste_end_position.first)
-						copy_paste_end_position.first = q.vertices[2].x;
-
-					if (q.vertices[2].y > copy_paste_end_position.second)
-						copy_paste_end_position.second = q.vertices[2].y;
-
-					if (q.vertices[3].x > copy_paste_end_position.first)
-						copy_paste_end_position.first = q.vertices[3].x;
-
-					if (q.vertices[3].y > copy_paste_end_position.second)
-						copy_paste_end_position.second = q.vertices[3].y;
-				}
-			}
-
-			copy_paste_average_position.first = (copy_paste_base_position.first + copy_paste_end_position.first) * 0.5f;
-			copy_paste_average_position.second = (copy_paste_base_position.second + copy_paste_end_position.second) * 0.5f;
-
-
-			copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+(copy_paste_average_position.first + diff_x) / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_average_position.second + diff_y) / (block_size * zoom_factor));
-
-
-
-
-
-
-			int base_mouse_x = 0, base_mouse_y = 0;
-			SDL_GetMouseState(&base_mouse_x, &base_mouse_y);
-			base_mouse_y = io.DisplaySize.y - base_mouse_y;
-
-			diff_x = base_mouse_x - copy_paste_average_position.first;
-			diff_y = base_mouse_y - copy_paste_average_position.second;
-
-			for (int i = 0; i < tiles_per_dimension; i++)
-			{
-				for (int j = 0; j < tiles_per_dimension; j++)
-				{
-					int i_ = i;
-					int j_ = j;
+						copy_paste_relative_index = make_pair(-zoomed_image_anchor.x / (block_size)+copy_paste_base_position.first / (block_size * zoom_factor), -zoomed_image_anchor.y / (block_size)+(copy_paste_base_position.second) / (block_size * zoom_factor));
+					}
 
 					if (copy_selected_indices.end() == find(copy_selected_indices.begin(), copy_selected_indices.end(), make_pair(i_, j_)))
 						continue;
-
-					int x, y;
-					SDL_GetMouseState(&x, &y);
-
-					int index = i_ * tiles_per_dimension + (tiles_per_dimension - 1 - j_);
-
-					quad q;
-
-					q.vertices[0].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[0].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[1].x = x + block_size * zoom_factor * i_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[1].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[2].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[2].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ + block_size * 0.5f * zoom_factor;//custom_brush1_img.cols;
-					q.vertices[3].x = x + block_size * zoom_factor * i_ + block_size * 0.5f * zoom_factor;// custom_brush1_img.rows;
-					q.vertices[3].y = io.DisplaySize.y - y - block_size * zoom_factor * j_ - block_size * 0.5f * zoom_factor;// custom_brush1_img.cols;
-
-					q.vertices[0].x += diff_x;
-					q.vertices[0].y += diff_y;
-					q.vertices[1].x += diff_x;
-					q.vertices[1].y += diff_y;
-					q.vertices[2].x += diff_x;
-					q.vertices[2].y += diff_y;
-					q.vertices[3].x += diff_x;
-					q.vertices[3].y += diff_y;
 
 					draw_tex_quad(main_tiles_texture, q, (int)io.DisplaySize.x, (int)io.DisplaySize.y, copy_background_tiles[index].uv_min, copy_background_tiles[index].uv_max);
 					draw_quad_line_loop(glm::vec3(1, 1, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, q);
@@ -1909,29 +1713,10 @@ int main(int, char**)
 		}
 
 
-		glm::vec3 pos(copy_paste_base_position.first, copy_paste_base_position.second, 0.0f);
 
-		pos.x += diff_x;
-		pos.y += diff_y;
-
-		draw_circle_line_loop(glm::vec3(1, 0, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
-
-		pos = glm::vec3(copy_paste_end_position.first, copy_paste_end_position.second, 0.0f);
-		pos.x += diff_x;
-		pos.y += diff_y;
-
-
-		draw_circle_line_loop(glm::vec3(0, 1, 0), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
-
-		pos = glm::vec3(copy_paste_average_position.first, copy_paste_average_position.second, 0.0f);
-		pos.x += diff_x;
-		pos.y += diff_y;
-
-
-		draw_circle_line_loop(glm::vec3(0, 0, 1), (int)io.DisplaySize.x, (int)io.DisplaySize.y, 4.0, pos, zoom_factor * (float)brush_size * block_size * 0.5f, 20);
-
-
+		if(show_interface)
 		ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+	
 		SDL_GL_SwapWindow(window);
 	}
 
